@@ -652,8 +652,14 @@ export function initSkinsStudio(): void {
     `;
   }
 
-  // Interactive UV canvas drag for selected zone / decal / pan
-  let dragMode: "none" | "pan" | "zone-move" | "zone-resize" | "decal-move" = "none";
+  // Interactive UV canvas drag for selected zone / decal / pan / freeform brush
+  let brushMode = false;
+  let brushColor = "#00e699";
+  let brushSize = 0.022;
+  let brushMirror = true;
+  let activeStroke: { color: string; size: number; mirrorX: boolean; points: Array<{ x: number; y: number }> } | null = null;
+
+  let dragMode: "none" | "pan" | "zone-move" | "zone-resize" | "decal-move" | "brush" = "none";
   let dragStartX = 0;
   let dragStartY = 0;
   let origPanX = 0;
@@ -675,6 +681,17 @@ export function initSkinsStudio(): void {
     dragStartY = e.clientY;
     origPanX = uvPanX;
     origPanY = uvPanY;
+
+    // 0. Freeform Brush mode
+    if (brushMode) {
+      if (!Array.isArray(state.strokes)) state.strokes = [];
+      activeStroke = { color: brushColor, size: brushSize, mirrorX: brushMirror, points: [{ x: u, y: v }] };
+      state.strokes.push(activeStroke);
+      dragMode = "brush";
+      uvCanvas.setPointerCapture(e.pointerId);
+      scheduleRender();
+      return;
+    }
 
     // 1. Check resize handle of selected zone
     if (showZonesOverlay && selectedZone) {
@@ -732,7 +749,11 @@ export function initSkinsStudio(): void {
     const du = (e.clientX - dragStartX) / rect.width;
     const dv = (e.clientY - dragStartY) / rect.height;
 
-    if (dragMode === "pan") {
+    if (dragMode === "brush" && activeStroke) {
+      const { u, v } = canvasUvCoords(e);
+      activeStroke.points.push({ x: u, y: v });
+      scheduleRender();
+    } else if (dragMode === "pan") {
       uvPanX = origPanX + (e.clientX - dragStartX);
       uvPanY = origPanY + (e.clientY - dragStartY);
       applyUvTransform();
@@ -759,6 +780,7 @@ export function initSkinsStudio(): void {
   const endUvDrag = () => {
     if (dragMode === "zone-move" || dragMode === "zone-resize") renderZoneList();
     if (dragMode === "decal-move") renderDecalEditor();
+    activeStroke = null;
     dragMode = "none";
   };
   uvCanvas.addEventListener("pointerup", endUvDrag);
@@ -1109,6 +1131,66 @@ export function initSkinsStudio(): void {
   byId<HTMLInputElement>("skCarbonWeave")?.addEventListener("change", (e) => {
     state.spec.carbonAccent = (e.target as HTMLInputElement).checked;
     scheduleRender();
+  });
+
+  // Freeform Brush & Shape Controls
+  const brushToggleBtn = byId<HTMLButtonElement>("skBrushToggle");
+  brushToggleBtn?.addEventListener("click", () => {
+    brushMode = !brushMode;
+    brushToggleBtn.textContent = brushMode ? "Pincel libre: ON (dibuja en el mapa)" : "Pincel libre: OFF";
+    brushToggleBtn.classList.toggle("sk-btn-primary", brushMode);
+    uvCanvas.style.cursor = brushMode ? "crosshair" : "grab";
+    if (brushMode && viewMode !== "uv") {
+      viewMode = "uv";
+      updateViewModeUI();
+    }
+  });
+  byId<HTMLInputElement>("skBrushColor")?.addEventListener("input", (e) => {
+    brushColor = (e.target as HTMLInputElement).value;
+  });
+  byId<HTMLInputElement>("skBrushSize")?.addEventListener("input", (e) => {
+    brushSize = Number((e.target as HTMLInputElement).value) * 0.007;
+  });
+  byId<HTMLInputElement>("skBrushMirror")?.addEventListener("change", (e) => {
+    brushMirror = (e.target as HTMLInputElement).checked;
+  });
+  byId<HTMLButtonElement>("skBrushUndo")?.addEventListener("click", () => {
+    if (Array.isArray(state.strokes) && state.strokes.length > 0) {
+      state.strokes.pop();
+      scheduleRender();
+    }
+  });
+  byId<HTMLButtonElement>("skBrushClear")?.addEventListener("click", () => {
+    state.strokes = [];
+    scheduleRender();
+  });
+
+  document.querySelectorAll<HTMLButtonElement>("[data-add-shape]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const shapeType = (btn.dataset.addShape as "stripe" | "triangle" | "circle") || "stripe";
+      const label = shapeType === "stripe" ? "Franja libre" : shapeType === "triangle" ? "Triángulo" : "Círculo";
+      const layer: DecalLayer = {
+        id: `shape-${Date.now()}`,
+        name: label,
+        kind: "shape",
+        shapeType,
+        color: state.palette.accent,
+        x: 0.5,
+        y: 0.5,
+        scale: shapeType === "stripe" ? 0.34 : 0.16,
+        rotation: 0,
+        opacity: 1,
+        mirrorX: false,
+      };
+      state.decals.push(layer);
+      selectedDecalId = layer.id;
+      rightTab = "decals";
+      updateRightTabUI();
+      renderDecalList();
+      renderDecalEditor();
+      scheduleRender();
+      setStatus(`${label} añadida: arrástrala y rótala libremente sobre el mapa UV.`, "ok");
+    });
   });
 
   // Decals Tab Bindings

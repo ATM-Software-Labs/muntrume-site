@@ -91,6 +91,11 @@ function drawPatternGeometry(ctx: CanvasRenderingContext2D, state: SkinDesignSta
     drawCarbonPattern(ctx, 0, 0, size, size, size / 128);
   }
 
+  // Modo Diseño Libre: lienzo limpio sin ninguna caja forzada ni rectángulos predefinidos
+  if (pattern === "freeform") {
+    return;
+  }
+
   // Secondary structural zones (bumpers & rear)
   ctx.fillStyle = palette.secondary;
   ctx.fillRect(fBump.x, fBump.y, fBump.w, fBump.h);
@@ -338,7 +343,27 @@ async function drawDecals(ctx: CanvasRenderingContext2D, state: SkinDesignState,
       ctx.rotate((pos.rot * Math.PI) / 180);
 
       let drawH = drawW * 0.35;
-      if (decal.kind === "text") {
+      if (decal.kind === "shape") {
+        ctx.fillStyle = decal.color || "#00e699";
+        if (decal.shapeType === "circle") {
+          drawH = drawW;
+          ctx.beginPath();
+          ctx.arc(0, 0, drawW / 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (decal.shapeType === "triangle") {
+          drawH = drawW * 0.85;
+          ctx.beginPath();
+          ctx.moveTo(0, -drawH / 2);
+          ctx.lineTo(drawW / 2, drawH / 2);
+          ctx.lineTo(-drawW / 2, drawH / 2);
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          // Freeform stripe / rectangle
+          drawH = drawW * 0.22;
+          ctx.fillRect(-drawW / 2, -drawH / 2, drawW, drawH);
+        }
+      } else if (decal.kind === "text") {
         const fontFam = getFontFamily(state.fontStyle);
         const fontSize = Math.max(12, Math.round(drawW * 0.24));
         ctx.font = `800 ${fontSize}px ${fontFam}`;
@@ -443,6 +468,43 @@ async function drawBrandEmblemPreview(ctx: CanvasRenderingContext2D, state: Skin
   drawBadge(rBump.x + rBump.w * 0.5, rBump.y + rBump.h * 0.52, size * 0.034);
 }
 
+function drawBrushStrokes(ctx: CanvasRenderingContext2D, state: SkinDesignState, size: number): void {
+  const strokes = state.strokes;
+  if (!Array.isArray(strokes) || strokes.length === 0) return;
+
+  const paintPath = (pts: Array<{ x: number; y: number }>, color: string, widthNorm: number, flipX: boolean) => {
+    if (pts.length === 0) return;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = Math.max(2, widthNorm * size);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    if (pts.length === 1) {
+      const px = (flipX ? 1 - pts[0].x : pts[0].x) * size;
+      const py = pts[0].y * size;
+      ctx.beginPath();
+      ctx.arc(px, py, ctx.lineWidth / 2, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.beginPath();
+      pts.forEach((p, i) => {
+        const px = (flipX ? 1 - p.x : p.x) * size;
+        const py = p.y * size;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+    }
+    ctx.restore();
+  };
+
+  for (const st of strokes) {
+    paintPath(st.points, st.color, st.size, false);
+    if (st.mirrorX) paintPath(st.points, st.color, st.size, true);
+  }
+}
+
 export async function renderSkinToCanvas(
   canvas: HTMLCanvasElement,
   state: SkinDesignState,
@@ -458,6 +520,7 @@ export async function renderSkinToCanvas(
 
   ctx.clearRect(0, 0, size, size);
   drawPatternGeometry(ctx, state, size);
+  drawBrushStrokes(ctx, state, size);
   drawDriverNumbers(ctx, state, size);
   await drawDecals(ctx, state, size, opts.selectedDecalId, opts.forExport);
 

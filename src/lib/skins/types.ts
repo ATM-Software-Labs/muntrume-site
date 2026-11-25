@@ -49,7 +49,14 @@ export interface DriverProfile {
   accentHex?: string;
 }
 
-export type PatternStyle = "endurance" | "sprint" | "carbon-stealth" | "tricolor" | "clean-minimal";
+export type PatternStyle = "freeform" | "endurance" | "sprint" | "carbon-stealth" | "tricolor" | "clean-minimal";
+
+export interface BrushStroke {
+  color: string;
+  size: number;
+  mirrorX: boolean;
+  points: Array<{ x: number; y: number }>;
+}
 
 export interface PaletteConfig {
   primary: string;
@@ -74,10 +81,11 @@ export interface SpecConfig {
 export interface DecalLayer {
   id: string;
   name: string;
-  kind: "builtin" | "custom" | "text";
+  kind: "builtin" | "custom" | "text" | "shape";
   assetId?: string;
   dataUrl?: string;
   text?: string;
+  shapeType?: "stripe" | "triangle" | "circle";
   color: string;
   /** Normalized 0..1 position */
   x: number;
@@ -107,6 +115,7 @@ export interface SkinDesignState {
   showNumberOnCar: boolean;
   zones: Record<ZoneKey, ZoneRect>;
   decals: DecalLayer[];
+  strokes?: BrushStroke[];
   updatedAt: string;
 }
 
