@@ -9,6 +9,7 @@ import {
   getDriverById,
 } from "./catalog";
 import { renderSkinToCanvas, renderSpecMapToCanvas } from "./compositor";
+import { renderShowroomCarView, type ShowroomAngle } from "./car-showroom-view";
 import {
   exportIracingZipBundle,
   exportPresetJson,
@@ -47,7 +48,7 @@ import type {
 const STATE_STORAGE_KEY = "mmt-skins-active-design-v1";
 const LIBRARY_STORAGE_KEY = "mmt-skins-saved-presets-v1";
 
-type ViewMode = "uv" | "3d" | "spec";
+type ViewMode = "showroom" | "uv" | "3d" | "spec";
 type RightTab = "design" | "decals" | "gemini" | "export";
 
 function byId<T extends HTMLElement>(id: string): T | null {
@@ -84,7 +85,8 @@ export function initSkinsStudio(): void {
   if (!root) return;
 
   let state: SkinDesignState = loadActiveDesign();
-  let viewMode: ViewMode = "uv";
+  let viewMode: ViewMode = "showroom";
+  let showroomAngle: ShowroomAngle = "side";
   let rightTab: RightTab = "design";
   let loadedTemplate: LoadedTemplate | null = null;
   let showTemplateOverlay = true;
@@ -169,6 +171,7 @@ export function initSkinsStudio(): void {
   let uvPanX = 0;
   let uvPanY = 0;
 
+  const showroomCanvas = byId<HTMLCanvasElement>("skShowroomCanvas")!;
   const uvCanvas = byId<HTMLCanvasElement>("skUvCanvas")!;
   const glCanvas = byId<HTMLCanvasElement>("skGlCanvas")!;
   const offscreenTexture = document.createElement("canvas");
@@ -243,7 +246,9 @@ export function initSkinsStudio(): void {
     requestAnimationFrame(async () => {
       renderPending = false;
       try {
-        if (viewMode === "uv") {
+        if (viewMode === "showroom") {
+          await renderShowroomCarView(showroomCanvas, state, showroomAngle);
+        } else if (viewMode === "uv") {
           await renderSkinToCanvas(uvCanvas, state, {
             size: 1024,
             templateCanvas: loadedTemplate?.canvas ?? null,
@@ -286,11 +291,15 @@ export function initSkinsStudio(): void {
     document.querySelectorAll<HTMLButtonElement>("[data-view-mode]").forEach((btn) => {
       btn.classList.toggle("is-active", btn.dataset.viewMode === viewMode);
     });
+    const isShowroom = viewMode === "showroom";
     const isGl = viewMode === "3d";
-    uvCanvas.classList.toggle("sk-hidden", isGl);
+    const isUvOrSpec = viewMode === "uv" || viewMode === "spec";
+    showroomCanvas.classList.toggle("sk-hidden", !isShowroom);
+    uvCanvas.classList.toggle("sk-hidden", !isUvOrSpec);
     glCanvas.classList.toggle("sk-hidden", !isGl);
+    byId<HTMLElement>("skShowroomControls")?.classList.toggle("sk-hidden", !isShowroom);
     byId<HTMLElement>("skGlOverlay")?.classList.toggle("sk-hidden", !isGl);
-    byId<HTMLElement>("skUvControls")?.classList.toggle("sk-hidden", isGl);
+    byId<HTMLElement>("skUvControls")?.classList.toggle("sk-hidden", !isUvOrSpec);
     scheduleRender();
   }
 
@@ -688,8 +697,57 @@ export function initSkinsStudio(): void {
   // Bind Top & Stage Controls
   document.querySelectorAll<HTMLButtonElement>("[data-view-mode]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      viewMode = (btn.dataset.viewMode as ViewMode) || "uv";
+      viewMode = (btn.dataset.viewMode as ViewMode) || "showroom";
       updateViewModeUI();
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>("[data-showroom-angle]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      showroomAngle = (btn.dataset.showroomAngle as ShowroomAngle) || "side";
+      document.querySelectorAll<HTMLButtonElement>("[data-showroom-angle]").forEach((b) => {
+        b.classList.toggle("is-active", b.dataset.showroomAngle === showroomAngle);
+      });
+      scheduleRender();
+    });
+  });
+
+  // 1-Click GT-style sponsor placement onto exact car zones
+  document.querySelectorAll<HTMLButtonElement>("[data-quick-zone]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const zk = btn.dataset.quickZone as ZoneKey;
+      const rect = state.zones[zk];
+      if (!rect) return;
+      const isSide = zk === "leftSide" || zk === "rightSide";
+      const layer: DecalLayer = {
+        id: `decal-q-${Date.now()}`,
+        name: `MUNTRUME (${rect.label})`,
+        kind: "builtin",
+        assetId: zk === "hood" ? "mmt-crest" : zk === "rearWing" ? "muntru-url" : "mmt-wordmark",
+        color: zk === "rearWing" ? "#090b0f" : "#ffffff",
+        x: Number((rect.x + rect.w * 0.5).toFixed(3)),
+        y: Number((rect.y + rect.h * 0.55).toFixed(3)),
+        scale: zk === "hood" ? 0.14 : zk === "rearWing" ? 0.28 : 0.20,
+        rotation: 0,
+        opacity: 1,
+        mirrorX: isSide,
+        zoneHint: zk,
+      };
+      state.decals.push(layer);
+      selectedDecalId = layer.id;
+      rightTab = "decals";
+      if (zk === "hood" || zk === "roof") showroomAngle = "top";
+      else if (zk === "rearWing") showroomAngle = "rear";
+      else if (zk === "frontBumper") showroomAngle = "front";
+      else showroomAngle = "side";
+      document.querySelectorAll<HTMLButtonElement>("[data-showroom-angle]").forEach((b) => {
+        b.classList.toggle("is-active", b.dataset.showroomAngle === showroomAngle);
+      });
+      updateRightTabUI();
+      renderDecalList();
+      renderDecalEditor();
+      scheduleRender();
+      setStatus(`Sponsor colocado en ${rect.label}${isSide ? " (con simetría L↔R)" : ""}.`, "ok");
     });
   });
 

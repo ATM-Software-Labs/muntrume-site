@@ -206,16 +206,26 @@ const canonical = "https://skins.muntru.me/";
         </section>
       </aside>
 
-      <!-- CENTER VIEWPORT: UV 2D / WebGL 3D / Spec Map -->
+      <!-- CENTER VIEWPORT: GT/iRacing Paint Shop / UV 2D / WebGL 3D / Spec Map -->
       <section class="sk-stage-col">
         <div class="sk-stage-bar">
           <div class="sk-seg" role="tablist" aria-label="Modo de previsualización">
-            <button type="button" data-view-mode="uv" class="is-active">Mapa UV 2D</button>
+            <button type="button" data-view-mode="showroom" class="is-active">Pintor GT / iRacing</button>
+            <button type="button" data-view-mode="uv">Mapa UV 2D</button>
             <button type="button" data-view-mode="3d">Visor 3D WebGL</button>
             <button type="button" data-view-mode="spec">Spec Map (RGB)</button>
           </div>
 
-          <div id="skUvControls" class="sk-row">
+          <div id="skShowroomControls" class="sk-row">
+            <div class="sk-seg" role="group" aria-label="Ángulo de cámara GT">
+              <button type="button" data-showroom-angle="side" class="is-active">Lateral</button>
+              <button type="button" data-showroom-angle="top">Superior</button>
+              <button type="button" data-showroom-angle="front">Frontal</button>
+              <button type="button" data-showroom-angle="rear">Trasera</button>
+            </div>
+          </div>
+
+          <div id="skUvControls" class="sk-row sk-hidden">
             <button type="button" id="skZoomOut" class="sk-btn sk-btn-sm" aria-label="Alejar">−</button>
             <span id="skZoomLabel" style="font-size:11px;font-family:monospace;min-width:40px;text-align:center;">100%</span>
             <button type="button" id="skZoomIn" class="sk-btn sk-btn-sm" aria-label="Acercar">+</button>
@@ -224,7 +234,8 @@ const canonical = "https://skins.muntru.me/";
         </div>
 
         <div id="skCanvasWrap" class="sk-canvas-wrap">
-          <canvas id="skUvCanvas" class="sk-uv-canvas" width="1024" height="1024"></canvas>
+          <canvas id="skShowroomCanvas" width="1024" height="640" style="width:100%;max-width:960px;height:auto;border-radius:10px;border:1px solid rgba(255,255,255,0.08);box-shadow:0 20px 54px rgba(0,0,0,0.65);"></canvas>
+          <canvas id="skUvCanvas" class="sk-uv-canvas sk-hidden" width="1024" height="1024"></canvas>
           <canvas id="skGlCanvas" class="sk-gl-canvas sk-hidden"></canvas>
 
           <div id="skGlOverlay" class="sk-gl-overlay sk-hidden">
@@ -242,6 +253,18 @@ const canonical = "https://skins.muntru.me/";
               </label>
               <button type="button" id="skGlResetMesh" class="sk-btn sk-btn-sm">Reset</button>
             </div>
+          </div>
+        </div>
+
+        <!-- Quick GT-style 1-Click Sponsor Placement Bar -->
+        <div class="sk-stage-bar" style="border-top:1px solid var(--sk-border);border-bottom:none;">
+          <span style="font-size:11px;font-weight:700;color:var(--sk-muted);text-transform:uppercase;letter-spacing:0.06em;">Colocar sponsor en:</span>
+          <div class="sk-row" style="flex-wrap:wrap;">
+            <button type="button" class="sk-btn sk-btn-sm" data-quick-zone="hood">+ Capó</button>
+            <button type="button" class="sk-btn sk-btn-sm" data-quick-zone="leftSide">+ Laterales (L↔R)</button>
+            <button type="button" class="sk-btn sk-btn-sm" data-quick-zone="roof">+ Techo</button>
+            <button type="button" class="sk-btn sk-btn-sm" data-quick-zone="rearWing">+ Alerón</button>
+            <button type="button" class="sk-btn sk-btn-sm" data-quick-zone="frontBumper">+ Parachoques</button>
           </div>
         </div>
       </section>
