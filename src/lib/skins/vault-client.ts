@@ -252,12 +252,16 @@ export function mapWorkerUvToZones(
   const H = Number(hStr) || 2048;
   const norm = (r: WorkerUvRect | undefined, base: ZoneRect): ZoneRect => {
     if (!r || !r.width || !r.height) return { ...base };
+    const nw = r.width / W;
+    const nh = r.height / H;
+    // Reject corrupted full-canvas boxes (> 85% of UV)
+    if (nw > 0.85 && nh > 0.85) return { ...base };
     return {
       ...base,
       x: Number((r.x / W).toFixed(4)),
       y: Number((r.y / H).toFixed(4)),
-      w: Number((r.width / W).toFixed(4)),
-      h: Number((r.height / H).toFixed(4)),
+      w: Number(nw.toFixed(4)),
+      h: Number(nh.toFixed(4)),
     };
   };
 

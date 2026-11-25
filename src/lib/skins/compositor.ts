@@ -1,4 +1,4 @@
-import { BUILTIN_DECALS } from "./catalog";
+import { BUILTIN_DECALS, getCarById } from "./catalog";
 import type { DecalLayer, SkinDesignState, ZoneKey, ZoneRect } from "./types";
 
 export interface CompositeOptions {
@@ -416,6 +416,33 @@ function drawZonesOverlay(
   ctx.restore();
 }
 
+async function drawBrandEmblemPreview(ctx: CanvasRenderingContext2D, state: SkinDesignState, size: number): Promise<void> {
+  const car = getCarById(state.carId);
+  if (!car.logoPath) return;
+  const img = await loadImageCached(`brand:${car.logoPath}`, car.logoPath);
+  if (!img) return;
+
+  const hood = zonePx(state.zones.hood, size);
+  const fBump = zonePx(state.zones.frontBumper, size);
+  const rBump = zonePx(state.zones.rearBumper, size);
+
+  const drawBadge = (cx: number, cy: number, badgeSize: number) => {
+    const aspect = img.naturalHeight > 0 && img.naturalWidth > 0 ? img.naturalHeight / img.naturalWidth : 1;
+    const w = aspect >= 1 ? badgeSize / aspect : badgeSize;
+    const h = aspect >= 1 ? badgeSize : badgeSize * aspect;
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,0.65)";
+    ctx.shadowBlur = 4;
+    ctx.drawImage(img, cx - w / 2, cy - h / 2, w, h);
+    ctx.restore();
+  };
+
+  // Nose emblem (top of hood) + front & rear bumper badges (simulates iRacing's in-game Car Decals layer)
+  drawBadge(hood.x + hood.w * 0.5, hood.y + hood.h * 0.14, size * 0.042);
+  drawBadge(fBump.x + fBump.w * 0.5, fBump.y + fBump.h * 0.45, size * 0.036);
+  drawBadge(rBump.x + rBump.w * 0.5, rBump.y + rBump.h * 0.52, size * 0.034);
+}
+
 export async function renderSkinToCanvas(
   canvas: HTMLCanvasElement,
   state: SkinDesignState,
@@ -439,6 +466,9 @@ export async function renderSkinToCanvas(
     ctx.save();
     ctx.drawImage(opts.partsOverlayCanvas, 0, 0, size, size);
     ctx.restore();
+  } else if (!opts.forExport) {
+    // Preview-only manufacturer emblem (iRacing renders real car badges in-game above car_<id>.tga)
+    await drawBrandEmblemPreview(ctx, state, size);
   }
 
   if (!opts.forExport && opts.showTemplateOverlay && opts.templateCanvas) {
