@@ -91,8 +91,9 @@ export function initSkinsStudio(): void {
   let rightTab: RightTab = "design";
   let loadedTemplate: LoadedTemplate | null = null;
   let workerWireframeCanvas: HTMLCanvasElement | null = null;
+  let workerCarsCatalog: Array<{ car_slug: string; name: string; brand: string; category?: string; iracing_folder: string; uv_status: string }> = [];
   let showTemplateOverlay = true;
-  let templateOpacity = 0.45;
+  let templateOpacity = 0.72;
   let showZonesOverlay = true;
   let selectedZone: ZoneKey | null = "hood";
   let selectedDecalId: string | null = state.decals[0]?.id ?? null;
@@ -134,6 +135,51 @@ export function initSkinsStudio(): void {
     });
   }
 
+  function populateCarSelectorFromWorker(): void {
+    const sel = byId<HTMLSelectElement>("skCarSelect");
+    if (!sel) return;
+    const order = [
+      "GT3",
+      "GTP / Hypercar",
+      "LMP2 / Prototipos",
+      "GT4 & Cup",
+      "Fórmula",
+      "Stock Cars & Oval",
+      "TCR / Turismo / Dirt",
+    ];
+    const items = workerCarsCatalog.length > 0
+      ? workerCarsCatalog
+      : CAR_PROFILES.map((c) => ({
+          car_slug: c.id,
+          name: c.name,
+          brand: c.brand,
+          category: c.category,
+          iracing_folder: c.iracingFolder,
+          uv_status: "baseline",
+        }));
+
+    const groups = new Map<string, typeof items>();
+    for (const item of items) {
+      const cat = item.category || "TCR / Turismo / Dirt";
+      if (!groups.has(cat)) groups.set(cat, []);
+      groups.get(cat)!.push(item);
+    }
+
+    const orderedCats = [...order.filter((c) => groups.has(c)), ...Array.from(groups.keys()).filter((c) => !order.includes(c))];
+    sel.innerHTML = orderedCats
+      .map((cat) => {
+        const list = (groups.get(cat) || []).slice().sort((a, b) => a.name.localeCompare(b.name));
+        const opts = list
+          .map((c) => `<option value="${escapeHtml(c.car_slug)}">${escapeHtml(c.name)}${c.uv_status === "extracted" ? " ✓" : ""}</option>`)
+          .join("");
+        return `<optgroup label="${escapeHtml(cat)} (${list.length})">${opts}</optgroup>`;
+      })
+      .join("");
+    if (items.some((i) => i.car_slug === state.carId)) {
+      sel.value = state.carId;
+    }
+  }
+
   async function syncCarUvFromWorker(carSlug: string): Promise<void> {
     if (!vaultAuthenticated) return;
     try {
@@ -141,9 +187,17 @@ export function initSkinsStudio(): void {
       const car = getCarById(carSlug);
       state.zones = mapWorkerUvToZones(uv, car.defaultZones);
       workerWireframeCanvas = await renderSvgStringToCanvas(uv.wireframe_svg || "");
+      const infoEl = byId<HTMLElement>("skTemplateSummary");
+      if (infoEl) {
+        infoEl.textContent = `Plantilla UV limpia sin copy cargada automáticamente (${uv.car_name} · ${uv.native_resolution}). Cambia colores, patrón y sponsors encima.`;
+      }
+      const notesEl = byId<HTMLElement>("skCarNotes");
+      if (notesEl) {
+        notesEl.textContent = `Carpeta iRacing: paint/${uv.iracing_folder}/ · Estado UV: ${uv.uv_status === "extracted" ? "Plantilla vectorial calibrada ✓" : "Base"}`;
+      }
       renderZoneList();
       scheduleRender();
-      setStatus(`UV limpio sin copy cargado (${uv.car_slug} · ${uv.uv_status})`, "ok");
+      setStatus(`Plantilla UV cargada (${uv.car_name})`, "ok");
     } catch (err) {
       if (err instanceof SkinsApiError && err.status === 401) {
         lockStudio(err.message);
@@ -163,12 +217,14 @@ export function initSkinsStudio(): void {
     }
     try {
       const cars = await fetchWorkerCars();
+      workerCarsCatalog = cars;
       unlockStudio();
+      populateCarSelectorFromWorker();
       syncControlsFromState();
       renderSavedLibrary();
       updateViewModeUI();
       updateRightTabUI();
-      setStatus(`Sesión Vault verificada · ${cars.length} coches UV disponibles`, "ok");
+      setStatus(`Sesión Vault verificada · ${cars.length} plantillas UV disponibles`, "ok");
       await syncCarUvFromWorker(state.carId);
     } catch (err) {
       if (err instanceof SkinsApiError) {
@@ -861,14 +917,15 @@ export function initSkinsStudio(): void {
       return `<optgroup label="${escapeHtml(cat)}">${opts}</optgroup>`;
     }).join("");
     carSelect.addEventListener("change", () => {
-      const nextCar = getCarById(carSelect.value);
-      state.carId = nextCar.id;
+      const nextSlug = carSelect.value;
+      const nextCar = getCarById(nextSlug);
+      state.carId = nextSlug;
       state.zones = cloneZones(nextCar.defaultZones);
+      loadedTemplate = null;
       customPhotoShots = null;
       syncControlsFromState();
       scheduleRender();
-      setStatus(`Diseño adaptado a ${nextCar.name}`, "ok");
-      void syncCarUvFromWorker(nextCar.id);
+      void syncCarUvFromWorker(nextSlug);
     });
   }
 

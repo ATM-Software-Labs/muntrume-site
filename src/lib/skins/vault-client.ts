@@ -152,6 +152,7 @@ export interface WorkerCarSummary {
   car_slug: string;
   name: string;
   brand: string;
+  category?: string;
   iracing_folder: string;
   native_resolution: string;
   uv_status: string;
