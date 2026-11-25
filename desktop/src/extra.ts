@@ -1,5 +1,8 @@
 import { listen } from "@tauri-apps/api/event";
 import cockpitPorscheUrl from "./assets/cockpit-porsche-992-gt3r.jpg";
+import cockpitGt3WetUrl from "./assets/cockpit-gt3-wet.jpg";
+import cockpitGtpNightUrl from "./assets/cockpit-gtp-night.jpg";
+import cockpitFormulaUrl from "./assets/cockpit-formula.jpg";
 import type { HardwareReport, IbtSessionReport, IracingAnalysis, LiveSample, Settings, Snapshot } from "./types";
 import { areSessionsCompatible, computeDistanceDelta, resampleTrackByDistance } from "./telemetry/alignment";
 import { cleanTelemetrySignals, detectCornerKeyEvents } from "./telemetry/signal-cleaner";
@@ -3031,47 +3034,36 @@ function ensureLayoutSchemaV2(force = false): void {
       applyHudCustomAppearance();
     });
 
-    let studioWeather: "day" | "night" = "day";
     let studioCockpitActive = true;
+    const COCKPIT_URLS: Record<string, string> = {
+      porsche_gt3: cockpitPorscheUrl,
+      gt3_wet: cockpitGt3WetUrl,
+      gtp_night: cockpitGtpNightUrl,
+      formula: cockpitFormulaUrl,
+    };
+    let selectedCockpitKey = localStorage.getItem("mmt_studio_cockpit_v1") || "porsche_gt3";
 
     const applyStudioScene = () => {
-      const sceneBar = document.getElementById("mmtStudioSceneBar");
-      if (sceneBar) {
-        sceneBar.querySelectorAll<HTMLButtonElement>("[data-scene]").forEach((b) => {
-          const s = b.dataset.scene;
-          if (s === "cockpit") {
-            b.setAttribute("aria-pressed", String(studioCockpitActive));
-            b.className = studioCockpitActive
-              ? "px-2 py-0.5 rounded-[3px] bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/45 font-bold cursor-pointer"
-              : "px-2 py-0.5 rounded-[3px] text-white/70 hover:text-white border border-transparent font-bold cursor-pointer";
-          } else {
-            const active = s === studioWeather;
-            b.className = active
-              ? "px-2 py-0.5 rounded-[3px] bg-[#10b981] text-[#04130d] font-bold cursor-pointer"
-              : "px-2 py-0.5 rounded-[3px] text-white/70 hover:text-white font-bold cursor-pointer";
-          }
-        });
+      const cockpitSel = document.getElementById("mmtCockpitSelect") as HTMLSelectElement | null;
+      if (cockpitSel) {
+        cockpitSel.value = studioCockpitActive ? selectedCockpitKey : "dark";
       }
       const bg = document.getElementById("mmtStudioSceneBg");
       if (!bg) return;
-      if (studioCockpitActive) {
+      if (studioCockpitActive && COCKPIT_URLS[selectedCockpitKey]) {
         bg.classList.add("is-cockpit");
         bg.style.background = "";
-        bg.style.backgroundImage = `linear-gradient(180deg, rgba(5, 8, 12, 0.28) 0%, rgba(5, 8, 12, 0.14) 45%, rgba(5, 8, 12, 0.42) 100%), url("${cockpitPorscheUrl}")`;
+        bg.style.backgroundImage = `linear-gradient(180deg, rgba(5, 8, 12, 0.24) 0%, rgba(5, 8, 12, 0.12) 45%, rgba(5, 8, 12, 0.38) 100%), url("${COCKPIT_URLS[selectedCockpitKey]}")`;
         bg.style.backgroundSize = "cover";
         bg.style.backgroundPosition = "center center";
         bg.style.backgroundRepeat = "no-repeat";
-        bg.style.filter = studioWeather === "night" ? "brightness(0.55) contrast(1.12)" : "none";
+        bg.style.filter = "none";
       } else {
         bg.classList.remove("is-cockpit");
         bg.style.backgroundImage = "";
         bg.style.backgroundRepeat = "";
         bg.style.filter = "none";
-        if (studioWeather === "night") {
-          bg.style.background = "radial-gradient(ellipse at 50% 45%, rgba(14, 165, 233, 0.18) 0%, rgba(4, 7, 14, 0.98) 72%), linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)";
-        } else {
-          bg.style.background = "radial-gradient(ellipse at 50% 45%, rgba(16, 185, 129, 0.12) 0%, rgba(5, 8, 12, 0.94) 72%), linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)";
-        }
+        bg.style.background = "radial-gradient(ellipse at 50% 45%, rgba(16, 185, 129, 0.10) 0%, rgba(5, 8, 12, 0.96) 72%), linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)";
         bg.style.backgroundSize = "100% 100%, 28px 28px, 28px 28px";
         bg.style.backgroundPosition = "center center";
       }
@@ -3079,14 +3071,14 @@ function ensureLayoutSchemaV2(force = false): void {
 
     applyStudioScene();
 
-    document.getElementById("mmtStudioSceneBar")?.addEventListener("click", (e) => {
-      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-scene]");
-      if (!btn) return;
-      const scene = btn.dataset.scene || "day";
-      if (scene === "cockpit") {
-        studioCockpitActive = !studioCockpitActive;
-      } else if (scene === "night" || scene === "day") {
-        studioWeather = scene;
+    document.getElementById("mmtCockpitSelect")?.addEventListener("change", (e) => {
+      const val = (e.target as HTMLSelectElement).value;
+      if (val === "dark") {
+        studioCockpitActive = false;
+      } else {
+        studioCockpitActive = true;
+        selectedCockpitKey = val;
+        try { localStorage.setItem("mmt_studio_cockpit_v1", val); } catch {}
       }
       applyStudioScene();
     });
@@ -3230,11 +3222,11 @@ function ensureLayoutSchemaV2(force = false): void {
 
     setupDraggableWidgets();
     restoreWidgetPositions();
-    if (hudMockAllowed()) startDemoOverlayLoop();
-    else {
-      setHudMode("closed");
-      renderStandbyWidgets();
-    }
+  }
+
+  if (!isLiveFromSDK) {
+    previewDemoActive = true;
+    startDemoOverlayLoop();
   }
 
   canvases.forEach((canvas) => {

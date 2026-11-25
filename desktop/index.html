@@ -55,7 +55,7 @@
           <img src="./favicon.svg" width="24" height="24" alt="Muntrume Motorsport" class="h-[24px] w-[24px] rounded-lg border border-white/15 bg-[#090b0f] shrink-0 shadow-sm" />
           <div class="flex items-baseline gap-1.5">
             <span class="font-display font-extrabold text-[15px] tracking-wider text-white whitespace-nowrap">MMT <span class="text-[#10b981]">SYNC</span></span>
-            <span class="text-[10px] font-mono text-white/35">v0.7.5</span>
+            <span class="text-[10px] font-mono text-white/35">v0.7.6</span>
           </div>
           <span id="irBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-medium border border-white/10 bg-[#090c12] text-r-muted whitespace-nowrap shrink-0">
             <span id="irDot" class="w-2 h-2 rounded-full bg-r-muted"></span>
@@ -1154,10 +1154,14 @@
                       <button type="button" data-hud-factory-preset="endurance_multi" class="px-2.5 py-1 rounded-md text-white/75 hover:text-white hover:bg-white/[0.06] font-medium cursor-pointer whitespace-nowrap transition">Endurance</button>
                       <button type="button" data-hud-factory-preset="stream_minimal" class="px-2.5 py-1 rounded-md text-white/75 hover:text-white hover:bg-white/[0.06] font-medium cursor-pointer whitespace-nowrap transition">Qualy</button>
                     </div>
-                    <div id="mmtStudioSceneBar" class="inline-flex items-center gap-0.5 rounded-lg border border-white/[0.08] bg-[#090c12] p-0.5 shrink-0">
-                      <button type="button" data-scene="cockpit" aria-pressed="true" class="px-2.5 py-1 rounded-md bg-[#10b981]/15 text-[#10b981] font-semibold cursor-pointer whitespace-nowrap transition">Cockpit</button>
-                      <button type="button" data-scene="night" class="px-2.5 py-1 rounded-md text-white/65 hover:text-white font-medium cursor-pointer whitespace-nowrap transition">Oscuro</button>
-                      <button type="button" data-scene="day" class="hidden">Día</button>
+                    <div id="mmtStudioSceneBar" class="inline-flex items-center gap-1 shrink-0">
+                      <select id="mmtCockpitSelect" aria-label="Elegir onboard de cabina" class="h-7 px-2.5 rounded-lg border border-white/10 bg-[#090c12] text-white/90 text-[11px] font-medium cursor-pointer outline-none focus:border-[#10b981]/60">
+                        <option value="porsche_gt3">Porsche 992 GT3 R (Día)</option>
+                        <option value="gt3_wet">GT3 Onboard (Lluvia)</option>
+                        <option value="gtp_night">GTP Hypercar (Noche)</option>
+                        <option value="formula">Formula Halo (Día)</option>
+                        <option value="dark">Fondo Oscuro (Rejilla)</option>
+                      </select>
                     </div>
                   </div>
                   <div class="flex items-center gap-1.5 shrink-0">
