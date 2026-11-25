@@ -85,6 +85,7 @@ export function initSkinsStudio(): void {
   let rightTab: RightTab = "design";
   let loadedTemplate: LoadedTemplate | null = null;
   let workerWireframeCanvas: HTMLCanvasElement | null = null;
+  let workerSponsorBlocks: Array<{ id: string; cx: number; cy: number; nw: number; nh: number }> = [];
   let workerCarsCatalog: Array<{ car_slug: string; name: string; brand: string; category?: string; iracing_folder: string; uv_status: string }> = [];
   let showTemplateOverlay = true;
   let templateOpacity = 0.85;
@@ -180,6 +181,10 @@ export function initSkinsStudio(): void {
       const uv = await fetchWorkerUvMap(carSlug);
       const car = getCarById(carSlug);
       state.zones = mapWorkerUvToZones(uv, car.defaultZones);
+      const rawZones = uv.zones as Record<string, unknown>;
+      workerSponsorBlocks = Array.isArray(rawZones?.sponsor_blocks)
+        ? (rawZones.sponsor_blocks as Array<{ id: string; cx: number; cy: number; nw: number; nh: number }>)
+        : [];
       workerWireframeCanvas = await renderSvgStringToCanvas(uv.wireframe_svg || "");
       const infoEl = byId<HTMLElement>("skTemplateSummary");
       if (infoEl) {
@@ -1216,22 +1221,32 @@ export function initSkinsStudio(): void {
       btn.addEventListener("click", () => {
         const item = items.find((i) => i.id === btn.dataset.libDecal);
         if (!item) return;
-        // Encajar automáticamente el logo según la forma/zona detectada del coche
+        // Encajar automáticamente el logo en los Sponsor Blocks REALES de la plantilla iRacing de este coche
         const targetZoneKey: ZoneKey =
           selectedZone ??
           (item.group === "series" ? "leftSide" : item.group === "brand" ? "hood" : "hood");
         const z = state.zones[targetZoneKey] || state.zones.hood;
+        const realSlot =
+          workerSponsorBlocks.length > 0
+            ? workerSponsorBlocks[state.decals.length % workerSponsorBlocks.length]
+            : null;
         const autoMirror =
-          defaultMirror || targetZoneKey === "leftSide" || targetZoneKey === "rightSide";
-        const autoX = Math.max(0.06, Math.min(0.94, z.x + z.w * 0.5));
-        const autoY = Math.max(
-          0.06,
-          Math.min(0.94, z.y + z.h * (item.group === "brand" && targetZoneKey === "hood" ? 0.28 : 0.5)),
-        );
-        const autoScale = Math.max(
-          0.08,
-          Math.min(0.32, Math.min(z.w, z.h) * (item.group === "brand" ? 0.48 : 0.65)),
-        );
+          realSlot ? false : defaultMirror || targetZoneKey === "leftSide" || targetZoneKey === "rightSide";
+        const autoX = realSlot
+          ? Math.max(0.05, Math.min(0.95, realSlot.cx))
+          : Math.max(0.06, Math.min(0.94, z.x + z.w * 0.5));
+        const autoY = realSlot
+          ? Math.max(0.05, Math.min(0.95, realSlot.cy))
+          : Math.max(
+              0.06,
+              Math.min(0.94, z.y + z.h * (item.group === "brand" && targetZoneKey === "hood" ? 0.28 : 0.5)),
+            );
+        const autoScale = realSlot
+          ? Math.max(0.06, Math.min(0.24, Math.max(realSlot.nw, realSlot.nh) * 0.8))
+          : Math.max(
+              0.08,
+              Math.min(0.32, Math.min(z.w, z.h) * (item.group === "brand" ? 0.48 : 0.65)),
+            );
         const layer: DecalLayer = {
           id: `decal-lib-${Date.now()}`,
           name: item.label,

@@ -99,7 +99,9 @@ void main() {
 }
 `;
 
-const DEFAULT_CAR_ZONES: Record<ZoneKey, ZoneRect> = {
+type UvRect = Pick<ZoneRect, "x" | "y" | "w" | "h">;
+
+const DEFAULT_CAR_ZONES: Record<ZoneKey, UvRect> = {
   hood: { x: 0.3, y: 0.06, w: 0.4, h: 0.25 },
   roof: { x: 0.34, y: 0.34, w: 0.32, h: 0.22 },
   leftSide: { x: 0.03, y: 0.34, w: 0.27, h: 0.44 },
@@ -108,10 +110,12 @@ const DEFAULT_CAR_ZONES: Record<ZoneKey, ZoneRect> = {
   mirrors: { x: 0.05, y: 0.12, w: 0.18, h: 0.1 },
   frontBumper: { x: 0.25, y: 0.6, w: 0.5, h: 0.09 },
   rearBumper: { x: 0.25, y: 0.7, w: 0.5, h: 0.08 },
+  numberPlateLeft: { x: 0.1, y: 0.47, w: 0.14, h: 0.14 },
+  numberPlateRight: { x: 0.76, y: 0.47, w: 0.14, h: 0.14 },
 };
 
 function buildGt3CarMesh(
-  zones: Record<ZoneKey, ZoneRect> = DEFAULT_CAR_ZONES,
+  zones: Record<ZoneKey, UvRect> = DEFAULT_CAR_ZONES,
 ): { positions: Float32Array; uvs: Float32Array; normals: Float32Array; mats: Float32Array } {
   const pos: number[] = [];
   const uvs: number[] = [];
@@ -135,7 +139,7 @@ function buildGt3CarMesh(
     mats.push(mat, mat, mat);
   };
 
-  const pushQuad = (a: Vec3, b: Vec3, c: Vec3, d: Vec3, zRect: ZoneRect, mat = 0, flipU = false) => {
+  const pushQuad = (a: Vec3, b: Vec3, c: Vec3, d: Vec3, zRect: UvRect, mat = 0, flipU = false) => {
     const u0 = flipU ? zRect.x + zRect.w : zRect.x;
     const u1 = flipU ? zRect.x : zRect.x + zRect.w;
     const v0 = zRect.y;
@@ -147,7 +151,7 @@ function buildGt3CarMesh(
   const pushBox = (
     cx: number, cy: number, cz: number,
     sx: number, sy: number, sz: number,
-    zRect: ZoneRect, mat = 0,
+    zRect: UvRect, mat = 0,
   ) => {
     const x0 = cx - sx / 2, x1 = cx + sx / 2;
     const y0 = cy - sy / 2, y1 = cy + sy / 2;
@@ -171,7 +175,7 @@ function buildGt3CarMesh(
     const r = 0.27;
     const rimR = 0.175;
     const halfW = 0.115;
-    const dummy: ZoneRect = { x: 0, y: 0, w: 0.01, h: 0.01 };
+    const dummy: UvRect = { x: 0, y: 0, w: 0.01, h: 0.01 };
     const xIn = wx < 0 ? wx + halfW : wx - halfW;
     const xOut = wx < 0 ? wx - halfW : wx + halfW;
     for (let i = 0; i < segs; i++) {
@@ -319,7 +323,7 @@ function buildGt3CarMesh(
   };
 }
 
-function parseWavefrontObj(objText: string): { positions: Float32Array; uvs: Float32Array; normals: Float32Array } {
+function parseWavefrontObj(objText: string): { positions: Float32Array; uvs: Float32Array; normals: Float32Array; mats: Float32Array } {
   const verts: Array<[number, number, number]> = [];
   const texs: Array<[number, number]> = [];
   const norms: Array<[number, number, number]> = [];
