@@ -90,7 +90,7 @@ export class GpuPedalsEngine {
 
   private initContainer(container: HTMLElement) {
     const dpr = Math.min(2, typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1);
-    container.innerHTML = `<canvas data-mmt-pedals-canvas width="${280 * dpr}" height="${82 * dpr}" style="width:280px;height:82px;background:rgba(9,11,15,0.88);border:1px solid rgba(255,255,255,0.12);border-radius:3px;display:block;"></canvas>`;
+    container.innerHTML = `<canvas data-mmt-pedals-canvas width="${332 * dpr}" height="${82 * dpr}" style="width:332px;height:82px;background:rgba(9,11,15,0.9);border:1px solid rgba(255,255,255,0.12);border-radius:4px;display:block;"></canvas>`;
 
     const canvas = container.querySelector("[data-mmt-pedals-canvas]") as HTMLCanvasElement;
     const ctx = canvas.getContext("2d");
@@ -154,7 +154,7 @@ export class GpuPedalsEngine {
     refs.ringHead = (refs.ringHead + 1) % cap;
     if (refs.ringCount < cap) refs.ringCount++;
 
-    ctx.clearRect(0, 0, 280, 82);
+    ctx.clearRect(0, 0, 332, 82);
 
     // 1. Área de trazas nítidas 280x82 (192x74, x: 4..196, y: 4..78) con guías 25/50/75%
     const traceX = 4;
@@ -307,18 +307,61 @@ export class GpuPedalsEngine {
       ctx.fillText(`${Math.round(b.val * 100)}`, b.x + 4.5, 73);
     }
 
-    // 3. Marcha + Velocidad a la derecha (x: 252..278)
+    // 3. Marcha + Velocidad (x: 252..282)
     const gearVal = Math.round(sample.gear ?? 0);
     const gearStr = gearVal < 0 ? "R" : gearVal === 0 ? "N" : String(gearVal);
     const kmh = Math.max(0, Math.round(sample.speedKmh ?? 0));
 
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "900 18px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
-    ctx.fillText(gearStr, 265, 32);
+    ctx.fillStyle = "#facc15";
+    ctx.font = "900 22px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+    ctx.fillText(gearStr, 267, 30);
 
-    ctx.fillStyle = "rgba(255, 255, 255, 0.78)";
-    ctx.font = "700 9px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
-    ctx.fillText(`${kmh}`, 265, 50);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "800 11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+    ctx.fillText(`${kmh}`, 267, 50);
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
+    ctx.font = "600 7.5px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+    ctx.fillText("km/h", 267, 62);
+
+    // 4. Volante giratorio 60 FPS (x: 286..328)
+    const swCx = 307;
+    const swCy = 41;
+    const swR = 17;
+    const steerRad = -(sample.steering || 0);
+    ctx.save();
+    ctx.translate(swCx, swCy);
+    ctx.rotate(steerRad);
+    // Aro exterior
+    ctx.beginPath();
+    ctx.arc(0, 0, swR, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.88)";
+    ctx.lineWidth = 3.2;
+    ctx.stroke();
+    // Marca 12h verde esmeralda MMT
+    ctx.beginPath();
+    ctx.arc(0, 0, swR, -Math.PI / 2 - 0.18, -Math.PI / 2 + 0.18);
+    ctx.strokeStyle = "#00e699";
+    ctx.lineWidth = 3.8;
+    ctx.stroke();
+    // 3 radios
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.72)";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(-swR + 2, 0);
+    ctx.lineTo(swR - 2, 0);
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, swR - 2);
+    ctx.stroke();
+    // Centro
+    ctx.beginPath();
+    ctx.arc(0, 0, 4.2, 0, Math.PI * 2);
+    ctx.fillStyle = "#111622";
+    ctx.fill();
+    ctx.strokeStyle = "#00e699";
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    ctx.restore();
   }
 
   public render(container: HTMLElement, sample: PedalsSample): void {

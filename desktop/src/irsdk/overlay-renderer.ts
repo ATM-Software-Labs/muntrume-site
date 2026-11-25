@@ -200,10 +200,25 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
     </div>
   `;
 
+  const curLapNum = Math.max(0, state.frame.carIdxLap[state.camCarIdx] ?? 0);
+  const remLapsEx = state.frame.sessionLapsRemainEx;
+  const estTotalLaps = remLapsEx > 0 && remLapsEx < 30000
+    ? `${curLapNum + remLapsEx}`
+    : (state.fuel?.stintLapsRemaining && state.fuel.stintLapsRemaining > 0 ? `≈${(curLapNum + state.fuel.stintLapsRemaining).toFixed(1)}` : "--");
+  const nowClock = new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+  const relFooterHtml = `
+    <div class="flex items-center justify-between gap-2 px-2 py-1 border-t border-white/10 text-[9.5px] font-mono tabular-nums text-white/65" style="background:rgba(15,20,28,0.92);">
+      <span>Lap <strong class="text-white/95">${curLapNum}/${estTotalLaps}</strong></span>
+      <span>⏱ ${nowClock}</span>
+      <span>Rem <strong class="text-white/95">${clk}</strong></span>
+    </div>
+  `;
+
   setHtmlWithFlipAnimation(container, `
     <div class="font-mono select-none overflow-hidden w-[332px]" style="background:rgba(9,11,15,0.9);border-radius:4px;">
       ${relHeaderHtml}
       ${rowsHtml}
+      ${relFooterHtml}
     </div>
   `);
 }
