@@ -4,10 +4,12 @@ import type { TemplateAnalysisResult, ZoneKey, ZoneRect } from "./types";
 
 export interface LoadedTemplate {
   canvas: HTMLCanvasElement;
-  /** Official iRacing Wireframe / Turn Off Before Exporting guide layer (never exported) */
+  /** Official iRacing Wireframe / Number Blocks guide layer (never exported) */
   wireframeCanvas?: HTMLCanvasElement | null;
-  /** Official iRacing Parts / Decals / Contingencies / Lights layer (composited above paint) */
+  /** Official iRacing Parts / Car_decal / Car_Mandatory layer (composited above paint) */
   partsOverlayCanvas?: HTMLCanvasElement | null;
+  /** Official iRacing Mask layer used for clean panel bounding-box detection */
+  maskCanvas?: HTMLCanvasElement | null;
   width: number;
   height: number;
   filename: string;
@@ -15,29 +17,57 @@ export interface LoadedTemplate {
   layerCount?: number;
 }
 
-const GUIDE_LAYER_RE = /turn\s*off|wireframe|wire|uv\s*grid|mask|guide|number.*block|car\s*mandatory/i;
-const PARTS_LAYER_RE = /decal|part|contig|sponsor|light|grille|vent|shade|shadow|window|banner|wheel|carbon|detail|trim|logo/i;
+const SKIP_GROUP_RE = /custom\s*spec\s*map|car\s*patterns|imsa\s*style\s*size|pit\s*box|pitboard/i;
+const WIRE_LAYER_RE = /^wire(frame)?$|\bwireframe\b|uv\s*grid/i;
+const NUMBER_BLOCK_RE = /number\s*blocks?/i;
+const MASK_LAYER_RE = /^mask$/i;
+const MANDATORY_PARTS_RE = /car[_\s-]*mandatory|car[_\s-]*decal|color\s*change\s*logos/i;
+const BASE_FILL_RE = /^(base|main\s*car\s*body|paintable\s*area|background|base\s*paint)$/i;
 
-function drawPsdBranch(
+interface WalkOpts {
+  includeHidden?: boolean;
+  alphaMultiplier?: number;
+}
+
+function drawMatchingPsdLayers(
   ctx: CanvasRenderingContext2D,
   layers: Layer[] | undefined,
-  predicate: (name: string, ancestorMatched: boolean) => boolean,
-  ancestorMatched = false,
+  matcher: (layer: Layer, path: string[]) => boolean,
+  opts: WalkOpts = {},
+  path: string[] = [],
 ): number {
   if (!Array.isArray(layers)) return 0;
   let drawn = 0;
   for (const layer of layers) {
-    const name = String(layer.name || "");
-    const matched = predicate(name, ancestorMatched);
-    if (Array.isArray(layer.children) && layer.children.length > 0) {
-      drawn += drawPsdBranch(ctx, layer.children, predicate, matched);
-    } else if (matched && layer.canvas && !layer.hidden) {
-      ctx.save();
-      ctx.globalAlpha = typeof layer.opacity === "number" ? Math.max(0, Math.min(1, layer.opacity)) : 1;
-      ctx.drawImage(layer.canvas, layer.left ?? 0, layer.top ?? 0);
-      ctx.restore();
-      drawn++;
+    const name = String(layer.name || "").trim();
+    if (SKIP_GROUP_RE.test(name)) continue;
+
+    const isGroup = Array.isArray(layer.children) && layer.children.length > 0;
+    const nextPath = [...path, name];
+
+    if (isGroup) {
+      // Never descend into hidden groups unless explicitly requested
+      if (layer.hidden && !opts.includeHidden) continue;
+      drawn += drawMatchingPsdLayers(ctx, layer.children, matcher, opts, nextPath);
+      continue;
     }
+
+    if (layer.hidden && !opts.includeHidden) continue;
+    if (!layer.canvas) continue;
+    if (!matcher(layer, nextPath)) continue;
+
+    ctx.save();
+    const baseAlpha = typeof layer.opacity === "number" ? Math.max(0, Math.min(1, layer.opacity)) : 1;
+    ctx.globalAlpha = baseAlpha * (opts.alphaMultiplier ?? 1);
+    if (layer.blendMode && layer.blendMode !== "normal" && layer.blendMode !== "pass through") {
+      const bm = layer.blendMode as GlobalCompositeOperation;
+      if (["multiply", "screen", "overlay", "darken", "lighten"].includes(bm)) {
+        ctx.globalCompositeOperation = bm;
+      }
+    }
+    ctx.drawImage(layer.canvas, layer.left ?? 0, layer.top ?? 0);
+    ctx.restore();
+    drawn++;
   }
   return drawn;
 }
@@ -57,46 +87,81 @@ export async function loadTemplateFile(file: File): Promise<LoadedTemplate> {
     const buf = await file.arrayBuffer();
     const psd = readPsd(buf, {
       skipThumbnail: true,
-      skipCompositeImageData: false,
+      skipCompositeImageData: true,
       skipLayerImageData: false,
     });
     const w = psd.width || 2048;
     const h = psd.height || 2048;
 
-    const fullCanvas = document.createElement("canvas");
-    fullCanvas.width = w;
-    fullCanvas.height = h;
-    const fctx = fullCanvas.getContext("2d");
-    if (!fctx) throw new Error("No se pudo inicializar Canvas 2D para PSD.");
-    if (psd.canvas) {
-      fctx.drawImage(psd.canvas, 0, 0, w, h);
-    } else {
-      drawPsdBranch(fctx, psd.children, () => true);
-    }
-
+    // 1. Crisp UV Wireframe + Number Blocks guide (includeHidden: true because iRacing hides Wire & Number Blocks by default!)
     const wfCanvas = document.createElement("canvas");
     wfCanvas.width = w;
     wfCanvas.height = h;
     const wfCtx = wfCanvas.getContext("2d");
-    const wfCount = wfCtx
-      ? drawPsdBranch(wfCtx, psd.children, (name, anc) => anc || GUIDE_LAYER_RE.test(name))
+    let wfCount = 0;
+    if (wfCtx) {
+      wfCount += drawMatchingPsdLayers(
+        wfCtx,
+        psd.children,
+        (l) => WIRE_LAYER_RE.test(String(l.name || "").trim()),
+        { includeHidden: true, alphaMultiplier: 0.9 },
+      );
+      wfCount += drawMatchingPsdLayers(
+        wfCtx,
+        psd.children,
+        (l) => NUMBER_BLOCK_RE.test(String(l.name || "").trim()),
+        { includeHidden: true, alphaMultiplier: 0.32 },
+      );
+    }
+
+    // 2. Clean Mask layer (for panel detection & wireframe fallback if a PSD has no Wire layer)
+    const maskCanvas = document.createElement("canvas");
+    maskCanvas.width = w;
+    maskCanvas.height = h;
+    const maskCtx = maskCanvas.getContext("2d");
+    const maskCount = maskCtx
+      ? drawMatchingPsdLayers(
+          maskCtx,
+          psd.children,
+          (l) => MASK_LAYER_RE.test(String(l.name || "").trim()),
+          { includeHidden: true, alphaMultiplier: 1 },
+        )
       : 0;
 
+    if (wfCount === 0 && maskCount > 0 && wfCtx) {
+      wfCtx.save();
+      wfCtx.globalAlpha = 0.35;
+      wfCtx.drawImage(maskCanvas, 0, 0);
+      wfCtx.restore();
+      wfCount = maskCount;
+    }
+
+    // 3. Official Car Decals & Mandatory Parts (headlights, grilles, brand emblems — NEVER Spec Map or Base fill!)
     const partsCanvas = document.createElement("canvas");
     partsCanvas.width = w;
     partsCanvas.height = h;
     const pCtx = partsCanvas.getContext("2d");
     const partsCount = pCtx
-      ? drawPsdBranch(pCtx, psd.children, (name, anc) => {
-          if (GUIDE_LAYER_RE.test(name)) return false;
-          return anc || PARTS_LAYER_RE.test(name);
-        })
+      ? drawMatchingPsdLayers(
+          pCtx,
+          psd.children,
+          (l) => {
+            const n = String(l.name || "").trim();
+            if (BASE_FILL_RE.test(n) || MASK_LAYER_RE.test(n) || WIRE_LAYER_RE.test(n)) return false;
+            return MANDATORY_PARTS_RE.test(n);
+          },
+          { includeHidden: false, alphaMultiplier: 1 },
+        )
       : 0;
 
+    // 4. Analysis canvas (prefer crisp Mask, otherwise Wireframe)
+    const analysisCanvas = maskCount > 0 ? maskCanvas : wfCanvas;
+
     return {
-      canvas: fullCanvas,
-      wireframeCanvas: wfCount > 0 ? wfCanvas : fullCanvas,
+      canvas: analysisCanvas,
+      wireframeCanvas: wfCount > 0 ? wfCanvas : null,
       partsOverlayCanvas: partsCount > 0 ? partsCanvas : null,
+      maskCanvas: maskCount > 0 ? maskCanvas : null,
       width: w,
       height: h,
       filename: file.name,

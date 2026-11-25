@@ -40,7 +40,7 @@ import type {
   ZoneKey,
 } from "./types";
 
-const STATE_STORAGE_KEY = "mmt-skins-active-design-v1";
+const STATE_STORAGE_KEY = "mmt-skins-active-design-v2";
 const LIBRARY_STORAGE_KEY = "mmt-skins-saved-presets-v1";
 
 type ViewMode = "showroom" | "uv" | "3d" | "spec";
@@ -936,6 +936,9 @@ export function initSkinsStudio(): void {
       const nextSlug = carSelect.value;
       const nextCar = getCarById(nextSlug);
       state.carId = nextSlug;
+      if (!state.name || state.name.startsWith("MMT ")) {
+        state.name = `MMT · ${nextCar.name} #${state.customNumber}`;
+      }
       state.zones = cloneZones(nextCar.defaultZones);
       loadedTemplate = null;
       customPhotoShots = null;
@@ -989,11 +992,11 @@ export function initSkinsStudio(): void {
         if (rect) state.zones[key as ZoneKey] = rect;
       }
       showTemplateOverlay = true;
-      showZonesOverlay = true;
+      showZonesOverlay = false;
       const wfChk = byId<HTMLInputElement>("skToggleWireframe");
       if (wfChk) wfChk.checked = true;
       const zChk = byId<HTMLInputElement>("skToggleZones");
-      if (zChk) zChk.checked = true;
+      if (zChk) zChk.checked = false;
       const infoEl = byId<HTMLElement>("skTemplateSummary");
       if (infoEl) {
         const extra = loadedTemplate.format === "PSD"
