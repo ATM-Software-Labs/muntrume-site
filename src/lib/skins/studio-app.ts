@@ -19,17 +19,25 @@ import {
 import {
   getSavedGeminiKey,
   requestGeminiDesignReview,
-  requestGeminiDesignSuggestion,
   requestGeminiPhotoAdaptation,
   saveGeminiKey,
 } from "./gemini-copilot";
 import { buildDefaultPhotoGuide, contrastRatio } from "./photo-guide";
 import { WebGLPreviewEngine } from "./preview-3d";
 import { analyzeTemplateZones, loadTemplateFile, type LoadedTemplate } from "./template-analyzer";
+import {
+  SkinsApiError,
+  fetchWorkerAiAssist,
+  fetchWorkerCars,
+  fetchWorkerUvMap,
+  getVaultToken,
+  mapWorkerPhotoGuideToShots,
+  mapWorkerUvToZones,
+  setVaultToken,
+} from "./vault-client";
 import type {
   DecalLayer,
   FinishType,
-  GeminiDesignSuggestion,
   PhotoGuideShot,
   ResolutionMode,
   SkinDesignState,
@@ -85,7 +93,70 @@ export function initSkinsStudio(): void {
   let selectedZone: ZoneKey | null = "hood";
   let selectedDecalId: string | null = state.decals[0]?.id ?? null;
   let customPhotoShots: PhotoGuideShot[] | null = null;
-  let lastGeminiSuggestion: GeminiDesignSuggestion | null = null;
+  let vaultAuthenticated = false;
+
+  const authGate = byId<HTMLElement>("skAuthGate");
+  const authErrorBox = byId<HTMLElement>("skAuthError");
+  const authTokenInput = byId<HTMLInputElement>("skAuthTokenInput");
+  const studioShell = byId<HTMLElement>("skStudioShell");
+
+  function lockStudio(reason: string): void {
+    vaultAuthenticated = false;
+    authGate?.classList.remove("sk-hidden");
+    studioShell?.classList.add("sk-hidden");
+    if (authErrorBox) authErrorBox.textContent = reason;
+  }
+
+  function unlockStudio(): void {
+    vaultAuthenticated = true;
+    authGate?.classList.add("sk-hidden");
+    studioShell?.classList.remove("sk-hidden");
+  }
+
+  async function syncCarUvFromWorker(carSlug: string): Promise<void> {
+    if (!vaultAuthenticated) return;
+    try {
+      const uv = await fetchWorkerUvMap(carSlug);
+      const car = getCarById(carSlug);
+      state.zones = mapWorkerUvToZones(uv, car.defaultZones);
+      renderZoneList();
+      scheduleRender();
+      setStatus(`UV cargado desde Worker (${uv.car_slug} · ${uv.uv_status})`, "ok");
+    } catch (err) {
+      if (err instanceof SkinsApiError && err.status === 401) {
+        lockStudio(err.message);
+        return;
+      }
+      setStatus(err instanceof Error ? err.message : "No se pudo sincronizar UV del Worker", "err");
+    }
+  }
+
+  async function verifyVaultSession(): Promise<void> {
+    if (authErrorBox) authErrorBox.textContent = "Verificando sesión activa de muntru.me...";
+    try {
+      const cars = await fetchWorkerCars();
+      unlockStudio();
+      syncControlsFromState();
+      renderSavedLibrary();
+      updateViewModeUI();
+      updateRightTabUI();
+      setStatus(`Sesión Vault verificada · ${cars.length} coches UV disponibles`, "ok");
+      await syncCarUvFromWorker(state.carId);
+    } catch (err) {
+      if (err instanceof SkinsApiError) {
+        lockStudio(err.message);
+      } else {
+        lockStudio(err instanceof Error ? err.message : "Error desconocido verificando sesión de muntru.me.");
+      }
+    }
+  }
+
+  if (authTokenInput) authTokenInput.value = getVaultToken();
+  byId<HTMLButtonElement>("skAuthVerifyBtn")?.addEventListener("click", async () => {
+    const val = authTokenInput?.value.trim() || "";
+    if (val) setVaultToken(val);
+    await verifyVaultSession();
+  });
 
   // UV Pan/Zoom state
   let uvZoom = 1;
@@ -701,6 +772,7 @@ export function initSkinsStudio(): void {
       syncControlsFromState();
       scheduleRender();
       setStatus(`Diseño adaptado a ${nextCar.name}`, "ok");
+      void syncCarUvFromWorker(nextCar.id);
     });
   }
 
@@ -976,39 +1048,60 @@ export function initSkinsStudio(): void {
     const out = byId<HTMLElement>("skGeminiOutput")!;
     const promptText = byId<HTMLTextAreaElement>("skGeminiPrompt")?.value || "";
     btn.disabled = true;
-    setStatus("Consultando Gemini API para propuesta de diseño...");
+    setStatus("Consultando Worker privado (POST /api/skins/ai-assist)...");
     try {
-      const car = getCarById(state.carId);
-      const suggestion = await requestGeminiDesignSuggestion(keyInput?.value || getSavedGeminiKey(), car, state, promptText);
-      lastGeminiSuggestion = suggestion;
+      const aiRes = await fetchWorkerAiAssist({
+        car_slug: state.carId,
+        style: promptText || "MMT Endurance agresivo y legible",
+        driver_number: state.customNumber,
+        colors: {
+          primary: state.palette.primary,
+          secondary: state.palette.secondary,
+          accent: state.palette.accent,
+        },
+      });
+      const plan = aiRes.design_plan;
+      customPhotoShots = mapWorkerPhotoGuideToShots(state.carId, state.customNumber, aiRes.photo_guide);
+      renderPhotoGuide();
+
       out.innerHTML = `
         <div class="sk-shot-card">
-          <strong>${escapeHtml(suggestion.title)}</strong>
-          <p class="sk-help">${escapeHtml(suggestion.rationale)}</p>
+          <strong>${escapeHtml(plan.title)}</strong>
+          <p class="sk-help">${escapeHtml(plan.rationale)}</p>
           <div class="sk-row">
-            ${Object.values(suggestion.palette)
+            ${Object.values(plan.palette)
               .slice(0, 4)
               .map((hex) => `<span style="width:20px;height:20px;border-radius:4px;background:${hex};border:1px solid rgba(255,255,255,0.2);"></span>`)
               .join("")}
-            <span class="sk-tag">${escapeHtml(suggestion.pattern)} · ${escapeHtml(suggestion.finish)}</span>
+            <span class="sk-tag">${escapeHtml(plan.pattern)} · ${escapeHtml(plan.finish)}</span>
           </div>
-          <ul>${suggestion.sponsorTips.map((t) => `<li>${escapeHtml(t)}</li>`).join("")}</ul>
+          <ul>${(plan.layers || []).slice(0, 4).map((l) => `<li><strong>${escapeHtml(l.zone)}:</strong> ${escapeHtml(l.element)} (${l.x}, ${l.y})</li>`).join("")}</ul>
+          <p class="sk-help" style="color:var(--sk-accent);">Guía de fotos Trading Paints actualizada (${escapeHtml(aiRes.photo_guide.circuit)}).</p>
           <button type="button" id="skApplyGeminiBtn" class="sk-btn sk-btn-primary sk-btn-sm">Aplicar propuesta al editor</button>
         </div>
       `;
       byId<HTMLButtonElement>("skApplyGeminiBtn")?.addEventListener("click", () => {
-        if (!lastGeminiSuggestion) return;
-        state.pattern = lastGeminiSuggestion.pattern;
-        state.palette = { ...lastGeminiSuggestion.palette };
-        state.spec = { finish: lastGeminiSuggestion.finish, ...finishDefaults(lastGeminiSuggestion.finish) };
+        state.pattern = plan.pattern;
+        state.palette = {
+          ...state.palette,
+          primary: plan.palette.primary || state.palette.primary,
+          secondary: plan.palette.secondary || state.palette.secondary,
+          accent: plan.palette.accent || state.palette.accent,
+          detail: plan.palette.detail || state.palette.detail,
+        };
+        state.spec = { finish: plan.finish, ...finishDefaults(plan.finish) };
         syncControlsFromState();
         scheduleRender();
-        setStatus(`Propuesta Gemini aplicada: ${lastGeminiSuggestion.title}`, "ok");
+        setStatus(`Propuesta IA aplicada: ${plan.title}`, "ok");
       });
-      setStatus("Propuesta Gemini lista.", "ok");
+      setStatus("Plan UV + Guía de fotos generados por Worker IA.", "ok");
     } catch (err) {
-      out.innerHTML = `<p class="sk-help" style="color:#fca5a5;">${escapeHtml(err instanceof Error ? err.message : "Error de Gemini")}</p>`;
-      setStatus("Error en Gemini API", "err");
+      if (err instanceof SkinsApiError && err.status === 401) {
+        lockStudio(err.message);
+        return;
+      }
+      out.innerHTML = `<p class="sk-help" style="color:#fca5a5;">${escapeHtml(err instanceof Error ? err.message : "Error al consultar Worker IA")}</p>`;
+      setStatus(err instanceof Error ? err.message : "Error en Worker IA", "err");
     } finally {
       btn.disabled = false;
     }
@@ -1111,12 +1204,10 @@ export function initSkinsStudio(): void {
     }
   });
 
-  // Init
-  syncControlsFromState();
-  renderSavedLibrary();
-  updateViewModeUI();
-  updateRightTabUI();
+  // Init: verify active muntru.me Vault session before unlocking studio
+  void verifyVaultSession();
   window.addEventListener("resize", () => {
+    if (!vaultAuthenticated) return;
     if (viewMode === "3d") glEngine.render();
     else applyUvTransform();
   });

@@ -10,6 +10,33 @@ const canonical = "https://skins.muntru.me/";
 
 <Layout title={title} description={description} canonical={canonical}>
   <main id="mmtSkinsStudio" class="sk-root">
+    <!-- Vault Authentication Gate (Blocks Studio until active muntru.me session is verified) -->
+    <section id="skAuthGate" class="sk-auth-gate">
+      <div class="sk-auth-card">
+        <span class="sk-brand-badge" style="align-self:flex-start;">ACCESO RESTRINGIDO · MUNTRUME VAULT</span>
+        <h2>skins.muntru.me · Solo miembros de Muntrume Motorsport</h2>
+        <p class="sk-help">
+          El estudio de skins y el copiloto IA están protegidos por tu sesión del Vault de <code>muntru.me</code>. Inicia sesión para desbloquear los mapas UV, los presets oficiales de MMT y la exportación 2K/4K.
+        </p>
+        <div id="skAuthError" class="sk-auth-error">Verificando sesión activa de muntru.me...</div>
+        <a
+          href="https://muntru.me/login/?next=https%3A%2F%2Fskins.muntru.me%2F"
+          class="sk-btn sk-btn-primary"
+          style="text-decoration:none;"
+        >
+          Iniciar sesión en muntru.me
+        </a>
+        <div class="sk-card" style="background:#080c12;">
+          <label class="sk-label">
+            ¿Vienes desde la app o ya tienes tu token de sesión (<code>mrt_vault_token</code>)?
+            <input id="skAuthTokenInput" type="password" class="sk-input" placeholder="Pega aquí tu token JWT del Vault..." autocomplete="off" />
+          </label>
+          <button type="button" id="skAuthVerifyBtn" class="sk-btn sk-btn-sm">Validar sesión y entrar</button>
+        </div>
+      </div>
+    </section>
+
+    <div id="skStudioShell" class="sk-hidden" style="display:flex;flex-direction:column;flex:1;min-height:0;">
     <!-- Top Studio Header -->
     <header class="sk-topbar">
       <div class="sk-brand">
@@ -234,27 +261,33 @@ const canonical = "https://skins.muntru.me/";
           <div id="skDecalEditor"></div>
         </div>
 
-        <!-- TAB 3: GEMINI COPILOT -->
+        <!-- TAB 3: GEMINI COPILOT (VIA WORKER) -->
         <div id="skTab-gemini" class="sk-card sk-hidden">
-          <h2 class="sk-card-title">Copiloto Gemini API</h2>
+          <h2 class="sk-card-title">Copiloto Gemini API (Worker Privado)</h2>
           <p class="sk-help">
-            Tu API key se guarda únicamente en el <code>localStorage</code> de tu navegador (nunca se sube al repositorio).
+            Conectado de forma segura a <code>POST api.muntru.me/api/skins/ai-assist</code> con tu sesión de <code>muntru.me</code> y las coordenadas UV reales del coche (sin exponer API keys en el navegador).
           </p>
-          <div class="sk-row">
-            <input id="skGeminiKey" type="password" class="sk-input" placeholder="AIza... (Google AI Studio)" autocomplete="off" />
-            <button type="button" id="skSaveGeminiKey" class="sk-btn sk-btn-sm">Guardar</button>
-          </div>
 
           <label class="sk-label">
             Idea o estilo de diseño
             <textarea id="skGeminiPrompt" class="sk-textarea" placeholder="Ej: Livery 24h de Spa agresiva con carbono expuesto, verde esmeralda eléctrico y detalles blancos muy visibles de noche..."></textarea>
           </label>
 
-          <button type="button" id="skGeminiDesignBtn" class="sk-btn sk-btn-primary">1. Sugerir paleta y patrón</button>
-          <div class="sk-grid-2">
-            <button type="button" id="skGeminiReviewBtn" class="sk-btn sk-btn-sm">2. Auditar contraste</button>
-            <button type="button" id="skGeminiPhotoBtn" class="sk-btn sk-btn-sm">3. Adaptar fotos TP</button>
-          </div>
+          <button type="button" id="skGeminiDesignBtn" class="sk-btn sk-btn-primary">Generar plan UV + Guía de fotos (Worker IA)</button>
+
+          <details style="font-size:11px;color:var(--sk-muted);">
+            <summary style="cursor:pointer;">Modo alternativo con API key local (opcional)</summary>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+              <div class="sk-row">
+                <input id="skGeminiKey" type="password" class="sk-input" placeholder="AIza... (solo navegador)" autocomplete="off" />
+                <button type="button" id="skSaveGeminiKey" class="sk-btn sk-btn-sm">Guardar</button>
+              </div>
+              <div class="sk-grid-2">
+                <button type="button" id="skGeminiReviewBtn" class="sk-btn sk-btn-sm">Auditar contraste</button>
+                <button type="button" id="skGeminiPhotoBtn" class="sk-btn sk-btn-sm">Adaptar fotos local</button>
+              </div>
+            </div>
+          </details>
 
           <div id="skGeminiOutput"></div>
         </div>
@@ -288,6 +321,7 @@ const canonical = "https://skins.muntru.me/";
           <div id="skPhotoGuideList" class="sk-preset-list"></div>
         </div>
       </aside>
+    </div>
     </div>
   </main>
 
