@@ -22,19 +22,18 @@ function setHtmlIfChanged(container: HTMLElement, html: string): void {
   container.innerHTML = html;
 }
 
-const LIC_BG_MAP: Record<string, string> = { A: "#2563eb", B: "#16a34a", C: "#d97706", D: "#dc2626", R: "#dc2626" };
 
 function renderLicenseIrBlock(licString: string | undefined, iRatingExact?: number, iRatingStr?: string, showIr = true): string {
   const raw = (licString || "R 0.0").trim();
   const letter = raw.charAt(0).toUpperCase();
   const num = raw.slice(1).trim();
   const licLabel = num ? `${letter}${num}` : letter;
-  const licBg = LIC_BG_MAP[letter] || "#dc2626";
   const irVal = iRatingExact && iRatingExact > 0 ? String(Math.round(iRatingExact)) : (iRatingStr || "");
   if (!licLabel && !irVal) return "";
-  const licPill = `<span style="display:inline-flex;align-items:center;justify-content:center;height:16px;padding:0 5px;border-radius:3px;background:${licBg};color:#fff;font:800 10px/1 Inter,Segoe UI,system-ui,sans-serif;letter-spacing:0.01em;">${licLabel}</span>`;
-  const irPill = showIr && irVal ? `<span style="display:inline-flex;align-items:center;justify-content:center;height:16px;min-width:34px;padding:0 5px;border-radius:3px;background:rgba(255,255,255,0.14);color:#f8fafc;font:700 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;">${irVal}</span>` : "";
-  return `<span class="mmt-lic-ir-block inline-flex items-center gap-[3px] tabular-nums">${licPill}${irPill}</span>`;
+  const licClass = ["A", "B", "C", "D", "R", "P"].includes(letter) ? letter : "R";
+  const licPill = `<span class="mmt-lic-pill mmt-lic-${licClass}">${licLabel}</span>`;
+  const irPill = showIr && irVal ? `<span class="mmt-ir-exact">${irVal}</span>` : "";
+  return `<span class="mmt-lic-ir-block">${licPill}${irPill}</span>`;
 }
 
 const gpuPedalsEngine = new GpuPedalsEngine();
@@ -151,11 +150,11 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
         : ``;
       const compoundCell = showCompounds ? renderCompoundBadge(state.frame.carIdxTireCompound?.[e.carIdx]) : "";
       const irDeltaVal = isPractice ? 0 : Math.round(irDeltas.get(e.carIdx) ?? 0);
-      const irDeltaText = isPractice ? "" : irDeltaVal > 0 ? `+${irDeltaVal}` : `${irDeltaVal}`;
-      const irDeltaColor = irDeltaVal > 0 ? "#22c55e" : irDeltaVal < 0 ? "#ef4444" : "rgba(255,255,255,0.35)";
+      const irDeltaText = isPractice ? "" : irDeltaVal > 0 ? `▲${irDeltaVal}` : irDeltaVal < 0 ? `▼${Math.abs(irDeltaVal)}` : "—";
+      const irDeltaCls = irDeltaVal > 0 ? "mmt-ir-gain" : irDeltaVal < 0 ? "mmt-ir-loss" : "mmt-ir-flat";
       const irDeltaCell = isPractice
         ? ``
-        : `<span class="w-[30px] shrink-0 text-right text-[10.5px] font-bold tabular-nums" style="color:${irDeltaColor}">${irDeltaText}</span>`;
+        : `<span class="w-[38px] shrink-0 text-right text-[10.5px] font-mono tabular-nums ${irDeltaCls}">${irDeltaText}</span>`;
       const deltaCell = cols.delta
         ? `<span class="w-[42px] shrink-0 text-right text-[11px] font-bold font-mono tabular-nums" style="color:${gapColor}">${gapStr}</span>`
         : ``;
@@ -549,10 +548,10 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
           const irDeltaHtml = isPractice
             ? ``
             : irDeltaVal > 0
-            ? `<span class="w-[34px] shrink-0 text-right tabular-nums text-[11px] font-bold" style="color:#22c55e;">+${irDeltaVal}</span>`
+            ? `<span class="w-[38px] shrink-0 text-right font-mono tabular-nums text-[10.5px] mmt-ir-gain">▲${irDeltaVal}</span>`
             : irDeltaVal < 0
-            ? `<span class="w-[34px] shrink-0 text-right tabular-nums text-[11px] font-bold" style="color:#ef4444;">${irDeltaVal}</span>`
-            : `<span class="w-[34px] shrink-0 text-right tabular-nums text-[10.5px] text-white/35">0</span>`;
+            ? `<span class="w-[38px] shrink-0 text-right font-mono tabular-nums text-[10.5px] mmt-ir-loss">▼${Math.abs(irDeltaVal)}</span>`
+            : `<span class="w-[38px] shrink-0 text-right font-mono tabular-nums text-[10.5px] mmt-ir-flat">—</span>`;
 
           // 7. Tag PIT (badge ámbar compacto)
           const pitCell = e.pitStatus === "PIT"

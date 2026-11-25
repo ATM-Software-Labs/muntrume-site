@@ -55,7 +55,7 @@
           <img src="./favicon.svg" width="24" height="24" alt="Muntrume Motorsport" class="h-[24px] w-[24px] rounded-lg border border-white/15 bg-[#090b0f] shrink-0 shadow-sm" />
           <div class="flex items-baseline gap-1.5">
             <span class="font-display font-extrabold text-[15px] tracking-wider text-white whitespace-nowrap">MMT <span class="text-[#10b981]">SYNC</span></span>
-            <span class="text-[10px] font-mono text-white/35">v0.7.7</span>
+            <span class="text-[10px] font-mono text-white/35">v0.7.8</span>
           </div>
           <span id="irBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-medium border border-white/10 bg-[#090c12] text-r-muted whitespace-nowrap shrink-0">
             <span id="irDot" class="w-2 h-2 rounded-full bg-r-muted"></span>
@@ -1247,7 +1247,7 @@
                         <div id="ovTireMonitor"></div>
                       </div>
 
-                      <div id="widgetTrackMap" class="mmt-hud-widget absolute top-3 right-[278px] w-[176px] h-[126px] rounded-[4px] border border-white/[0.1] overflow-hidden cursor-move" style="top: 12px; right: 278px; background: rgba(9, 11, 15, 0.72);" data-widget="trackmap">
+                      <div id="widgetTrackMap" class="mmt-hud-widget mmt-trackmap-clean absolute top-3 right-[278px] w-[176px] h-[126px] overflow-hidden cursor-move" style="top: 12px; right: 278px;" data-widget="trackmap">
                         <canvas id="ovTrackMap" width="180" height="132"></canvas>
                       </div>
 
@@ -2341,7 +2341,7 @@
       </div>
 
       <!-- Transparent Track Map floating cleanly above Relative (no ugly black box) -->
-      <div id="floatTrackMapCard" class="mmt-float-widget fixed bottom-[232px] right-[16px] w-[184px] h-[136px] pointer-events-auto overflow-hidden" style="background: transparent !important; border: none !important; box-shadow: none !important;" data-widget="trackmap">
+      <div id="floatTrackMapCard" class="mmt-trackmap-clean fixed bottom-[232px] right-[16px] w-[184px] h-[136px] pointer-events-auto overflow-hidden" data-widget="trackmap">
         <canvas id="ovTrackMapFloat" width="184" height="136"></canvas>
       </div>
 

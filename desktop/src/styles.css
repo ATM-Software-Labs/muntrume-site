@@ -407,40 +407,68 @@ input[type="search"]:focus {
 }
 .mmt-lic-ir-block {
   display: inline-flex;
-  align-items: stretch;
-  border-radius: 2px;
-  overflow: hidden;
-  height: 15px;
-  line-height: 15px;
+  align-items: center;
+  gap: 2px;
+  height: 16px;
+  line-height: 16px;
   font-variant-numeric: tabular-nums;
 }
 .mmt-lic-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 4px;
-  font-size: 9.5px;
+  height: 16px;
+  min-width: 34px;
+  padding: 0 5px;
+  border-radius: 3px;
+  font-family: Inter, "Segoe UI", system-ui, sans-serif;
+  font-size: 10px;
   font-weight: 800;
   line-height: 1;
   color: #ffffff;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
   font-variant-numeric: tabular-nums;
 }
-.mmt-lic-A { background: #1d4ed8; }
-.mmt-lic-B { background: #15803d; }
-.mmt-lic-C { background: #b45309; }
-.mmt-lic-D { background: #c2410c; }
-.mmt-lic-R { background: #b91c1c; }
+.mmt-lic-A { background: #2563eb !important; color: #ffffff !important; }
+.mmt-lic-B { background: #16a34a !important; color: #ffffff !important; }
+.mmt-lic-C { background: #d97706 !important; color: #ffffff !important; }
+.mmt-lic-D { background: #ea580c !important; color: #ffffff !important; }
+.mmt-lic-R { background: #dc2626 !important; color: #ffffff !important; }
+.mmt-lic-P { background: #111827 !important; color: #f8fafc !important; border: 1px solid rgba(255,255,255,0.35); }
 .mmt-ir-exact {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 4px;
-  background: #d1d5db;
-  color: #090b0f;
-  font-size: 9.5px;
+  height: 16px;
+  min-width: 36px;
+  padding: 0 5px;
+  border-radius: 3px;
+  background: #e5e7eb !important;
+  color: #090b0f !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
   font-weight: 800;
   line-height: 1;
+  text-shadow: none !important;
   font-variant-numeric: tabular-nums;
+}
+.mmt-ir-gain {
+  color: #22c55e !important;
+  font-weight: 800;
+}
+.mmt-ir-loss {
+  color: #ef4444 !important;
+  font-weight: 800;
+}
+.mmt-ir-flat {
+  color: rgba(255, 255, 255, 0.35) !important;
+}
+.mmt-trackmap-clean {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 .mmt-flag-f {
   display: inline-flex;
