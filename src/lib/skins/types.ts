@@ -26,11 +26,13 @@ export interface ZoneRect {
   detectedConfidence?: number;
 }
 
+export type CarCategory = "GT3" | "GTP / Hypercar" | "LMP2 / LMP3" | "GT4 & Cup" | "Fórmula" | "TCR & Producción";
+
 export interface CarProfile {
   id: string;
   name: string;
   brand: string;
-  category: "GT3" | "GTP" | "LMP2";
+  category: CarCategory;
   iracingFolder: string;
   logoPath: string;
   notes: string;

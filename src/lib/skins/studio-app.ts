@@ -1,5 +1,6 @@
 import {
   BUILTIN_DECALS,
+  CAR_CATEGORY_ORDER,
   CAR_PROFILES,
   DRIVER_PROFILES,
   SKIN_PRESETS,
@@ -824,10 +825,17 @@ export function initSkinsStudio(): void {
     setStatus("Restaurada superficie de pruebas UV.", "neutral");
   });
 
-  // Populate Car & Driver selects
+  // Populate Car select grouped cleanly by class (GT3 > GTP > LMP2/LMP3 > GT4 & Cup > Fórmula > TCR)
   const carSelect = byId<HTMLSelectElement>("skCarSelect");
   if (carSelect) {
-    carSelect.innerHTML = CAR_PROFILES.map((c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
+    carSelect.innerHTML = CAR_CATEGORY_ORDER.map((cat) => {
+      const groupCars = CAR_PROFILES.filter((c) => c.category === cat).sort((a, b) => a.name.localeCompare(b.name));
+      if (groupCars.length === 0) return "";
+      const opts = groupCars
+        .map((c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`)
+        .join("");
+      return `<optgroup label="${escapeHtml(cat)}">${opts}</optgroup>`;
+    }).join("");
     carSelect.addEventListener("change", () => {
       const nextCar = getCarById(carSelect.value);
       state.carId = nextCar.id;
