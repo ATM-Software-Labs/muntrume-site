@@ -194,6 +194,42 @@ fn extract_yaml_field(yaml: &str, key: &str) -> String {
     String::new()
 }
 
+/// Extracts a field (such as `CarScreenName:` or `CarPath:`) specifically from the
+/// local player's entry inside `DriverInfo -> Drivers` matching `DriverCarIdx`.
+/// Prevents reading another driver's car (e.g. a GTP car at `CarIdx: 0`) in multiclass sessions.
+pub fn extract_player_driver_field(yaml: &str, key: &str) -> String {
+    let target_idx: Option<i32> = extract_yaml_field(yaml, "DriverCarIdx:").parse::<i32>().ok();
+    if let Some(wanted) = target_idx {
+        let mut in_drivers = false;
+        let mut in_target = false;
+        for line in yaml.lines() {
+            let trimmed = line.trim();
+            if !in_drivers {
+                if trimmed == "Drivers:" {
+                    in_drivers = true;
+                }
+                continue;
+            }
+            if !line.starts_with(' ') && !line.starts_with('\t') && !trimmed.is_empty() && !trimmed.starts_with('-') {
+                break;
+            }
+            if let Some(rest) = trimmed.strip_prefix("- CarIdx:") {
+                in_target = rest.trim().parse::<i32>().ok() == Some(wanted);
+                continue;
+            }
+            if in_target {
+                if let Some(rest) = trimmed.strip_prefix(key) {
+                    let val = rest.trim().trim_matches('"').trim_matches('\'').to_string();
+                    if !val.is_empty() {
+                        return val;
+                    }
+                }
+            }
+        }
+    }
+    extract_yaml_field(yaml, key)
+}
+
 /// Reads only header + YAML metadata from an `.ibt` file to list sessions quickly.
 pub fn read_ibt_meta(path: &Path) -> Result<IbtSessionMeta, String> {
     let file = File::open(path).map_err(|e| format!("No se pudo abrir .ibt: {e}"))?;
@@ -229,8 +265,8 @@ pub fn read_ibt_meta(path: &Path) -> Result<IbtSessionMeta, String> {
         sub_session_id: extract_yaml_field(&yaml, "SubSessionID:"),
         track_name: extract_yaml_field(&yaml, "TrackDisplayName:"),
         track_config: extract_yaml_field(&yaml, "TrackConfigName:"),
-        car_path: extract_yaml_field(&yaml, "CarPath:"),
-        car_screen_name: extract_yaml_field(&yaml, "CarScreenName:"),
+        car_path: extract_player_driver_field(&yaml, "CarPath:"),
+        car_screen_name: extract_player_driver_field(&yaml, "CarScreenName:"),
         is_recent_48h,
     })
 }
@@ -724,8 +760,8 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
         track_rubber_state: extract_yaml_field(&yaml, "TrackRubberState:"),
         driver_setup_name: extract_yaml_field(&yaml, "DriverSetupName:"),
         fuel_level_start_l: best_fuel_l,
-        car_path: extract_yaml_field(&yaml, "CarPath:"),
-        car_screen_name: extract_yaml_field(&yaml, "CarScreenName:"),
+        car_path: extract_player_driver_field(&yaml, "CarPath:"),
+        car_screen_name: extract_player_driver_field(&yaml, "CarScreenName:"),
         best_lap_s,
         avg_lap_s,
         top_speed_kmh: global_top_speed,

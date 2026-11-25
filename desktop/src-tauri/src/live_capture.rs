@@ -275,7 +275,7 @@ impl LiveTelemetryRecorder {
         if len_m > 200.0 {
             self.track_length_m = len_m;
         }
-        let car = extract_yaml_value(yaml, "CarScreenName:");
+        let car = crate::ibt_parser::extract_player_driver_field(yaml, "CarScreenName:");
         if !car.is_empty() {
             self.car_screen_name = car;
         }

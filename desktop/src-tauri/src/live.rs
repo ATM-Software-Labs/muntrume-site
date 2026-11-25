@@ -134,7 +134,7 @@ impl LiveSessionTracker {
         if !track.is_empty() {
             self.track_name = track;
         }
-        let car = extract_yaml_scalar(yaml, "CarScreenName:");
+        let car = crate::ibt_parser::extract_player_driver_field(yaml, "CarScreenName:");
         if !car.is_empty() {
             self.car_name = car;
         }

@@ -32,7 +32,7 @@ export interface RaceHistoryResponse {
   streaks: StreakSummary;
 }
 
-const LOCAL_FALLBACK_KEY = "mmt_race_history_v1";
+const LOCAL_FALLBACK_KEY = "mmt_race_history_v2";
 
 function formatLapSec(sec: number): string {
   if (!Number.isFinite(sec) || sec <= 0) return "--:--.---";
