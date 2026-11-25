@@ -15,26 +15,26 @@ const pageTitle = "Error de página | Muntrume Motorsport";
   <section class="r-section" style="border-top:0;padding:clamp(36px,7vw,84px) 0" aria-labelledby="missingTitle">
     <div class="r-wrap" style="max-width:760px;">
       <div
-        style="background:rgba(13,18,26,0.92);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:clamp(24px,4vw,40px);display:grid;gap:18px;box-shadow:0 20px 56px rgba(0,0,0,0.5);"
+        style="background:var(--r-surface, rgba(13,18,26,0.92));color:var(--r-text);border:1px solid var(--r-line, rgba(255,255,255,0.12));border-radius:16px;padding:clamp(24px,4vw,40px);display:grid;gap:18px;box-shadow:0 16px 42px -18px rgba(0,0,0,0.22);"
       >
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <span
             id="mmtErrCode"
-            style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:6px;background:rgba(0,230,153,0.14);border:1px solid rgba(0,230,153,0.35);color:#00e699;font-family:ui-monospace,monospace;font-size:12px;font-weight:800;letter-spacing:0.06em;"
+            style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:6px;background:rgba(16,185,129,0.14);border:1px solid rgba(16,185,129,0.38);color:#059669;font-family:ui-monospace,monospace;font-size:12px;font-weight:800;letter-spacing:0.06em;"
             data-i18n="miss.kicker"
           >
             ERROR 404
           </span>
           <span
             id="mmtErrPath"
-            style="font-family:ui-monospace,monospace;font-size:12px;color:#94a3b8;word-break:break-all;"
+            style="font-family:ui-monospace,monospace;font-size:12px;color:var(--r-muted);word-break:break-all;"
           ></span>
         </div>
 
-        <h1 id="missingTitle" class="r-h2" style="margin:0;" data-i18n="miss.title">
+        <h1 id="missingTitle" class="r-h2" style="margin:0;color:var(--r-text);" data-i18n="miss.title">
           Esta página no está disponible
         </h1>
-        <p id="mmtErrLead" class="r-lead" style="margin:0;" data-i18n="miss.lead">
+        <p id="mmtErrLead" class="r-lead" style="margin:0;color:var(--r-muted);" data-i18n="miss.lead">
           La dirección solicitada no corresponde a ninguna ruta activa o el recurso está temporalmente fuera de línea.
         </p>
 
@@ -44,15 +44,15 @@ const pageTitle = "Error de página | Muntrume Motorsport";
             type="button"
             id="mmtErrReload"
             class="r-btn"
-            style="border-color:var(--r-line);color:var(--r-text);cursor:pointer;"
+            style="background:transparent;border:1px solid var(--r-line);color:var(--r-text);cursor:pointer;"
           >
             Reintentar
           </button>
-          <a href="https://muntru.me/garage/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)" data-i18n="nav.garage">Garage</a>
-          <a href="https://skins.muntru.me/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)">Skins Studio</a>
-          <a href="https://ai.muntru.me/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)">Muntrume AI</a>
-          <a href="https://support.muntru.me/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)">Soporte</a>
-          <a href="https://muntru.me/pilotos/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)" data-i18n="nav.drivers">Pilotos</a>
+          <a href="https://muntru.me/garage/" class="r-btn" style="background:transparent;border:1px solid var(--r-line);color:var(--r-text)" data-i18n="nav.garage">Garage</a>
+          <a href="https://skins.muntru.me/" class="r-btn" style="background:transparent;border:1px solid var(--r-line);color:var(--r-text)">Skins Studio</a>
+          <a href="https://ai.muntru.me/" class="r-btn" style="background:transparent;border:1px solid var(--r-line);color:var(--r-text)">Muntrume AI</a>
+          <a href="https://support.muntru.me/" class="r-btn" style="background:transparent;border:1px solid var(--r-line);color:var(--r-text)">Soporte</a>
+          <a href="https://muntru.me/pilotos/" class="r-btn" style="background:transparent;border:1px solid var(--r-line);color:var(--r-text)" data-i18n="nav.drivers">Pilotos</a>
         </div>
       </div>
     </div>
