@@ -1,22 +1,94 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 
-const pageTitle = "Página no encontrada | Muntrume Motorsport";
+const pageTitle = "Error de página | Muntrume Motorsport";
 ---
 
-<Layout title={pageTitle} description="Esta página no existe en Muntrume Motorsport (MMT). Vuelve al inicio, al garage o a la plantilla." noindex translated i18nTitle="miss.meta.title" i18nDescription="miss.meta.desc">
-  <section class="r-section" style="border-top:0;padding-top:clamp(28px,5vw,64px)" aria-labelledby="missingTitle">
-    <div class="r-wrap" style="display:grid;gap:16px;max-width:68ch">
-      <p class="r-kicker" data-i18n="miss.kicker">404</p>
-      <h1 id="missingTitle" class="r-h2" data-i18n="miss.title">Esta página no está</h1>
-      <p class="r-lead" data-i18n="miss.lead">El enlace no corresponde a ninguna página del sitio.</p>
-      <div style="display:flex;flex-wrap:wrap;gap:12px">
-        <a href="/" class="r-btn r-btn--primary" data-i18n="nav.home">Inicio</a>
-        <a href="/pilotos/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)" data-i18n="nav.drivers">Pilotos</a>
-        <a href="/garage/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)" data-i18n="nav.garage">Garage</a>
-        <a href="/noticias/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)" data-i18n="nav.news">Noticias</a>
-        <a href="/paddock/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)" data-i18n="nav.paddock">Paddock</a>
+<Layout
+  title={pageTitle}
+  description="Página de error y recuperación de Muntrume Motorsport (MMT). Vuelve al inicio, Garage, Skins Studio o Soporte."
+  noindex
+  translated
+  i18nTitle="miss.meta.title"
+  i18nDescription="miss.meta.desc"
+>
+  <section class="r-section" style="border-top:0;padding:clamp(36px,7vw,84px) 0" aria-labelledby="missingTitle">
+    <div class="r-wrap" style="max-width:760px;">
+      <div
+        style="background:rgba(13,18,26,0.92);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:clamp(24px,4vw,40px);display:grid;gap:18px;box-shadow:0 20px 56px rgba(0,0,0,0.5);"
+      >
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span
+            id="mmtErrCode"
+            style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:6px;background:rgba(0,230,153,0.14);border:1px solid rgba(0,230,153,0.35);color:#00e699;font-family:ui-monospace,monospace;font-size:12px;font-weight:800;letter-spacing:0.06em;"
+            data-i18n="miss.kicker"
+          >
+            ERROR 404
+          </span>
+          <span
+            id="mmtErrPath"
+            style="font-family:ui-monospace,monospace;font-size:12px;color:#94a3b8;word-break:break-all;"
+          ></span>
+        </div>
+
+        <h1 id="missingTitle" class="r-h2" style="margin:0;" data-i18n="miss.title">
+          Esta página no está disponible
+        </h1>
+        <p id="mmtErrLead" class="r-lead" style="margin:0;" data-i18n="miss.lead">
+          La dirección solicitada no corresponde a ninguna ruta activa o el recurso está temporalmente fuera de línea.
+        </p>
+
+        <div style="display:flex;flex-wrap:wrap;gap:10px;padding-top:4px;">
+          <a href="https://muntru.me/" class="r-btn r-btn--primary" data-i18n="nav.home">Volver al Inicio</a>
+          <button
+            type="button"
+            id="mmtErrReload"
+            class="r-btn"
+            style="border-color:var(--r-line);color:var(--r-text);cursor:pointer;"
+          >
+            Reintentar
+          </button>
+          <a href="https://muntru.me/garage/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)" data-i18n="nav.garage">Garage</a>
+          <a href="https://skins.muntru.me/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)">Skins Studio</a>
+          <a href="https://ai.muntru.me/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)">Muntrume AI</a>
+          <a href="https://support.muntru.me/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)">Soporte</a>
+          <a href="https://muntru.me/pilotos/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)" data-i18n="nav.drivers">Pilotos</a>
+        </div>
       </div>
     </div>
   </section>
+
+  <script>
+    (() => {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code") || "404";
+      const reason = params.get("reason") || "";
+      const codeEl = document.getElementById("mmtErrCode");
+      const pathEl = document.getElementById("mmtErrPath");
+      const titleEl = document.getElementById("missingTitle");
+      const leadEl = document.getElementById("mmtErrLead");
+
+      if (pathEl) pathEl.textContent = `${window.location.host}${window.location.pathname}`;
+      if (codeEl) codeEl.textContent = `ERROR ${code}`;
+
+      const copyMap: Record<string, [string, string]> = {
+        "401": ["Sesión requerida", "Necesitas iniciar sesión en el Vault de muntru.me para acceder a este recurso."],
+        "403": ["Acceso restringido", "Tu cuenta o el origen actual no tiene permisos para ver esta ruta."],
+        "500": ["Error interno temporal", "El servidor encontró un fallo inesperado. Puedes reintentar en unos segundos."],
+        "502": ["Servicio en actualización", "El origen está desplegando cambios en este momento. Recarga en unos segundos."],
+        "503": ["Mantenimiento temporal", "El servicio no está disponible temporalmente. Inténtalo de nuevo en breve."],
+      };
+
+      if (copyMap[code]) {
+        if (titleEl) titleEl.textContent = copyMap[code][0];
+        if (leadEl) leadEl.textContent = reason || copyMap[code][1];
+      } else if (reason && leadEl) {
+        leadEl.textContent = reason;
+      }
+
+      document.getElementById("mmtErrReload")?.addEventListener("click", () => {
+        window.location.reload();
+      });
+    })();
+  </script>
 </Layout>
