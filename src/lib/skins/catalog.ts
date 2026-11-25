@@ -34,11 +34,11 @@ export const CAR_CATEGORY_ORDER = [
 export const CAR_PROFILES: CarProfile[] = [
   // ─── GT3 (orden alfabético) ───
   {
-    id: "acuransxgt3evo22",
+    id: "acuransxevo22gt3",
     name: "Acura NSX GT3 EVO 22",
     brand: "Acura",
     category: "GT3",
-    iracingFolder: "acuransxgt3evo22",
+    iracingFolder: "acuransxevo22gt3",
     logoPath: "/assets/brand/logos/logo-acura.svg",
     notes: "Laterales estilizados con tomas de aire traseras; capó bajo con gran visibilidad.",
     defaultZones: makeBaseZones(),

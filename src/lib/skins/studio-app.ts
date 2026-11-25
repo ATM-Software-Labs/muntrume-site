@@ -968,6 +968,20 @@ export function initSkinsStudio(): void {
       if (!state.name || state.name.startsWith("MMT ")) {
         state.name = `MMT · ${nextCar.name} #${state.customNumber}`;
       }
+      // Actualizar automáticamente el logo de marca si había uno del coche anterior
+      const nextBrandDecal = BRAND_DECALS.find(
+        (b) =>
+          b.label.toLowerCase().includes(nextCar.brand.toLowerCase()) ||
+          nextCar.brand.toLowerCase().includes(b.label.toLowerCase()),
+      );
+      if (nextBrandDecal) {
+        for (const d of state.decals) {
+          if (d.dataUrl && d.dataUrl.includes("/assets/brand/logos/")) {
+            d.dataUrl = nextBrandDecal.src;
+            d.name = `Logo ${nextBrandDecal.label}`;
+          }
+        }
+      }
       state.zones = cloneZones(nextCar.defaultZones);
       loadedTemplate = null;
       customPhotoShots = null;

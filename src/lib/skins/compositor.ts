@@ -73,204 +73,123 @@ function zonePx(z: ZoneRect, size: number): { x: number; y: number; w: number; h
 }
 
 function drawPatternGeometry(ctx: CanvasRenderingContext2D, state: SkinDesignState, size: number): void {
-  const { palette, pattern, zones, spec } = state;
-  const hood = zonePx(zones.hood, size);
-  const roof = zonePx(zones.roof, size);
-  const left = zonePx(zones.leftSide, size);
-  const right = zonePx(zones.rightSide, size);
-  const wing = zonePx(zones.rearWing, size);
-  const mirrors = zonePx(zones.mirrors, size);
-  const fBump = zonePx(zones.frontBumper, size);
-  const rBump = zonePx(zones.rearBumper, size);
+  const { palette, pattern, spec } = state;
 
-  // Base full coat
-  ctx.fillStyle = palette.primary;
+  // Base full-body coat (subtle rich gradient so it never looks like flat dead black)
+  const baseGrad = ctx.createLinearGradient(0, 0, size, size);
+  baseGrad.addColorStop(0, palette.primary);
+  baseGrad.addColorStop(1, pattern === "freeform" ? palette.primary : palette.secondary);
+  ctx.fillStyle = baseGrad;
   ctx.fillRect(0, 0, size, size);
 
   if (spec.finish === "carbon" || spec.carbonAccent) {
     drawCarbonPattern(ctx, 0, 0, size, size, size / 128);
   }
 
-  // Modo Diseño Libre: lienzo limpio sin ninguna caja forzada ni rectángulos predefinidos
+  // Modo Diseño Libre: lienzo 100 % limpio sin trazos ni gráficos impuestos
   if (pattern === "freeform") {
     return;
   }
 
-  // Secondary structural zones (bumpers & rear)
-  ctx.fillStyle = palette.secondary;
-  ctx.fillRect(fBump.x, fBump.y, fBump.w, fBump.h);
-  ctx.fillRect(rBump.x, rBump.y, rBump.w, rBump.h);
-
-  // Mirrors in high-vis accent
-  ctx.fillStyle = palette.accent;
-  ctx.fillRect(mirrors.x, mirrors.y, mirrors.w, mirrors.h);
-
-  // Rear wing base + accent strip
-  ctx.fillStyle = palette.accent;
-  ctx.fillRect(wing.x, wing.y, wing.w, wing.h);
-  ctx.fillStyle = palette.secondary;
-  ctx.fillRect(wing.x, wing.y, wing.w, wing.h * 0.18);
-
+  // Todos los patrones pintan geometría fluida a lienzo completo (2048×2048) sin cajas rectangulares flotantes
   if (pattern === "endurance") {
-    // Hood V-spear
+    // Sweeping motorsport diagonal aerodynamic bands across the entire UV
     ctx.save();
-    ctx.beginPath();
-    ctx.rect(hood.x, hood.y, hood.w, hood.h);
-    ctx.clip();
     ctx.fillStyle = palette.secondary;
     ctx.beginPath();
-    ctx.moveTo(hood.x + hood.w * 0.12, hood.y);
-    ctx.lineTo(hood.x + hood.w * 0.88, hood.y);
-    ctx.lineTo(hood.x + hood.w * 0.65, hood.y + hood.h);
-    ctx.lineTo(hood.x + hood.w * 0.35, hood.y + hood.h);
+    ctx.moveTo(0, size * 0.58);
+    ctx.lineTo(size, size * 0.22);
+    ctx.lineTo(size, size);
+    ctx.lineTo(0, size);
     ctx.closePath();
     ctx.fill();
 
+    // Primary sharp accent spear
     ctx.strokeStyle = palette.accent;
-    ctx.lineWidth = Math.max(4, size * 0.008);
+    ctx.lineWidth = Math.max(12, size * 0.022);
     ctx.beginPath();
-    ctx.moveTo(hood.x + hood.w * 0.14, hood.y);
-    ctx.lineTo(hood.x + hood.w * 0.36, hood.y + hood.h);
-    ctx.moveTo(hood.x + hood.w * 0.86, hood.y);
-    ctx.lineTo(hood.x + hood.w * 0.64, hood.y + hood.h);
+    ctx.moveTo(-size * 0.05, size * 0.60);
+    ctx.lineTo(size * 1.05, size * 0.20);
+    ctx.stroke();
+
+    // Parallel fine motorsport pinstripe
+    ctx.strokeStyle = palette.detail;
+    ctx.lineWidth = Math.max(4, size * 0.006);
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.05, size * 0.555);
+    ctx.lineTo(size * 1.05, size * 0.155);
+    ctx.stroke();
+
+    // Subtle secondary chevron accent on lower body
+    ctx.strokeStyle = palette.accent;
+    ctx.globalAlpha = 0.55;
+    ctx.lineWidth = Math.max(6, size * 0.01);
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.05, size * 0.84);
+    ctx.lineTo(size * 1.05, size * 0.44);
     ctx.stroke();
     ctx.restore();
-
-    // Roof high-visibility endurance band
+  } else if (pattern === "sprint") {
+    // Classic bold twin center racing stripes running cleanly down the full UV center axis
+    const cx = size * 0.5;
+    const stripeW = size * 0.055;
+    const gap = size * 0.018;
     ctx.fillStyle = palette.accent;
-    ctx.fillRect(roof.x, roof.y, roof.w, roof.h * 0.22);
-    ctx.fillStyle = palette.detail;
-    ctx.fillRect(roof.x, roof.y + roof.h * 0.22, roof.w, roof.h * 0.05);
+    ctx.fillRect(cx - gap / 2 - stripeW, 0, stripeW, size);
+    ctx.fillRect(cx + gap / 2, 0, stripeW, size);
 
-    // Left & Right side dynamic slashes
-    for (const [side, flip] of [
-      [left, 1],
-      [right, -1],
-    ] as const) {
-      ctx.save();
+    // Crisp outer pinstripes
+    ctx.fillStyle = palette.detail;
+    const pinW = Math.max(3, size * 0.005);
+    ctx.fillRect(cx - gap / 2 - stripeW - pinW * 2.4, 0, pinW, size);
+    ctx.fillRect(cx + gap / 2 + stripeW + pinW * 1.4, 0, pinW, size);
+  } else if (pattern === "carbon-stealth") {
+    // Full exposed carbon weave + sleek razor-thin diagonal stealth highlights (zero solid blocks)
+    drawCarbonPattern(ctx, 0, 0, size, size, size / 140);
+    ctx.save();
+    ctx.strokeStyle = palette.accent;
+    ctx.lineWidth = Math.max(5, size * 0.008);
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.34);
+    ctx.lineTo(size, size * 0.64);
+    ctx.moveTo(0, size * 0.66);
+    ctx.lineTo(size, size * 0.36);
+    ctx.stroke();
+
+    ctx.strokeStyle = palette.detail;
+    ctx.globalAlpha = 0.65;
+    ctx.lineWidth = Math.max(2, size * 0.003);
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.32);
+    ctx.lineTo(size, size * 0.62);
+    ctx.stroke();
+    ctx.restore();
+  } else if (pattern === "tricolor") {
+    // Classic 3-stripe diagonal factory motorsport livery across the full body
+    const colors = [palette.secondary, palette.accent, palette.detail];
+    const bandW = size * 0.065;
+    ctx.save();
+    colors.forEach((c, idx) => {
+      ctx.fillStyle = c;
+      const ox = size * 0.32 + idx * bandW * 1.18;
       ctx.beginPath();
-      ctx.rect(side.x, side.y, side.w, side.h);
-      ctx.clip();
-      ctx.fillStyle = palette.secondary;
-      ctx.beginPath();
-      if (flip === 1) {
-        ctx.moveTo(side.x, side.y + side.h * 0.55);
-        ctx.lineTo(side.x + side.w, side.y + side.h * 0.25);
-        ctx.lineTo(side.x + side.w, side.y + side.h);
-        ctx.lineTo(side.x, side.y + side.h);
-      } else {
-        ctx.moveTo(side.x + side.w, side.y + side.h * 0.55);
-        ctx.lineTo(side.x, side.y + side.h * 0.25);
-        ctx.lineTo(side.x, side.y + side.h);
-        ctx.lineTo(side.x + side.w, side.y + side.h);
-      }
+      ctx.moveTo(ox, 0);
+      ctx.lineTo(ox + bandW, 0);
+      ctx.lineTo(ox - size * 0.38 + bandW, size);
+      ctx.lineTo(ox - size * 0.38, size);
       ctx.closePath();
       ctx.fill();
-
-      ctx.strokeStyle = palette.accent;
-      ctx.lineWidth = Math.max(6, size * 0.011);
-      ctx.beginPath();
-      if (flip === 1) {
-        ctx.moveTo(side.x, side.y + side.h * 0.55);
-        ctx.lineTo(side.x + side.w, side.y + side.h * 0.25);
-      } else {
-        ctx.moveTo(side.x + side.w, side.y + side.h * 0.55);
-        ctx.lineTo(side.x, side.y + side.h * 0.25);
-      }
-      ctx.stroke();
-
-      ctx.strokeStyle = palette.detail;
-      ctx.lineWidth = Math.max(2, size * 0.0035);
-      ctx.beginPath();
-      if (flip === 1) {
-        ctx.moveTo(side.x, side.y + side.h * 0.50);
-        ctx.lineTo(side.x + side.w, side.y + side.h * 0.20);
-      } else {
-        ctx.moveTo(side.x + side.w, side.y + side.h * 0.50);
-        ctx.lineTo(side.x, side.y + side.h * 0.20);
-      }
-      ctx.stroke();
-      ctx.restore();
-    }
-  } else if (pattern === "sprint") {
-    // Bold racing center stripe across hood & roof
-    const cx = hood.x + hood.w / 2;
-    ctx.fillStyle = palette.secondary;
-    ctx.fillRect(cx - hood.w * 0.16, hood.y, hood.w * 0.32, hood.h);
-    ctx.fillStyle = palette.accent;
-    ctx.fillRect(cx - hood.w * 0.19, hood.y, hood.w * 0.03, hood.h);
-    ctx.fillRect(cx + hood.w * 0.16, hood.y, hood.w * 0.03, hood.h);
-
-    ctx.fillStyle = palette.secondary;
-    ctx.fillRect(roof.x + roof.w * 0.1, roof.y, roof.w * 0.8, roof.h);
-    ctx.fillStyle = palette.accent;
-    ctx.fillRect(roof.x + roof.w * 0.1, roof.y + roof.h * 0.86, roof.w * 0.8, roof.h * 0.14);
-
-    // Side speed wedges
-    for (const side of [left, right]) {
-      ctx.fillStyle = palette.secondary;
-      ctx.fillRect(side.x, side.y + side.h * 0.68, side.w, side.h * 0.32);
-      ctx.fillStyle = palette.accent;
-      ctx.fillRect(side.x, side.y + side.h * 0.62, side.w, side.h * 0.06);
-    }
-  } else if (pattern === "carbon-stealth") {
-    // Exposed carbon with razor-sharp neon pinstripes on zone borders
-    ctx.strokeStyle = palette.accent;
-    ctx.lineWidth = Math.max(4, size * 0.006);
-    ctx.strokeRect(hood.x + size * 0.01, hood.y + size * 0.01, hood.w - size * 0.02, hood.h - size * 0.02);
-    ctx.fillStyle = palette.secondary;
-    ctx.fillRect(roof.x, roof.y, roof.w, roof.h);
-    ctx.fillStyle = palette.accent;
-    ctx.fillRect(roof.x, roof.y + roof.h * 0.46, roof.w, roof.h * 0.08);
-    for (const side of [left, right]) {
-      ctx.fillStyle = palette.accent;
-      ctx.fillRect(side.x, side.y + side.h * 0.78, side.w, side.h * 0.045);
-      ctx.fillStyle = palette.detail;
-      ctx.fillRect(side.x, side.y + side.h * 0.84, side.w, side.h * 0.02);
-    }
-  } else if (pattern === "tricolor") {
-    // Classic motorsport diagonal 3-stripe bands
-    const colors = [palette.secondary, palette.accent, palette.detail];
-    const drawTri = (r: { x: number; y: number; w: number; h: number }) => {
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(r.x, r.y, r.w, r.h);
-      ctx.clip();
-      const bandW = r.w * 0.12;
-      colors.forEach((c, idx) => {
-        ctx.fillStyle = c;
-        ctx.beginPath();
-        const ox = r.x + r.w * 0.18 + idx * bandW * 1.15;
-        ctx.moveTo(ox, r.y);
-        ctx.lineTo(ox + bandW, r.y);
-        ctx.lineTo(ox - r.w * 0.25 + bandW, r.y + r.h);
-        ctx.lineTo(ox - r.w * 0.25, r.y + r.h);
-        ctx.closePath();
-        ctx.fill();
-      });
-      ctx.restore();
-    };
-    drawTri(hood);
-    drawTri(left);
-    drawTri(right);
-    ctx.fillStyle = palette.secondary;
-    ctx.fillRect(roof.x, roof.y, roof.w, roof.h);
+    });
+    ctx.restore();
   } else {
-    // Clean minimal
+    // Clean minimal: factory-team two-tone split with a refined single pinstripe
     ctx.fillStyle = palette.secondary;
-    ctx.fillRect(roof.x, roof.y, roof.w, roof.h);
+    ctx.fillRect(0, size * 0.64, size, size * 0.36);
     ctx.fillStyle = palette.accent;
-    ctx.fillRect(hood.x + hood.w * 0.08, hood.y + hood.h * 0.88, hood.w * 0.84, hood.h * 0.06);
-    for (const side of [left, right]) {
-      ctx.fillStyle = palette.accent;
-      ctx.fillRect(side.x, side.y + side.h * 0.86, side.w, side.h * 0.05);
-    }
+    ctx.fillRect(0, size * 0.632, size, Math.max(5, size * 0.008));
+    ctx.fillStyle = palette.detail;
+    ctx.fillRect(0, size * 0.622, size, Math.max(2, size * 0.003));
   }
-
-  // Front splitter / rear diffuser accent pinstripe
-  ctx.fillStyle = palette.accent;
-  ctx.fillRect(fBump.x, fBump.y + fBump.h * 0.82, fBump.w, fBump.h * 0.18);
-  ctx.fillRect(rBump.x, rBump.y, rBump.w, rBump.h * 0.18);
 }
 
 function getFontFamily(style: SkinDesignState["fontStyle"]): string {
