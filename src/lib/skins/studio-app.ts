@@ -190,6 +190,7 @@ export function initSkinsStudio(): void {
         notesEl.textContent = `Carpeta iRacing: paint/${uv.iracing_folder}/ · Estado UV: ${uv.uv_status === "extracted" ? "Plantilla vectorial calibrada ✓" : "Base"}`;
       }
       renderZoneList();
+      glEngine.updateZones(state.zones);
       scheduleRender();
       setStatus(`Plantilla UV cargada (${uv.car_name})`, "ok");
     } catch (err) {
@@ -1007,6 +1008,7 @@ export function initSkinsStudio(): void {
       viewMode = "uv";
       updateViewModeUI();
       renderZoneList();
+      glEngine.updateZones(state.zones);
       scheduleRender();
       setStatus(`Plantilla real de iRacing cargada (${analysis.width}×${analysis.height} ${analysis.format})`, "ok");
     } catch (err) {
@@ -1214,25 +1216,42 @@ export function initSkinsStudio(): void {
       btn.addEventListener("click", () => {
         const item = items.find((i) => i.id === btn.dataset.libDecal);
         if (!item) return;
+        // Encajar automáticamente el logo según la forma/zona detectada del coche
+        const targetZoneKey: ZoneKey =
+          selectedZone ??
+          (item.group === "series" ? "leftSide" : item.group === "brand" ? "hood" : "hood");
+        const z = state.zones[targetZoneKey] || state.zones.hood;
+        const autoMirror =
+          defaultMirror || targetZoneKey === "leftSide" || targetZoneKey === "rightSide";
+        const autoX = Math.max(0.06, Math.min(0.94, z.x + z.w * 0.5));
+        const autoY = Math.max(
+          0.06,
+          Math.min(0.94, z.y + z.h * (item.group === "brand" && targetZoneKey === "hood" ? 0.28 : 0.5)),
+        );
+        const autoScale = Math.max(
+          0.08,
+          Math.min(0.32, Math.min(z.w, z.h) * (item.group === "brand" ? 0.48 : 0.65)),
+        );
         const layer: DecalLayer = {
           id: `decal-lib-${Date.now()}`,
           name: item.label,
           kind: "custom",
           dataUrl: item.src,
           color: "#ffffff",
-          x: defaultMirror ? 0.22 : 0.5,
-          y: item.group === "series" ? 0.42 : 0.22,
-          scale: item.defaultScale ?? 0.16,
+          x: autoX,
+          y: autoY,
+          scale: autoScale || (item.defaultScale ?? 0.16),
           rotation: 0,
           opacity: 1,
-          mirrorX: defaultMirror,
+          mirrorX: autoMirror,
+          zoneHint: targetZoneKey,
         };
         state.decals.push(layer);
         selectedDecalId = layer.id;
         renderDecalList();
         renderDecalEditor();
         scheduleRender();
-        setStatus(`Decal añadido: ${item.label} (arrástralo en el mapa UV)`, "ok");
+        setStatus(`Logo "${item.label}" encajado en ${targetZoneKey} (arrástralo libremente si quieres moverlo)`, "ok");
       });
     });
   };

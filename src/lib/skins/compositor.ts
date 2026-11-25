@@ -529,9 +529,6 @@ export async function renderSkinToCanvas(
     ctx.save();
     ctx.drawImage(opts.partsOverlayCanvas, 0, 0, size, size);
     ctx.restore();
-  } else if (!opts.forExport) {
-    // Preview-only manufacturer emblem (iRacing renders real car badges in-game above car_<id>.tga)
-    await drawBrandEmblemPreview(ctx, state, size);
   }
 
   if (!opts.forExport && opts.showTemplateOverlay && opts.templateCanvas) {
