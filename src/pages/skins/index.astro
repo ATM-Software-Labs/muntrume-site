@@ -1,0 +1,302 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import "../../styles/skins-studio.css";
+
+const title = "Skins Studio · Muntrume Motorsport (skins.muntru.me)";
+const description =
+  "Estudio web local-first de skins y liveries para iRacing de Muntrume Motorsport: detección asistida de zonas sobre plantillas oficiales, compositor 2K/4K, visor WebGL 3D, copiloto Gemini y exportación directa TGA/Spec Map + ZIP para Trading Paints.";
+const canonical = "https://skins.muntru.me/";
+---
+
+<Layout title={title} description={description} canonical={canonical}>
+  <main id="mmtSkinsStudio" class="sk-root">
+    <!-- Top Studio Header -->
+    <header class="sk-topbar">
+      <div class="sk-brand">
+        <span class="sk-brand-badge">MMT SKINS STUDIO</span>
+        <div>
+          <h1 class="sk-title">skins.muntru.me</h1>
+          <div class="sk-subtitle">Compositor iRacing 2K/4K · Detección de zonas · Copiloto Gemini · Trading Paints</div>
+        </div>
+      </div>
+
+      <div class="sk-top-actions">
+        <span id="skStatusPill" class="sk-status-pill is-ok">Listo · Procesamiento 100 % local en navegador</span>
+        <div class="sk-seg" role="group" aria-label="Resolución de exportación">
+          <button type="button" data-res-mode="2048" class="is-active">2048 px</button>
+          <button type="button" data-res-mode="4096">4096 px (4K)</button>
+        </div>
+        <button type="button" id="skSaveLocalBtn" class="sk-btn sk-btn-sm">Guardar preset</button>
+      </div>
+    </header>
+
+    <!-- 3-Column Workstation -->
+    <div class="sk-workspace">
+      <!-- LEFT SIDEBAR: Car, Driver, Template & Zones, Presets -->
+      <aside class="sk-sidebar">
+        <section class="sk-card">
+          <h2 class="sk-card-title">Coche y Piloto</h2>
+          <label class="sk-label">
+            Coche iRacing (adapta zonas automáticamente)
+            <select id="skCarSelect" class="sk-select"></select>
+          </label>
+          <p id="skCarNotes" class="sk-help"></p>
+
+          <label class="sk-label">
+            Piloto MMT
+            <select id="skDriverSelect" class="sk-select"></select>
+          </label>
+
+          <div class="sk-grid-2">
+            <label class="sk-label">
+              Dorsal
+              <input id="skDriverNumber" type="text" class="sk-input" maxlength="4" value="16" />
+            </label>
+            <label class="sk-label">
+              iRacing Customer ID
+              <input id="skCustomerId" type="text" class="sk-input" placeholder="994512" />
+            </label>
+          </div>
+
+          <label class="sk-label">
+            Nombre del diseño
+            <input id="skDesignName" type="text" class="sk-input" />
+          </label>
+        </section>
+
+        <section class="sk-card">
+          <h2 class="sk-card-title">
+            <span>Plantilla iRacing y Zonas</span>
+            <button type="button" id="skResetZones" class="sk-btn sk-btn-sm">Restaurar</button>
+          </h2>
+          <label class="sk-btn sk-btn-sm" style="cursor:pointer;">
+            Cargar plantilla oficial (PNG / TGA)
+            <input id="skTemplateInput" type="file" accept=".png,.tga,.webp,.jpg,.jpeg,.psd" class="sk-hidden" />
+          </label>
+          <p id="skTemplateSummary" class="sk-help">
+            Sube tu plantilla oficial de iRacing (PSD exportado a PNG o TGA con wireframe/máscara) para detectar zonas y evitar placas de número oficiales.
+          </p>
+          <div class="sk-row" style="justify-content:space-between;">
+            <label class="sk-row" style="font-size:11px;cursor:pointer;">
+              <input id="skToggleWireframe" type="checkbox" checked /> Guía plantilla
+            </label>
+            <label class="sk-row" style="font-size:11px;cursor:pointer;">
+              <input id="skToggleZones" type="checkbox" checked /> Cajas de zona
+            </label>
+          </div>
+          <label class="sk-label">
+            Opacidad guía de plantilla
+            <input id="skWireOpacity" type="range" min="10" max="90" value="45" />
+          </label>
+          <div id="skZoneList" class="sk-zone-list"></div>
+        </section>
+
+        <section class="sk-card">
+          <h2 class="sk-card-title">Presets Base y Remezcla</h2>
+          <div id="skPresetList" class="sk-preset-list"></div>
+          <div class="sk-row">
+            <button type="button" id="skExportJsonBtn" class="sk-btn sk-btn-sm" style="flex:1;">Exportar .JSON</button>
+            <label class="sk-btn sk-btn-sm" style="flex:1;cursor:pointer;">
+              Importar .JSON
+              <input id="skImportJsonInput" type="file" accept=".json" class="sk-hidden" />
+            </label>
+          </div>
+          <h3 class="sk-card-title" style="margin-top:4px;">Biblioteca local</h3>
+          <div id="skSavedLibrary" class="sk-preset-list"></div>
+        </section>
+      </aside>
+
+      <!-- CENTER VIEWPORT: UV 2D / WebGL 3D / Spec Map -->
+      <section class="sk-stage-col">
+        <div class="sk-stage-bar">
+          <div class="sk-seg" role="tablist" aria-label="Modo de previsualización">
+            <button type="button" data-view-mode="uv" class="is-active">Mapa UV 2D</button>
+            <button type="button" data-view-mode="3d">Visor 3D WebGL</button>
+            <button type="button" data-view-mode="spec">Spec Map (RGB)</button>
+          </div>
+
+          <div id="skUvControls" class="sk-row">
+            <button type="button" id="skZoomOut" class="sk-btn sk-btn-sm" aria-label="Alejar">−</button>
+            <span id="skZoomLabel" style="font-size:11px;font-family:monospace;min-width:40px;text-align:center;">100%</span>
+            <button type="button" id="skZoomIn" class="sk-btn sk-btn-sm" aria-label="Acercar">+</button>
+            <button type="button" id="skZoomReset" class="sk-btn sk-btn-sm">Centrar</button>
+          </div>
+        </div>
+
+        <div id="skCanvasWrap" class="sk-canvas-wrap">
+          <canvas id="skUvCanvas" class="sk-uv-canvas" width="1024" height="1024"></canvas>
+          <canvas id="skGlCanvas" class="sk-gl-canvas sk-hidden"></canvas>
+
+          <div id="skGlOverlay" class="sk-gl-overlay sk-hidden">
+            <div id="skGlNotice" class="sk-gl-notice">
+              Superficie curva de pruebas UV (carga un .OBJ para malla exacta del coche)
+            </div>
+            <div class="sk-row">
+              <button type="button" class="sk-btn sk-btn-sm" data-gl-cam="front34">Frontal 3/4</button>
+              <button type="button" class="sk-btn sk-btn-sm" data-gl-cam="side">Lateral</button>
+              <button type="button" class="sk-btn sk-btn-sm" data-gl-cam="rear34">Trasera 3/4</button>
+              <button type="button" class="sk-btn sk-btn-sm" data-gl-cam="top">Cenital</button>
+              <label class="sk-btn sk-btn-sm" style="cursor:pointer;">
+                Cargar .OBJ
+                <input id="skObjInput" type="file" accept=".obj" class="sk-hidden" />
+              </label>
+              <button type="button" id="skGlResetMesh" class="sk-btn sk-btn-sm">Reset</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT INSPECTOR: Design / Decals / Gemini IA / Export & Photo Guide -->
+      <aside class="sk-inspector">
+        <div class="sk-tabs" role="tablist" aria-label="Paneles del editor">
+          <button type="button" class="sk-tab is-active" data-right-tab="design">Diseño</button>
+          <button type="button" class="sk-tab" data-right-tab="decals">Logos</button>
+          <button type="button" class="sk-tab" data-right-tab="gemini">Gemini IA</button>
+          <button type="button" class="sk-tab" data-right-tab="export">Exportar</button>
+        </div>
+
+        <!-- TAB 1: DESIGN -->
+        <div id="skTab-design" class="sk-card">
+          <h2 class="sk-card-title">Patrón y Paleta</h2>
+          <label class="sk-label">
+            Distribución base
+            <select id="skPatternSelect" class="sk-select">
+              <option value="endurance">MMT Endurance (V-Spear + Laterales)</option>
+              <option value="sprint">MMT Sprint (Franja Central + Faldones)</option>
+              <option value="carbon-stealth">Carbono / Oscuro (Pinstripes Neón)</option>
+              <option value="tricolor">Tricolor Motorsport (Diagonales)</option>
+              <option value="clean-minimal">Limpio Minimal (Escudería Oficial)</option>
+            </select>
+          </label>
+
+          <div class="sk-grid-2">
+            <label class="sk-color-item"><span>Primario</span><input id="skColorPrimary" type="color" /></label>
+            <label class="sk-color-item"><span>Secundario</span><input id="skColorSecondary" type="color" /></label>
+            <label class="sk-color-item"><span>Acento MMT</span><input id="skColorAccent" type="color" /></label>
+            <label class="sk-color-item"><span>Detalles</span><input id="skColorDetail" type="color" /></label>
+            <label class="sk-color-item"><span>Texto Dorsal</span><input id="skColorNum" type="color" /></label>
+            <label class="sk-color-item"><span>Fondo Dorsal</span><input id="skColorNumBg" type="color" /></label>
+          </div>
+
+          <div class="sk-row" style="justify-content:space-between;">
+            <label class="sk-label" style="flex:1;">
+              Tipografía dorsales
+              <select id="skFontSelect" class="sk-select">
+                <option value="racing-bold">Racing Bold (Inter)</option>
+                <option value="condensed-gt">GT Condensed</option>
+                <option value="mono-tech">Tech Mono</option>
+              </select>
+            </label>
+          </div>
+          <label class="sk-row" style="font-size:11.5px;cursor:pointer;">
+            <input id="skShowNumber" type="checkbox" checked /> Pintar dorsal en techo y capó (respeta placas laterales de iRacing)
+          </label>
+
+          <h2 class="sk-card-title" style="margin-top:6px;">Spec Map iRacing (Acabado)</h2>
+          <label class="sk-label">
+            Tipo de pintura
+            <select id="skFinishSelect" class="sk-select">
+              <option value="gloss">Brillo (Gloss)</option>
+              <option value="satin">Satinado (Satin)</option>
+              <option value="matte">Mate (Matte)</option>
+              <option value="metallic">Metálico (Metallic)</option>
+              <option value="chrome">Cromado (Chrome)</option>
+              <option value="carbon">Fibra de Carbono</option>
+            </select>
+          </label>
+          <label class="sk-label">Canal R · Metálico<input id="skSpecMetallic" type="range" min="0" max="100" /></label>
+          <label class="sk-label">Canal G · Rugosidad (Mate)<input id="skSpecRoughness" type="range" min="0" max="100" /></label>
+          <label class="sk-label">Canal B · Laca (Clearcoat)<input id="skSpecClearcoat" type="range" min="0" max="100" /></label>
+          <label class="sk-row" style="font-size:11.5px;cursor:pointer;">
+            <input id="skCarbonWeave" type="checkbox" /> Trama de carbono visible sobre base
+          </label>
+        </div>
+
+        <!-- TAB 2: DECALS & SPONSORS -->
+        <div id="skTab-decals" class="sk-card sk-hidden">
+          <h2 class="sk-card-title">Añadir Logos MMT y Sponsors</h2>
+          <div id="skBuiltinDecals" class="sk-row" style="flex-wrap:wrap;"></div>
+
+          <div class="sk-row">
+            <input id="skCustomTextInput" type="text" class="sk-input" placeholder="Texto sponsor o piloto..." />
+            <button type="button" id="skAddTextDecal" class="sk-btn sk-btn-sm">+ Texto</button>
+          </div>
+
+          <label class="sk-btn sk-btn-sm" style="cursor:pointer;">
+            Subir logo propio (PNG / SVG transparente)
+            <input id="skUploadLogoInput" type="file" accept=".png,.svg,.webp" class="sk-hidden" />
+          </label>
+
+          <h2 class="sk-card-title" style="margin-top:4px;">Capas activas</h2>
+          <div id="skDecalList" class="sk-layer-list"></div>
+
+          <h2 class="sk-card-title" style="margin-top:4px;">Ajuste de capa seleccionada</h2>
+          <div id="skDecalEditor"></div>
+        </div>
+
+        <!-- TAB 3: GEMINI COPILOT -->
+        <div id="skTab-gemini" class="sk-card sk-hidden">
+          <h2 class="sk-card-title">Copiloto Gemini API</h2>
+          <p class="sk-help">
+            Tu API key se guarda únicamente en el <code>localStorage</code> de tu navegador (nunca se sube al repositorio).
+          </p>
+          <div class="sk-row">
+            <input id="skGeminiKey" type="password" class="sk-input" placeholder="AIza... (Google AI Studio)" autocomplete="off" />
+            <button type="button" id="skSaveGeminiKey" class="sk-btn sk-btn-sm">Guardar</button>
+          </div>
+
+          <label class="sk-label">
+            Idea o estilo de diseño
+            <textarea id="skGeminiPrompt" class="sk-textarea" placeholder="Ej: Livery 24h de Spa agresiva con carbono expuesto, verde esmeralda eléctrico y detalles blancos muy visibles de noche..."></textarea>
+          </label>
+
+          <button type="button" id="skGeminiDesignBtn" class="sk-btn sk-btn-primary">1. Sugerir paleta y patrón</button>
+          <div class="sk-grid-2">
+            <button type="button" id="skGeminiReviewBtn" class="sk-btn sk-btn-sm">2. Auditar contraste</button>
+            <button type="button" id="skGeminiPhotoBtn" class="sk-btn sk-btn-sm">3. Adaptar fotos TP</button>
+          </div>
+
+          <div id="skGeminiOutput"></div>
+        </div>
+
+        <!-- TAB 4: EXPORT & TRADING PAINTS PHOTO GUIDE -->
+        <div id="skTab-export" class="sk-card sk-hidden">
+          <h2 class="sk-card-title">Exportar para iRacing y Trading Paints</h2>
+          <div id="skExportValidation" class="sk-shot-card"></div>
+
+          <button type="button" id="skExportZipBtn" class="sk-btn sk-btn-primary">
+            Descargar Pack .ZIP listo para iRacing
+          </button>
+          <div class="sk-grid-2">
+            <button type="button" id="skExportTgaBtn" class="sk-btn sk-btn-sm">Solo car_&lt;id&gt;.tga</button>
+            <button type="button" id="skExportSpecBtn" class="sk-btn sk-btn-sm">Solo car_spec.tga</button>
+          </div>
+
+          <div class="sk-shot-card">
+            <strong>Flujo Trading Paints (pasos manuales)</strong>
+            <p class="sk-help">
+              Trading Paints no dispone de API pública de subida automática. Sigue este checklist tras exportar:
+            </p>
+            <ul>
+              <li>1. Descomprime el ZIP en <code>Documents\iRacing\paint\&lt;coche&gt;\</code> y pulsa <code>Ctrl+R</code> en iRacing.</li>
+              <li>2. Sube <code>car_&lt;id&gt;.tga</code> y <code>car_spec_&lt;id&gt;.tga</code> en <a href="https://www.tradingpaints.com/my-paints" target="_blank" rel="noopener noreferrer" style="color:var(--sk-accent);">Trading Paints → My Paints</a>.</li>
+              <li>3. Haz las 4 fotos recomendadas abajo para Showroom y <code>muntru.me</code>.</li>
+            </ul>
+          </div>
+
+          <h2 class="sk-card-title" style="margin-top:4px;">Guía de circuito y ángulos de foto</h2>
+          <div id="skPhotoGuideList" class="sk-preset-list"></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    import { initSkinsStudio } from "../../lib/skins/studio-app";
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => initSkinsStudio(), { once: true });
+    } else {
+      initSkinsStudio();
+    }
+  </script>
+</Layout>
