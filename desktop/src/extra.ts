@@ -4526,12 +4526,12 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
 
       vis.applyElementVisibility(document.getElementById("floatRelativeCard"), floatEditMode || relShow);
       vis.applyElementVisibility(document.getElementById("floatStandingsCard"), floatEditMode || stdShow);
-      vis.applyElementVisibility(document.getElementById("floatCarTelemetryDock"), floatEditMode || (fuelShow && !isReplayMode));
+      vis.applyElementVisibility(document.getElementById("floatCarTelemetryDock"), floatEditMode);
       vis.applyElementVisibility(document.getElementById("floatFuelCard"), floatEditMode || (fuelShow && !isReplayMode));
       vis.applyElementVisibility(document.getElementById("floatDeltaBarCard"), floatEditMode || (inpShow && !isReplayMode && !disabledWidgets.has("delta")));
       vis.applyElementVisibility(document.getElementById("floatRadarCard"), floatEditMode || (!isReplayMode && !disabledWidgets.has("radar")));
       vis.applyElementVisibility(document.getElementById("floatTireStatusCard"), replayAllowed && !disabledWidgets.has("tires") && vis.evaluateVisibility("fuel", visCtx));
-      vis.applyElementVisibility(document.getElementById("floatCenterStatusDock"), replayAllowed && !disabledWidgets.has("conditions") && vis.getReplayHudMode() !== "hidden");
+      vis.applyElementVisibility(document.getElementById("floatCenterStatusDock"), floatEditMode || (replayAllowed && !disabledWidgets.has("conditions") && irsdkState.onPitRoad && vis.getReplayHudMode() !== "hidden"));
       vis.applyElementVisibility(document.getElementById("floatTrackMapCard"), floatEditMode || mapShow);
       vis.applyElementVisibility(document.getElementById("floatInputsCard"), floatEditMode || (inpShow && !isReplayMode));
       vis.applyElementVisibility(document.getElementById("floatSteeringWheelCard"), floatEditMode || (inpShow && !isReplayMode));

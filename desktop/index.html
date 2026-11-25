@@ -55,7 +55,7 @@
           <img src="./favicon.svg" width="24" height="24" alt="Muntrume Motorsport" class="h-[24px] w-[24px] rounded-lg border border-white/15 bg-[#090b0f] shrink-0 shadow-sm" />
           <div class="flex items-baseline gap-1.5">
             <span class="font-display font-extrabold text-[15px] tracking-wider text-white whitespace-nowrap">MMT <span class="text-[#10b981]">SYNC</span></span>
-            <span class="text-[10px] font-mono text-white/35">v0.7.6</span>
+            <span class="text-[10px] font-mono text-white/35">v0.7.7</span>
           </div>
           <span id="irBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-medium border border-white/10 bg-[#090c12] text-r-muted whitespace-nowrap shrink-0">
             <span id="irDot" class="w-2 h-2 rounded-full bg-r-muted"></span>
@@ -2295,23 +2295,23 @@
         <div id="ovStandingsFloat"></div>
       </div>
 
-      <!-- 2. Top-Right (top: 6px, right: 6px): Ultra-Tight Kapps Relative (w-max, ~275px) -->
-      <div id="floatRelativeCard" class="mmt-float-widget fixed top-[10px] right-[12px] w-[340px] max-w-[340px] rounded-[3px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: none !important; text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="relative">
+      <!-- 2. Bottom-Right: Kapps/Esports Pro Relative -->
+      <div id="floatRelativeCard" class="mmt-float-widget fixed bottom-[12px] right-[12px] w-[336px] max-w-[336px] rounded-[4px] text-white text-[11.5px] tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(9, 11, 15, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: none !important; text-shadow: 0 1px 2px rgba(0,0,0,0.85);" data-widget="relative">
         <div id="ovRelativeFloat"></div>
       </div>
 
-      <!-- 3. Top-Center Flanking Virtual Mirror (top: 10px, 540px clear gap for iRacing Mirror) -->
+      <!-- 3. Top-Center Flanking Virtual Mirror -->
       <div id="floatRadarCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 bottom-[140px] pointer-events-none z-20" style="background: transparent !important; border: none !important; box-shadow: none !important;" data-widget="radar">
         <div id="ovRadarFloat"></div>
       </div>
 
-      <!-- 3b-4. Unified Status & Delta Dock (top: 224px below iRacing yellow Pit/Escape text) -->
       <!-- 3a. Top-Center Kapps Delta Bar (240x22 at top: 88px, hidden in Replay) -->
       <div id="floatDeltaBarCard" class="mmt-float-widget fixed top-[88px] left-1/2 -translate-x-1/2 w-[240px] h-[22px] rounded-[3px] pointer-events-none overflow-hidden z-20" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: none !important;" data-widget="delta">
         <canvas id="ovLiveDeltaFloat" width="240" height="22" style="width:240px;height:22px;display:block;"></canvas>
       </div>
 
-      <div id="floatCenterStatusDock" class="mmt-float-widget fixed top-[224px] left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 pointer-events-none z-20" data-widget="conditions">
+      <!-- Center status dock hidden by default so windshield stays 100% clean -->
+      <div id="floatCenterStatusDock" hidden class="mmt-float-widget fixed top-[224px] left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 pointer-events-none z-20" data-widget="conditions">
         <div id="floatTrackConditionsCard" class="w-max h-[26px]">
           <div id="ovTrackConditionsFloat"></div>
         </div>
@@ -2323,27 +2323,26 @@
         </div>
       </div>
 
-      <!-- 5. Unified CarTelemetryDock (340x118px scaled 1.15x at bottom: 18px; left: 265px beside Black Box) -->
-      <div id="floatCarTelemetryDock" class="mmt-float-widget fixed bottom-[165px] left-[18px] w-[340px] min-h-[118px] rounded-[4px] border border-white/10 text-white p-2 font-mono tabular-nums pointer-events-auto overflow-hidden" style="zoom: 1.15; background: rgba(8, 10, 14, 0.88); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="fuel">
+      <!-- 5. Top-Right: Esports Pro Fuel Calculator -->
+      <div id="floatCarTelemetryDock" hidden class="mmt-float-widget fixed bottom-[165px] left-[18px] w-[340px] min-h-[118px] rounded-[4px] border border-white/10 text-white p-2 font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(8, 10, 14, 0.88);" data-widget="fuel">
         <div id="ovCarTelemetryDockFloat"></div>
       </div>
 
-      <!-- 5b. Bottom-Right Live Track Map Canvas (above iRacing FUEL Black Box at bottom: 255px; right: 18px) -->
-      <!-- 5a. Compact Kapps Fuel & Stint Calculator (4 cells, hidden in Replay) -->
-      <div id="floatFuelCard" class="mmt-float-widget fixed bottom-[18px] right-[18px] w-[244px] rounded-[3px] text-white font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: transparent !important; border: none !important; box-shadow: none !important;" data-widget="fuel">
+      <div id="floatFuelCard" class="mmt-float-widget fixed top-[12px] right-[12px] w-[256px] rounded-[4px] text-white font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: transparent !important; border: none !important; box-shadow: none !important;" data-widget="fuel">
         <div id="ovFuelFloat"></div>
       </div>
 
-      <div id="floatPitStrategyCard" class="mmt-float-widget fixed bottom-[165px] left-[372px] w-[260px] rounded-[3px] text-white font-mono tabular-nums pointer-events-auto overflow-hidden p-2" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.12);" data-widget="pit">
+      <div id="floatPitStrategyCard" hidden class="mmt-float-widget fixed bottom-[165px] left-[372px] w-[260px] rounded-[3px] text-white font-mono tabular-nums pointer-events-auto overflow-hidden p-2" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.12);" data-widget="pit">
         <div id="ovPitStrategyFloat"></div>
       </div>
 
-      <div id="floatTireMonitorCard" class="mmt-float-widget fixed bottom-[78px] right-[18px] w-[244px] rounded-[3px] text-white font-mono tabular-nums pointer-events-auto overflow-hidden p-2" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.12);" data-widget="tires">
+      <div id="floatTireMonitorCard" hidden class="mmt-float-widget fixed bottom-[78px] right-[18px] w-[244px] rounded-[3px] text-white font-mono tabular-nums pointer-events-auto overflow-hidden p-2" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.12);" data-widget="tires">
         <div id="ovTireMonitorFloat"></div>
       </div>
 
-      <div id="floatTrackMapCard" class="mmt-float-widget fixed bottom-[255px] right-[18px] w-[180px] h-[132px] rounded-[3px] pointer-events-auto overflow-hidden" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: none !important;" data-widget="trackmap">
-        <canvas id="ovTrackMapFloat" width="180" height="132"></canvas>
+      <!-- Transparent Track Map floating cleanly above Relative (no ugly black box) -->
+      <div id="floatTrackMapCard" class="mmt-float-widget fixed bottom-[232px] right-[16px] w-[184px] h-[136px] pointer-events-auto overflow-hidden" style="background: transparent !important; border: none !important; box-shadow: none !important;" data-widget="trackmap">
+        <canvas id="ovTrackMapFloat" width="184" height="136"></canvas>
       </div>
 
       <div id="floatFlatMapCard" class="mmt-float-widget fixed top-[14px] left-1/2 -translate-x-1/2 w-[420px] h-[46px] rounded-[10px] pointer-events-auto overflow-hidden" style="box-shadow: none !important;" data-widget="flatmap">

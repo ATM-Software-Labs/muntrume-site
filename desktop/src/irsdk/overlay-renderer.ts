@@ -32,7 +32,9 @@ function renderLicenseIrBlock(licString: string | undefined, iRatingExact?: numb
   const licBg = LIC_BG_MAP[letter] || "#dc2626";
   const irVal = iRatingExact && iRatingExact > 0 ? String(Math.round(iRatingExact)) : (iRatingStr || "");
   if (!licLabel && !irVal) return "";
-  return `<span class="mmt-lic-ir-block inline-flex items-center gap-1 px-1.5 h-[14px] leading-[14px] rounded-[2px] text-white font-bold text-[9.5px] tabular-nums" style="background:${licBg};"><span>${licLabel}</span>${showIr && irVal ? `<span class="opacity-95">${irVal}</span>` : ""}</span>`;
+  const licPill = `<span style="display:inline-flex;align-items:center;justify-content:center;height:16px;padding:0 5px;border-radius:3px;background:${licBg};color:#fff;font:800 10px/1 Inter,Segoe UI,system-ui,sans-serif;letter-spacing:0.01em;">${licLabel}</span>`;
+  const irPill = showIr && irVal ? `<span style="display:inline-flex;align-items:center;justify-content:center;height:16px;min-width:34px;padding:0 5px;border-radius:3px;background:rgba(255,255,255,0.14);color:#f8fafc;font:700 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;">${irVal}</span>` : "";
+  return `<span class="mmt-lic-ir-block inline-flex items-center gap-[3px] tabular-nums">${licPill}${irPill}</span>`;
 }
 
 const gpuPedalsEngine = new GpuPedalsEngine();
@@ -93,7 +95,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
   const rowsHtml = displayEntries
     .map((e: RelativeEntry, rowIdx: number) => {
       const isSelf = e.isActiveCam;
-      const rowCls = `mmt-rel-row font-mono tabular-nums${isSelf ? " is-self" : rowIdx % 2 === 1 ? " is-alt" : ""}`;
+      const rowCls = `mmt-rel-row tabular-nums${isSelf ? " is-self" : rowIdx % 2 === 1 ? " is-alt" : ""}`;
 
       const gapStr = isSelf
         ? "0.0s"
@@ -136,16 +138,16 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
 
       const classPosCell = `<span class="w-[18px] shrink-0 text-right text-[11px] font-bold" style="color:${isSelf ? "#10b981" : (e.carClassColor || "#38bdf8")}">${relPos > 0 ? relPos : "-"}</span>`;
       const numCell = cols.carNumber
-        ? `<span class="w-[26px] shrink-0 text-center text-[10.5px] font-bold" style="color:${isSelf ? "#34d399" : textColor}">#${e.carNumber}</span>`
+        ? `<span class="w-[34px] shrink-0 text-right pr-1 text-[11px] font-bold font-mono" style="color:${isSelf ? "#34d399" : textColor}">#${e.carNumber}</span>`
         : ``;
       const nameCell = cols.driverName
-        ? `<span class="mmt-cell-name text-[11px] ${isSelf ? "font-bold" : "font-semibold"}" style="color:${textColor}">${displayName}</span>`
+        ? `<span class="mmt-cell-name text-[11.5px] ${isSelf ? "font-bold" : "font-semibold"}" style="color:${textColor}">${displayName}</span>`
         : ``;
       const tagCell = badgeParts.length > 0
         ? `<span class="shrink-0 flex items-center justify-center gap-0.5">${badgeParts.join("")}</span>`
         : ``;
       const licIrCell = cols.license
-        ? `<span class="w-[74px] shrink-0 flex items-center justify-end gap-1">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, true)}</span>`
+        ? `<span class="w-[82px] shrink-0 flex items-center justify-end gap-1">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, true)}</span>`
         : ``;
       const compoundCell = showCompounds ? renderCompoundBadge(state.frame.carIdxTireCompound?.[e.carIdx]) : "";
       const irDeltaVal = isPractice ? 0 : Math.round(irDeltas.get(e.carIdx) ?? 0);
@@ -155,13 +157,13 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
         ? ``
         : `<span class="w-[30px] shrink-0 text-right text-[10.5px] font-bold tabular-nums" style="color:${irDeltaColor}">${irDeltaText}</span>`;
       const deltaCell = cols.delta
-        ? `<span class="w-[40px] shrink-0 text-right text-[11px] font-bold tabular-nums" style="color:${gapColor}">${gapStr}</span>`
+        ? `<span class="w-[42px] shrink-0 text-right text-[11px] font-bold font-mono tabular-nums" style="color:${gapColor}">${gapStr}</span>`
         : ``;
 
       const rowOpacity = e.onPitRoad && !isSelf ? "opacity:0.55;" : "";
 
       return `
-        <div class="${rowCls}" data-car-idx="${e.carIdx}" style="height:19px;font-size:10.5px;border-left:3px solid ${isSelf ? "#10b981" : (e.carClassColor || "#00e699")};${isSelf ? "background:rgba(16,185,129,0.16);" : ""}${rowOpacity}">
+        <div class="${rowCls}" data-car-idx="${e.carIdx}" style="border-left:3px solid ${isSelf ? "#10b981" : (e.carClassColor || "#00e699")};${isSelf ? "background:rgba(16,185,129,0.18);" : ""}${rowOpacity}">
           ${classPosCell}
           ${numCell}
           ${nameCell}
@@ -508,15 +510,15 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
           const isLapUp = lapDelta > 0;
           const rowClassColor = e.carClassColor || distinctClassColor;
           const posColor = isLeader ? "text-amber-400" : clsPos === 2 ? "text-slate-200" : clsPos === 3 ? "text-amber-600" : "text-white/90";
-          const rowCls = `mmt-std-row font-mono tabular-nums${isSelf ? " is-self" : clsIdx % 2 === 1 ? " is-alt" : ""}`;
+          const rowCls = `mmt-std-row tabular-nums${isSelf ? " is-self" : clsIdx % 2 === 1 ? " is-alt" : ""}`;
 
           // 1. Posición en clase (16px)
           const posGlobalCell = cols.position
             ? `<span class="w-[16px] shrink-0 text-right text-[10.5px] font-bold ${posColor}">${clsPos}</span>`
             : ``;
 
-          // 2. Dorsal (24px, color de clase)
-          const numCell = `<span class="w-[24px] shrink-0 text-center text-[10.5px] font-bold" style="color:${isSelf ? "#34d399" : rowClassColor}">#${e.carNumber}</span>`;
+          // 2. Dorsal (34px, alineado derecha para evitar colisión con #001)
+          const numCell = `<span class="w-[34px] shrink-0 text-right pr-1 text-[11px] font-bold font-mono" style="color:${isSelf ? "#34d399" : rowClassColor}">#${e.carNumber}</span>`;
 
           // 3. Nombre piloto (118px, truncado limpio)
           const displayName = isStreamer
@@ -530,7 +532,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
                 ? "text-[#38bdf8]"
                 : "text-[#f8fafc]";
           const nameCell = cols.driverName
-            ? `<span class="mmt-cell-name shrink-0 text-[10.5px] ${nameColorClass}">${displayName}</span>`
+            ? `<span class="mmt-cell-name shrink-0 text-[11.5px] ${nameColorClass}">${displayName}</span>`
             : ``;
 
           // 4. Icono oficial de fabricante (13px)
@@ -539,7 +541,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
             : ``;
 
           // 5. Pill Licencia + iRating unificada
-          const licIrCell = `<span class="w-[74px] shrink-0 flex items-center justify-end">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, cols.iRating)}</span>`;
+          const licIrCell = `<span class="w-[82px] shrink-0 flex items-center justify-end">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, cols.iRating)}</span>`;
           const compoundCell = showCompounds ? renderCompoundBadge(state.frame.carIdxTireCompound?.[e.carIdx]) : "";
 
           // 6. Delta iRating (+65 en #22c55e / -24 en #ef4444)
@@ -578,8 +580,8 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
             }
           }
 
-          const gapCell = `<span class="w-[44px] shrink-0 text-right tabular-nums text-[11px] ${isLeader ? "text-white/45 font-bold" : isLapDown ? "text-[#fbbf24]" : isLapUp ? "text-[#38bdf8]" : "text-white/90 font-semibold"}">${gapText}</span>`;
-          const intCell = `<span class="w-[40px] shrink-0 text-right tabular-nums text-[11px] ${isLeader ? "text-white/35" : "text-white/65"}">${intText}</span>`;
+          const gapCell = `<span class="w-[46px] shrink-0 text-right font-mono tabular-nums text-[11px] ${isLeader ? "text-white/45 font-bold" : isLapDown ? "text-[#fbbf24]" : isLapUp ? "text-[#38bdf8]" : "text-white/90 font-semibold"}">${gapText}</span>`;
+          const intCell = `<span class="w-[42px] shrink-0 text-right font-mono tabular-nums text-[11px] ${isLeader ? "text-white/35" : "text-white/65"}">${intText}</span>`;
 
           // 9. Última / Mejor vuelta
           const activeLapSec = isRaceSession
@@ -598,10 +600,10 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
               : isSelf
                 ? "text-white font-bold"
                 : "text-[#f8fafc]";
-          const lapCell = `<span class="w-[56px] shrink-0 text-right text-[11px] tabular-nums ${lapColor}">${activeLapStr}</span>`;
+          const lapCell = `<span class="w-[58px] shrink-0 text-right font-mono text-[11px] tabular-nums ${lapColor}">${activeLapStr}</span>`;
 
           return `
-            <div class="${rowCls}" data-car-idx="${e.carIdx}" style="height:19px;font-size:10.5px;border-left:3px solid ${isSelf ? "#10b981" : rowClassColor};${isSelf ? "background:rgba(16,185,129,0.16);" : ""}">
+            <div class="${rowCls}" data-car-idx="${e.carIdx}" style="border-left:3px solid ${isSelf ? "#10b981" : rowClassColor};${isSelf ? "background:rgba(16,185,129,0.18);" : ""}">
               ${posGlobalCell}
               ${numCell}
               ${nameCell}
