@@ -17,9 +17,59 @@ export class SkinsApiError extends Error {
   }
 }
 
+function readCookie(name: string): string {
+  try {
+    const m = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+    return m ? decodeURIComponent(m[1]) : "";
+  } catch {
+    return "";
+  }
+}
+
+export function hydrateSsoFromHashOrCookie(): string {
+  try {
+    if (window.location.hash && window.location.hash.includes("mm_auth=")) {
+      const hp = new URLSearchParams(window.location.hash.slice(1));
+      const tk = (hp.get("mm_auth") || "").trim();
+      const uRaw = hp.get("mm_user");
+      if (tk) {
+        localStorage.setItem(VAULT_TOKEN_KEY, tk);
+        localStorage.setItem("mm_token", tk);
+      }
+      if (uRaw) {
+        try {
+          localStorage.setItem("mrt_vault_user", decodeURIComponent(escape(atob(uRaw))));
+        } catch {
+          // Ignore malformed user payload
+        }
+      }
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      if (tk) return tk;
+    }
+    const cookieTk = readCookie("mm_sso_tk").trim();
+    if (cookieTk) {
+      if (!localStorage.getItem(VAULT_TOKEN_KEY)) {
+        localStorage.setItem(VAULT_TOKEN_KEY, cookieTk);
+        localStorage.setItem("mm_token", cookieTk);
+      }
+      return cookieTk;
+    }
+  } catch {
+    // Ignore storage/cookie errors
+  }
+  return "";
+}
+
 export function getVaultToken(): string {
   try {
-    return (localStorage.getItem(VAULT_TOKEN_KEY) || sessionStorage.getItem(VAULT_TOKEN_KEY) || "").trim();
+    const sso = hydrateSsoFromHashOrCookie();
+    return (
+      localStorage.getItem(VAULT_TOKEN_KEY) ||
+      localStorage.getItem("mm_token") ||
+      sessionStorage.getItem(VAULT_TOKEN_KEY) ||
+      sso ||
+      ""
+    ).trim();
   } catch {
     return "";
   }

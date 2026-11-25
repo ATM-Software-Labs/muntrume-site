@@ -241,7 +241,7 @@ import Layout from '../layouts/Layout.astro';
       var API = "https://api.muntru.me";
       var params = new URLSearchParams(location.search);
       var nextRaw = params.get("next") || params.get("redirect") || "/garage/";
-      var nextUrl = /^https:\/\/(ai|docs|support|muntru)\.muntru\.me(\/|$)/i.test(nextRaw)
+      var nextUrl = /^https:\/\/(ai|docs|support|skins|muntru)\.muntru\.me(\/|$)/i.test(nextRaw)
         ? nextRaw
         : (nextRaw.startsWith("/") && !nextRaw.startsWith("//") && !nextRaw.includes("\\") ? nextRaw : "/garage/");
 
@@ -254,7 +254,7 @@ import Layout from '../layouts/Layout.astro';
         var target = nextUrl;
         var cleanUser = sanitizeUser(user);
         if (window.__mmtSyncSsoCookie) window.__mmtSyncSsoCookie(token, cleanUser);
-        if (/^https:\/\/(ai|support)\.muntru\.me(\/|$)/i.test(target) && token) {
+        if (/^https:\/\/(ai|support|skins)\.muntru\.me(\/|$)/i.test(target) && token) {
           var uEnc = "";
           try { if (cleanUser) uEnc = "&mm_user=" + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(cleanUser))))); } catch (e) {}
           target = target.split("#")[0] + "#mm_auth=" + encodeURIComponent(token) + uEnc;
@@ -262,12 +262,12 @@ import Layout from '../layouts/Layout.astro';
         return target;
       }
 
-      // Check existing active session (instant SSO bounce when coming from ai.muntru.me or support.muntru.me)
+      // Check existing active session (instant SSO bounce when coming from ai.muntru.me, support.muntru.me or skins.muntru.me)
       try {
         var existingTk = localStorage.getItem("mrt_vault_token") || localStorage.getItem("mm_token") || "";
         var existingUser = JSON.parse(localStorage.getItem("mrt_vault_user") || "null");
         if (existingTk && existingUser && existingUser.email) {
-          if (/^https:\/\/(ai|support)\.muntru\.me(\/|$)/i.test(nextUrl) && params.get("switch") !== "1") {
+          if (/^https:\/\/(ai|support|skins)\.muntru\.me(\/|$)/i.test(nextUrl) && params.get("switch") !== "1") {
             location.replace(buildTarget(existingTk, existingUser));
             return;
           }
