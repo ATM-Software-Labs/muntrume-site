@@ -94,7 +94,7 @@ export function initSkinsStudio(): void {
   let workerCarsCatalog: Array<{ car_slug: string; name: string; brand: string; category?: string; iracing_folder: string; uv_status: string }> = [];
   let showTemplateOverlay = true;
   let templateOpacity = 0.96;
-  let showZonesOverlay = false;
+  let showZonesOverlay = true;
   let selectedZone: ZoneKey | null = "hood";
   let selectedDecalId: string | null = state.decals[0]?.id ?? null;
   let customPhotoShots: PhotoGuideShot[] | null = null;
@@ -570,6 +570,39 @@ export function initSkinsStudio(): void {
     sel.value = state.psdPatternName || "";
   }
 
+  const ZONE_DOT_COLORS: Record<ZoneKey, string> = {
+    hood: "#38bdf8",
+    roof: "#818cf8",
+    leftSide: "#10b981",
+    rightSide: "#10b981",
+    rearWing: "#c084fc",
+    frontBumper: "#fb923c",
+    rearBumper: "#f472b6",
+    mirrors: "#fbbf24",
+    numberPlateLeft: "#ef4444",
+    numberPlateRight: "#ef4444",
+  };
+
+  function syncZonePaintBox(): void {
+    const box = byId<HTMLElement>("skZonePaintBox");
+    const title = byId<HTMLElement>("skZonePaintTitle");
+    const colIn = byId<HTMLInputElement>("skZonePaintColor");
+    const finSel = byId<HTMLSelectElement>("skZonePaintFinish");
+    const mirrorBtn = byId<HTMLButtonElement>("skZoneMirrorBtn");
+    if (!box || !title || !colIn || !finSel) return;
+
+    const zk = selectedZone && !state.zones[selectedZone]?.restricted ? selectedZone : "hood";
+    const z = state.zones[zk];
+    if (!z) return;
+    const ov = state.zoneOverrides?.[zk];
+    title.textContent = `Pieza: ${z.label}`;
+    colIn.value = ov?.color || state.palette.primary;
+    finSel.value = ov?.finish || "";
+    if (mirrorBtn) {
+      mirrorBtn.classList.toggle("sk-hidden", zk !== "leftSide" && zk !== "rightSide");
+    }
+  }
+
   function renderZoneList(): void {
     const host = byId<HTMLElement>("skZoneList");
     if (!host) return;
@@ -577,12 +610,19 @@ export function initSkinsStudio(): void {
       .map((z) => {
         const active = selectedZone === z.key ? " is-active" : "";
         const rest = z.restricted ? " is-restricted" : "";
+        const dotCol = ZONE_DOT_COLORS[z.key] || "#38bdf8";
+        const ov = state.zoneOverrides?.[z.key];
+        const swatch = ov?.color
+          ? `<span style="width:11px;height:11px;border-radius:3px;background:${ov.color};border:1px solid rgba(255,255,255,0.45);display:inline-block;"></span>`
+          : "";
         const badge = z.restricted
           ? `<span class="sk-tag sk-tag-warn">Fija</span>`
-          : z.detectedConfidence
-            ? `<span class="sk-tag sk-tag-ok">${Math.round(z.detectedConfidence * 100)}%</span>`
-            : `<span class="sk-tag">${Math.round(z.w * 100)}×${Math.round(z.h * 100)}</span>`;
-        return `<div class="sk-list-item${active}${rest}" data-select-zone="${z.key}"><span>${escapeHtml(z.label)}</span>${badge}</div>`;
+          : ov?.finish
+            ? `<span class="sk-tag sk-tag-ok">${ov.finish}</span>`
+            : z.detectedConfidence
+              ? `<span class="sk-tag sk-tag-ok">${Math.round(z.detectedConfidence * 100)}%</span>`
+              : `<span class="sk-tag">${Math.round(z.w * 100)}×${Math.round(z.h * 100)}</span>`;
+        return `<div class="sk-list-item${active}${rest}" data-select-zone="${z.key}"><span style="display:inline-flex;align-items:center;gap:6px;"><i style="width:8px;height:8px;border-radius:99px;background:${dotCol};display:inline-block;flex-shrink:0;"></i>${escapeHtml(z.label)}</span><span style="display:inline-flex;align-items:center;gap:5px;">${swatch}${badge}</span></div>`;
       })
       .join("");
 
@@ -591,10 +631,12 @@ export function initSkinsStudio(): void {
         selectedZone = el.dataset.selectZone as ZoneKey;
         selectedDecalId = null;
         renderZoneList();
+        syncZonePaintBox();
         renderDecalList();
         scheduleRender();
       });
     });
+    syncZonePaintBox();
   }
 
   function renderDecalList(): void {
@@ -1340,9 +1382,44 @@ export function initSkinsStudio(): void {
   byId<HTMLButtonElement>("skResetZones")?.addEventListener("click", () => {
     const car = getCarById(state.carId);
     state.zones = cloneZones(car.defaultZones);
+    state.zoneOverrides = {};
     renderZoneList();
     scheduleRender();
-    setStatus("Zonas restauradas al mapa base del coche.", "ok");
+    setStatus("Zonas y colores por pieza restaurados al mapa base del coche.", "ok");
+  });
+
+  // Per-part car paint & Spec Map override bindings
+  byId<HTMLInputElement>("skZonePaintColor")?.addEventListener("input", (e) => {
+    const zk = selectedZone && !state.zones[selectedZone]?.restricted ? selectedZone : "hood";
+    if (!state.zoneOverrides) state.zoneOverrides = {};
+    state.zoneOverrides[zk] = { ...(state.zoneOverrides[zk] || {}), color: (e.target as HTMLInputElement).value };
+    renderZoneList();
+    scheduleRender();
+  });
+  byId<HTMLSelectElement>("skZonePaintFinish")?.addEventListener("change", (e) => {
+    const zk = selectedZone && !state.zones[selectedZone]?.restricted ? selectedZone : "hood";
+    const val = (e.target as HTMLSelectElement).value as FinishType | "";
+    if (!state.zoneOverrides) state.zoneOverrides = {};
+    state.zoneOverrides[zk] = { ...(state.zoneOverrides[zk] || {}), finish: val || undefined };
+    renderZoneList();
+    scheduleRender();
+  });
+  byId<HTMLButtonElement>("skZoneMirrorBtn")?.addEventListener("click", () => {
+    if (selectedZone !== "leftSide" && selectedZone !== "rightSide") return;
+    const other: ZoneKey = selectedZone === "leftSide" ? "rightSide" : "leftSide";
+    const src = state.zoneOverrides?.[selectedZone];
+    if (!state.zoneOverrides) state.zoneOverrides = {};
+    state.zoneOverrides[other] = src ? { ...src } : undefined;
+    renderZoneList();
+    scheduleRender();
+    setStatus("Color y acabado copiados al lateral simétrico (L ↔ R).", "ok");
+  });
+  byId<HTMLButtonElement>("skZonePaintReset")?.addEventListener("click", () => {
+    const zk = selectedZone && !state.zones[selectedZone]?.restricted ? selectedZone : "hood";
+    if (state.zoneOverrides) delete state.zoneOverrides[zk];
+    renderZoneList();
+    scheduleRender();
+    setStatus(`Pieza ${state.zones[zk]?.label || zk} restaurada al color base.`, "neutral");
   });
 
   // Presets & Save/Load JSON
@@ -1378,6 +1455,7 @@ export function initSkinsStudio(): void {
     state.pattern = "freeform";
     state.surfaceTexture = "none";
     state.psdPatternName = null;
+    state.zoneOverrides = {};
     state.decals = [];
     state.strokes = [];
     selectedDecalId = null;

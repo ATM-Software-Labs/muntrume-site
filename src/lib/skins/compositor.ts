@@ -1,6 +1,6 @@
 import { BUILTIN_DECALS, getCarById } from "./catalog";
 import { DEFAULT_STAMPS } from "./stamps-library";
-import type { DecalLayer, PaletteConfig, PatternStyle, SkinDesignState, SurfaceTexture, ZoneKey, ZoneRect } from "./types";
+import type { DecalLayer, FinishType, PaletteConfig, PatternStyle, SkinDesignState, SurfaceTexture, ZoneKey, ZoneRect } from "./types";
 
 export interface ReservedGuideBox {
   x: number;
@@ -804,52 +804,119 @@ async function drawDecals(ctx: CanvasRenderingContext2D, state: SkinDesignState,
   }
 }
 
+const ZONE_GUIDE_COLORS: Record<ZoneKey, { stroke: string; fill: string; badge: string; arrow?: string }> = {
+  hood: { stroke: "#38bdf8", fill: "rgba(56, 189, 248, 0.11)", badge: "rgba(3, 105, 161, 0.92)", arrow: "▲ MORRO" },
+  roof: { stroke: "#818cf8", fill: "rgba(129, 140, 248, 0.11)", badge: "rgba(67, 56, 202, 0.92)", arrow: "▲ FRENTE" },
+  leftSide: { stroke: "#10b981", fill: "rgba(16, 185, 129, 0.10)", badge: "rgba(4, 120, 87, 0.92)" },
+  rightSide: { stroke: "#10b981", fill: "rgba(16, 185, 129, 0.10)", badge: "rgba(4, 120, 87, 0.92)" },
+  rearWing: { stroke: "#c084fc", fill: "rgba(192, 132, 252, 0.12)", badge: "rgba(126, 34, 206, 0.92)" },
+  frontBumper: { stroke: "#fb923c", fill: "rgba(251, 146, 60, 0.12)", badge: "rgba(194, 65, 12, 0.92)" },
+  rearBumper: { stroke: "#f472b6", fill: "rgba(244, 114, 182, 0.12)", badge: "rgba(190, 24, 93, 0.92)" },
+  mirrors: { stroke: "#fbbf24", fill: "rgba(251, 191, 36, 0.13)", badge: "rgba(180, 83, 9, 0.92)" },
+  numberPlateLeft: { stroke: "#ef4444", fill: "rgba(239, 68, 68, 0.16)", badge: "rgba(185, 28, 28, 0.94)" },
+  numberPlateRight: { stroke: "#ef4444", fill: "rgba(239, 68, 68, 0.16)", badge: "rgba(185, 28, 28, 0.94)" },
+};
+
+function drawZonePaintOverrides(ctx: CanvasRenderingContext2D, state: SkinDesignState, size: number): void {
+  const overrides = state.zoneOverrides;
+  if (!overrides) return;
+  for (const [k, ov] of Object.entries(overrides)) {
+    if (!ov || (!ov.color && !ov.finish)) continue;
+    const z = state.zones[k as ZoneKey];
+    if (!z || z.restricted) continue;
+    const r = zonePx(z, size);
+    ctx.save();
+    if (ov.color) {
+      ctx.fillStyle = ov.color;
+      ctx.fillRect(r.x, r.y, r.w, r.h);
+    }
+    if (ov.finish === "carbon") {
+      drawCarbonPattern(ctx, r.x, r.y, r.w, r.h, size / 128);
+    }
+    ctx.restore();
+  }
+}
+
 function drawZonesOverlay(
   ctx: CanvasRenderingContext2D,
-  zones: Record<ZoneKey, ZoneRect>,
+  state: SkinDesignState,
   size: number,
   selectedZone?: ZoneKey | null,
 ): void {
   ctx.save();
-  for (const z of Object.values(zones)) {
+  for (const z of Object.values(state.zones)) {
+    if (z.restricted) continue; // Placas de dorsal ya se dibujan con drawReservedGuidesOverlay
     const r = zonePx(z, size);
     const isSel = selectedZone === z.key;
-    ctx.strokeStyle = z.restricted
-      ? "rgba(239, 68, 68, 0.92)"
-      : isSel
-        ? "#00ff9d"
-        : "rgba(56, 189, 248, 0.72)";
-    ctx.lineWidth = isSel ? Math.max(3, size * 0.0035) : Math.max(1.5, size * 0.002);
-    ctx.setLineDash(z.restricted ? [8, 5] : isSel ? [] : [5, 5]);
+    const theme = ZONE_GUIDE_COLORS[z.key] || {
+      stroke: "#38bdf8",
+      fill: "rgba(56, 189, 248, 0.1)",
+      badge: "rgba(9, 13, 20, 0.88)",
+    };
+    const ov = state.zoneOverrides?.[z.key];
+
+    // 1. Relleno translúcido por pieza para diferenciar visualmente cada parte del coche
+    ctx.fillStyle = isSel ? "rgba(0, 255, 157, 0.18)" : theme.fill;
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+
+    // 2. Borde técnico fino
+    ctx.strokeStyle = isSel ? "#00ff9d" : theme.stroke;
+    ctx.lineWidth = isSel ? Math.max(3, size * 0.0034) : Math.max(1.5, size * 0.0018);
+    ctx.setLineDash(isSel ? [] : [7, 5]);
     ctx.strokeRect(r.x, r.y, r.w, r.h);
-
-    if (z.restricted) {
-      ctx.fillStyle = "rgba(239, 68, 68, 0.14)";
-      ctx.fillRect(r.x, r.y, r.w, r.h);
-    } else if (isSel) {
-      ctx.fillStyle = "rgba(0, 255, 157, 0.09)";
-      ctx.fillRect(r.x, r.y, r.w, r.h);
-    }
-
-    // Label pill
     ctx.setLineDash([]);
-    const fontSize = Math.max(11, Math.round(size * 0.013));
-    ctx.font = `700 ${fontSize}px Inter, system-ui, sans-serif`;
-    const tag = z.restricted ? `${z.label} · NO TAPAR` : z.label;
-    const tw = ctx.measureText(tag).width + 12;
-    const th = fontSize + 8;
-    ctx.fillStyle = z.restricted ? "rgba(185, 28, 28, 0.9)" : isSel ? "rgba(5, 150, 105, 0.95)" : "rgba(9, 13, 20, 0.85)";
-    ctx.fillRect(r.x, Math.max(0, r.y - th), tw, th);
+
+    // 3. Esquineros técnicos en L (estética plantilla oficial CAD / iRacing)
+    const arm = Math.min(Math.max(10, size * 0.016), r.w * 0.22, r.h * 0.22);
+    ctx.lineWidth = isSel ? Math.max(3.5, size * 0.0038) : Math.max(2.2, size * 0.0024);
+    ctx.beginPath();
+    // Top-left
+    ctx.moveTo(r.x, r.y + arm); ctx.lineTo(r.x, r.y); ctx.lineTo(r.x + arm, r.y);
+    // Top-right
+    ctx.moveTo(r.x + r.w - arm, r.y); ctx.lineTo(r.x + r.w, r.y); ctx.lineTo(r.x + r.w, r.y + arm);
+    // Bottom-left
+    ctx.moveTo(r.x, r.y + r.h - arm); ctx.lineTo(r.x, r.y + r.h); ctx.lineTo(r.x + arm, r.y + r.h);
+    // Bottom-right
+    ctx.moveTo(r.x + r.w - arm, r.y + r.h); ctx.lineTo(r.x + r.w, r.y + r.h); ctx.lineTo(r.x + r.w, r.y + r.h - arm);
+    ctx.stroke();
+
+    // 4. Etiqueta grande y nítida centrada dentro de cada pieza del coche
+    const fontSize = Math.max(11, Math.round(size * 0.014));
+    ctx.font = `800 ${fontSize}px Inter, system-ui, sans-serif`;
+    const customMark = ov && (ov.color || ov.finish) ? " ●" : "";
+    const tag = `${z.label.toUpperCase()}${customMark}`;
+    const tw = ctx.measureText(tag).width + 16;
+    const th = fontSize + 10;
+    const bx = r.x + Math.max(4, (r.w - tw) / 2);
+    const by = r.y + Math.max(4, (r.h - th) / 2);
+
+    ctx.fillStyle = isSel ? "rgba(5, 150, 105, 0.96)" : theme.badge;
+    ctx.fillRect(bx, by, tw, th);
+    ctx.strokeStyle = "rgba(255,255,255,0.28)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(bx, by, tw, th);
+
     ctx.fillStyle = "#ffffff";
     ctx.textBaseline = "middle";
-    ctx.textAlign = "left";
-    ctx.fillText(tag, r.x + 6, Math.max(th / 2, r.y - th / 2));
+    ctx.textAlign = "center";
+    ctx.fillText(tag, bx + tw / 2, by + th / 2 + 0.5);
 
-    // Resize handle on bottom-right for selected zone
+    // 5. Flecha de orientación frontal (▲ MORRO / ▲ FRENTE) en Capó y Techo
+    if (theme.arrow && r.h > th * 2.1) {
+      const aFont = Math.max(9, Math.round(size * 0.01));
+      ctx.font = `700 ${aFont}px Inter, system-ui, sans-serif`;
+      ctx.fillStyle = "rgba(255,255,255,0.82)";
+      ctx.fillText(theme.arrow, r.x + r.w / 2, r.y + aFont + 5);
+    }
+
+    // 6. Tirador de redimensionado en la pieza seleccionada
     if (isSel) {
-      const hs = Math.max(10, size * 0.012);
+      const hs = Math.max(10, size * 0.013);
       ctx.fillStyle = "#00ff9d";
       ctx.fillRect(r.x + r.w - hs / 2, r.y + r.h - hs / 2, hs, hs);
+      ctx.strokeStyle = "#061018";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(r.x + r.w - hs / 2, r.y + r.h - hs / 2, hs, hs);
     }
   }
   ctx.restore();
@@ -934,6 +1001,7 @@ export async function renderSkinToCanvas(
 
   ctx.clearRect(0, 0, size, size);
   drawPatternGeometry(ctx, state, size, opts.psdPatternCanvas);
+  drawZonePaintOverrides(ctx, state, size);
   drawBrushStrokes(ctx, state, size);
   drawDriverNumbers(ctx, state, size);
   await drawDecals(ctx, state, size, opts.selectedDecalId, opts.forExport);
@@ -958,7 +1026,7 @@ export async function renderSkinToCanvas(
   }
 
   if (!opts.forExport && opts.showZonesOverlay) {
-    drawZonesOverlay(ctx, state.zones, size, opts.selectedZone);
+    drawZonesOverlay(ctx, state, size, opts.selectedZone);
   }
 }
 
@@ -1089,5 +1157,28 @@ export function renderSpecMapToCanvas(canvas: HTMLCanvasElement, state: SkinDesi
   for (const key of ["rearWing", "mirrors"] as const) {
     const z = zonePx(state.zones[key], size);
     ctx.fillRect(z.x, z.y, z.w, z.h);
+  }
+
+  // Per-part Spec Map overrides (e.g. Carbon hood, Matte roof, Chrome mirrors)
+  if (state.zoneOverrides) {
+    const finishToRgb = (f: FinishType): [number, number, number] => {
+      switch (f) {
+        case "gloss": return [30, 36, 235];
+        case "satin": return [66, 92, 178];
+        case "matte": return [20, 210, 38];
+        case "metallic": return [189, 61, 224];
+        case "chrome": return [245, 25, 250];
+        case "carbon": return [107, 122, 140];
+      }
+    };
+    for (const [k, ov] of Object.entries(state.zoneOverrides)) {
+      if (!ov?.finish) continue;
+      const z = state.zones[k as ZoneKey];
+      if (!z || z.restricted) continue;
+      const [zr, zg, zb] = finishToRgb(ov.finish);
+      const px = zonePx(z, size);
+      ctx.fillStyle = `rgb(${zr}, ${zg}, ${zb})`;
+      ctx.fillRect(px.x, px.y, px.w, px.h);
+    }
   }
 }

@@ -123,6 +123,11 @@ export interface DecalLayer {
   zoneHint?: ZoneKey;
 }
 
+export interface ZonePaintOverride {
+  color?: string;
+  finish?: FinishType;
+}
+
 export interface SkinDesignState {
   version: number;
   name: string;
@@ -140,6 +145,7 @@ export interface SkinDesignState {
   fontStyle: "racing-bold" | "condensed-gt" | "mono-tech";
   showNumberOnCar: boolean;
   zones: Record<ZoneKey, ZoneRect>;
+  zoneOverrides?: Partial<Record<ZoneKey, ZonePaintOverride>>;
   decals: DecalLayer[];
   strokes?: BrushStroke[];
   updatedAt: string;

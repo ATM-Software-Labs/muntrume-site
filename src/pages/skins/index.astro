@@ -174,7 +174,7 @@ const canonical = "https://skins.muntru.me/";
               <input id="skToggleWireframe" type="checkbox" checked /> Guía plantilla
             </label>
             <label class="sk-row" style="font-size:11px;cursor:pointer;">
-              <input id="skToggleZones" type="checkbox" /> Cajas de zona
+              <input id="skToggleZones" type="checkbox" checked /> Partes del coche
             </label>
           </div>
           <label class="sk-label">
@@ -182,6 +182,27 @@ const canonical = "https://skins.muntru.me/";
             <input id="skWireOpacity" type="range" min="10" max="100" value="85" />
           </label>
           <div id="skZoneList" class="sk-zone-list"></div>
+          <div id="skZonePaintBox" class="sk-psd-patterns" style="margin-top:6px;">
+            <div class="sk-row" style="justify-content:space-between;align-items:center;">
+              <span id="skZonePaintTitle" style="font-size:10.5px;font-weight:800;color:var(--sk-accent);text-transform:uppercase;">Pieza: Capó</span>
+              <button type="button" id="skZonePaintReset" class="sk-btn sk-btn-sm">Restaurar</button>
+            </div>
+            <div class="sk-row" style="margin-top:6px;gap:6px;">
+              <label class="sk-color-item" style="flex:1;"><span>Color pieza</span><input id="skZonePaintColor" type="color" /></label>
+              <select id="skZonePaintFinish" class="sk-select" style="flex:1.15;padding:5px 6px;font-size:11px;">
+                <option value="">Acabado: Base</option>
+                <option value="gloss">Brillo</option>
+                <option value="satin">Satinado</option>
+                <option value="matte">Mate</option>
+                <option value="metallic">Metálico</option>
+                <option value="chrome">Cromado</option>
+                <option value="carbon">Carbono</option>
+              </select>
+            </div>
+            <button type="button" id="skZoneMirrorBtn" class="sk-btn sk-btn-sm sk-hidden" style="width:100%;margin-top:5px;">
+              Copiar color al otro lateral (L ↔ R)
+            </button>
+          </div>
         </section>
 
         <section class="sk-card">
