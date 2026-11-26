@@ -175,6 +175,52 @@ export async function exportSingleSpecTga(
   return filename;
 }
 
+export async function exportSingleDiffusePng(
+  state: SkinDesignState,
+  onProgress?: (msg: string) => void,
+  partsOverlayCanvas?: HTMLCanvasElement | null,
+  psdPatternCanvas?: HTMLCanvasElement | null,
+): Promise<string> {
+  const cid = sanitizeCustomerId(state.customerId);
+  const size = state.resolution;
+  const workCanvas = document.createElement("canvas");
+  onProgress?.(`Renderizando pintura .PNG ${size}×${size}px...`);
+  await renderSkinToCanvas(workCanvas, state, {
+    size,
+    partsOverlayCanvas,
+    psdPatternCanvas,
+    forExport: true,
+    numberModeOverride: state.numberMode || "sim-stamped",
+  });
+  const blob = await new Promise<Blob | null>((resolve) => workCanvas.toBlob((b) => resolve(b), "image/png"));
+  workCanvas.width = 1;
+  workCanvas.height = 1;
+  if (!blob) throw new Error("No se pudo generar el archivo PNG.");
+  const prefix = getExportBasePrefix(state.carId);
+  const filename = `${prefix}_${cid}_${size}px.png`;
+  triggerDownload(blob, filename);
+  return filename;
+}
+
+export async function exportSingleSpecPng(
+  state: SkinDesignState,
+  onProgress?: (msg: string) => void,
+): Promise<string> {
+  const cid = sanitizeCustomerId(state.customerId);
+  const size = state.resolution;
+  const workCanvas = document.createElement("canvas");
+  onProgress?.(`Renderizando Spec Map .PNG ${size}×${size}px...`);
+  renderSpecMapToCanvas(workCanvas, state, size);
+  const blob = await new Promise<Blob | null>((resolve) => workCanvas.toBlob((b) => resolve(b), "image/png"));
+  workCanvas.width = 1;
+  workCanvas.height = 1;
+  if (!blob) throw new Error("No se pudo generar el Spec Map PNG.");
+  const prefix = getExportBasePrefix(state.carId);
+  const filename = `${prefix}_spec_${cid}_${size}px.png`;
+  triggerDownload(blob, filename);
+  return filename;
+}
+
 function buildReadmeTxt(car: CarProfile, state: SkinDesignState, shots: PhotoGuideShot[]): string {
   const cid = sanitizeCustomerId(state.customerId);
   const isCustomNum = (state.numberMode || "sim-stamped") === "custom-number";

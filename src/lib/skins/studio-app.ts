@@ -17,7 +17,9 @@ import {
   exportIracingZipBundle,
   exportPresetJson,
   exportSingleCustomNumberTga,
+  exportSingleDiffusePng,
   exportSingleDiffuseTga,
+  exportSingleSpecPng,
   exportSingleSpecTga,
   sanitizeCustomerId,
 } from "./exporter";
@@ -2694,6 +2696,82 @@ export function initSkinsStudio(): void {
     } finally {
       btn.disabled = false;
     }
+  });
+
+  // PNG Export (Diffuse + Spec Map) & Quick Beginner Actions
+  const runExportDiffusePng = async (btn?: HTMLButtonElement | null) => {
+    if (btn) btn.disabled = true;
+    try {
+      const fn = await exportSingleDiffusePng(state, (m) => setStatus(m), loadedTemplate?.partsOverlayCanvas, getActivePsdPatternCanvas());
+      setStatus(`Exportado ${fn} (${state.resolution}px · PNG listo)`, "ok");
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Error exportando PNG", "err");
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  };
+  byId<HTMLButtonElement>("skExportPngBtn")?.addEventListener("click", () => {
+    void runExportDiffusePng(byId<HTMLButtonElement>("skExportPngBtn"));
+  });
+  byId<HTMLButtonElement>("skQuickExportPngBtn")?.addEventListener("click", () => {
+    void runExportDiffusePng(byId<HTMLButtonElement>("skQuickExportPngBtn"));
+  });
+  byId<HTMLButtonElement>("skExportSpecPngBtn")?.addEventListener("click", async () => {
+    const btn = byId<HTMLButtonElement>("skExportSpecPngBtn")!;
+    btn.disabled = true;
+    try {
+      const fn = await exportSingleSpecPng(state, (m) => setStatus(m));
+      setStatus(`Exportado ${fn} (${state.resolution}px · Spec PNG)`, "ok");
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Error exportando Spec PNG", "err");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // 1-Click Fullscreen / Expanded 3D & UV Stage
+  const workspaceEl = byId<HTMLElement>("skWorkspace");
+  const expandBtn = byId<HTMLButtonElement>("skExpandStageBtn");
+  const setStageExpanded = (expanded: boolean) => {
+    workspaceEl?.classList.toggle("is-expanded", expanded);
+    if (expandBtn) {
+      expandBtn.classList.toggle("is-active", expanded);
+      expandBtn.textContent = expanded ? "↙ Volver a normal" : "⛶ Visor grande";
+    }
+    requestAnimationFrame(() => {
+      if (viewMode === "3d") glEngine.render();
+      else applyUvTransform();
+    });
+  };
+  expandBtn?.addEventListener("click", () => {
+    setStageExpanded(!workspaceEl?.classList.contains("is-expanded"));
+  });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && workspaceEl?.classList.contains("is-expanded")) {
+      setStageExpanded(false);
+    }
+  });
+
+  // 3D Showroom Auto-Rotate & 1-Click 3D PNG Screenshot
+  let glAutoRotate = false;
+  byId<HTMLButtonElement>("skGlAutoRotateBtn")?.addEventListener("click", (e) => {
+    glAutoRotate = !glAutoRotate;
+    glEngine.setAutoRotate(glAutoRotate);
+    (e.currentTarget as HTMLButtonElement).classList.toggle("is-active", glAutoRotate);
+  });
+  byId<HTMLButtonElement>("skGlScreenshotBtn")?.addEventListener("click", () => {
+    const car = getCarById(state.carId);
+    const fn = `MMT_${car.iracingFolder}_3D_${sanitizeCustomerId(state.customerId)}.png`;
+    glEngine.captureScreenshotPng(fn);
+    setStatus(`Foto 3D guardada: ${fn}`, "ok");
+  });
+
+  // 1-2-3 Beginner Guide Strip Actions
+  byId<HTMLButtonElement>("skQuickAutoDesignBtn")?.addEventListener("click", () => {
+    byId<HTMLButtonElement>("skAutoRealLiveryBtn")?.click();
+  });
+  byId<HTMLButtonElement>("skCloseGuideBtn")?.addEventListener("click", () => {
+    byId<HTMLElement>("skGuideStrip")?.classList.add("sk-hidden");
   });
 
   byId<HTMLButtonElement>("skExportZipBtn")?.addEventListener("click", async () => {

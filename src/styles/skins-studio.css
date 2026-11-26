@@ -322,6 +322,59 @@
   user-select: none;
 }
 
+/* 1-2-3 Beginner Guide Strip & Fullscreen Expanded Stage */
+.sk-guide-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(0, 230, 153, 0.06);
+  border-bottom: 1px solid rgba(0, 230, 153, 0.22);
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.sk-guide-steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.sk-guide-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sk-guide-step b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--sk-accent);
+  color: #04130d;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.sk-workspace.is-expanded {
+  grid-template-columns: 1fr !important;
+}
+
+.sk-workspace.is-expanded .sk-sidebar,
+.sk-workspace.is-expanded .sk-inspector {
+  display: none !important;
+}
+
+.sk-workspace.is-expanded .sk-canvas-wrap {
+  min-height: calc(100vh - 155px);
+}
+
 .sk-uv-canvas {
   max-width: none;
   border-radius: 4px;

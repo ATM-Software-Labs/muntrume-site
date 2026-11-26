@@ -18,6 +18,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { ZoneKey, ZoneRect } from "./types";
+import modelsManifest from "../../data/models-manifest.json";
 
 export type CarBodyCategory = "gt3" | "gtp" | "formula" | "touring" | "nascar";
 export type LightingPreset = "noon" | "sunset" | "overcast";
@@ -322,6 +323,7 @@ export class WebGLPreviewEngine {
         canvas: this.canvas,
         antialias: true,
         alpha: false,
+        preserveDrawingBuffer: true,
         powerPreference: "high-performance",
       });
       this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -457,10 +459,11 @@ export class WebGLPreviewEngine {
   public async tryLoadCategoryBaseModel(category: CarBodyCategory, carSlug = ""): Promise<boolean> {
     this.currentCategory = category;
     const slugKey = (carSlug || "").toLowerCase().replace(/[^a-z0-9_-]/g, "");
+    const manifestModels = (modelsManifest?.models || {}) as Record<string, string>;
     const candidates = Array.from(
       new Set(
         [
-          slugKey ? `/assets/models/${slugKey}.glb` : "",
+          slugKey && manifestModels[slugKey] ? manifestModels[slugKey] : "",
           CAR_SPECIFIC_GLB_PATHS[slugKey] || "",
           CATEGORY_BASE_GLB_PATHS[category],
           category === "formula" ? "/assets/models/formula-base.glb" : "/assets/models/gt3-base.glb",
@@ -893,6 +896,24 @@ export class WebGLPreviewEngine {
   public resetToProofingBuck(): void {
     this.hasCustomModel = false;
     this.buildAutomotiveSpeedform();
+  }
+
+  public setAutoRotate(enabled: boolean): void {
+    if (!this.controls) return;
+    this.controls.autoRotate = enabled;
+    this.controls.autoRotateSpeed = 1.6;
+  }
+
+  public captureScreenshotPng(filename: string): void {
+    if (!this.renderer || !this.scene || !this.camera) return;
+    this.renderer.render(this.scene, this.camera);
+    const dataUrl = this.canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 
   public getMeshLabel(): string {
