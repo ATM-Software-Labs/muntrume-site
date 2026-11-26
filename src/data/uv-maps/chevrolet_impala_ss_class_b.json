@@ -1,0 +1,246 @@
+{
+  "car_slug": "chevrolet_impala_ss_class_b",
+  "car_name": "Chevrolet Impala SS Class B",
+  "brand": "Chevrolet",
+  "iracing_folder": "chevrolet_impala_ss_class_b",
+  "native_resolution": "2048x2048",
+  "uv_status": "extracted",
+  "zones": {
+    "hood": {
+      "x": 640,
+      "y": 0,
+      "width": 480,
+      "height": 48,
+      "rotation": 0,
+      "mirror_x": false,
+      "symmetry_axis": "center"
+    },
+    "roof": {
+      "x": 448,
+      "y": 1856,
+      "width": 208,
+      "height": 192,
+      "rotation": 0,
+      "mirror_x": false,
+      "symmetry_axis": "center"
+    },
+    "left_side": {
+      "x": 16,
+      "y": 80,
+      "width": 1120,
+      "height": 400,
+      "rotation": 0,
+      "mirror_x": false,
+      "flip_horizontal_logo": false,
+      "symmetry_axis": "left"
+    },
+    "right_side": {
+      "x": 1488,
+      "y": 1664,
+      "width": 544,
+      "height": 368,
+      "rotation": 0,
+      "mirror_x": true,
+      "flip_horizontal_logo": true,
+      "symmetry_axis": "right"
+    },
+    "rear_wing": {
+      "top_plane": {
+        "x": 128,
+        "y": 16,
+        "width": 496,
+        "height": 32,
+        "rotation": 0
+      },
+      "endplate_left": {
+        "x": 287,
+        "y": 1638,
+        "width": 225,
+        "height": 225,
+        "rotation": 0
+      },
+      "endplate_right": {
+        "x": 1536,
+        "y": 1638,
+        "width": 225,
+        "height": 225,
+        "rotation": 0
+      }
+    },
+    "front_bumper": {
+      "x": 512,
+      "y": 1188,
+      "width": 1024,
+      "height": 225,
+      "rotation": 0
+    },
+    "rear_bumper": {
+      "x": 512,
+      "y": 1434,
+      "width": 1024,
+      "height": 184,
+      "rotation": 0
+    },
+    "mirrors": {
+      "x": 102,
+      "y": 164,
+      "width": 369,
+      "height": 205,
+      "rotation": 0,
+      "mirror_x": true
+    },
+    "sunstrip": {
+      "x": 635,
+      "y": 20,
+      "width": 778,
+      "height": 82,
+      "rotation": 0
+    },
+    "sponsor_blocks": [
+      {
+        "id": "sponsor_1",
+        "x": 1568,
+        "y": 1056,
+        "width": 368,
+        "height": 448,
+        "cx": 0.8555,
+        "cy": 0.625,
+        "nw": 0.1797,
+        "nh": 0.2188
+      },
+      {
+        "id": "sponsor_2",
+        "x": 80,
+        "y": 1104,
+        "width": 176,
+        "height": 432,
+        "cx": 0.082,
+        "cy": 0.6445,
+        "nw": 0.0859,
+        "nh": 0.2109
+      },
+      {
+        "id": "sponsor_3",
+        "x": 160,
+        "y": 1712,
+        "width": 640,
+        "height": 96,
+        "cx": 0.2344,
+        "cy": 0.8594,
+        "nw": 0.3125,
+        "nh": 0.0469
+      },
+      {
+        "id": "sponsor_4",
+        "x": 208,
+        "y": 768,
+        "width": 592,
+        "height": 96,
+        "cx": 0.2461,
+        "cy": 0.3984,
+        "nw": 0.2891,
+        "nh": 0.0469
+      },
+      {
+        "id": "sponsor_5",
+        "x": 1216,
+        "y": 304,
+        "width": 448,
+        "height": 80,
+        "cx": 0.7031,
+        "cy": 0.168,
+        "nw": 0.2188,
+        "nh": 0.0391
+      },
+      {
+        "id": "sponsor_6",
+        "x": 256,
+        "y": 640,
+        "width": 128,
+        "height": 112,
+        "cx": 0.1563,
+        "cy": 0.3398,
+        "nw": 0.0625,
+        "nh": 0.0547
+      },
+      {
+        "id": "sponsor_7",
+        "x": 256,
+        "y": 1824,
+        "width": 128,
+        "height": 96,
+        "cx": 0.1563,
+        "cy": 0.9141,
+        "nw": 0.0625,
+        "nh": 0.0469
+      },
+      {
+        "id": "sponsor_8",
+        "x": 480,
+        "y": 1984,
+        "width": 160,
+        "height": 48,
+        "cx": 0.2734,
+        "cy": 0.9805,
+        "nw": 0.0781,
+        "nh": 0.0234
+      }
+    ]
+  },
+  "restricted_number_plates": [
+    {
+      "id": "num_block_1",
+      "label": "Placa Dorsal iRacing #1",
+      "x": 240,
+      "y": 240,
+      "width": 64,
+      "height": 48,
+      "rotation": 0
+    },
+    {
+      "id": "num_block_2",
+      "label": "Placa Dorsal iRacing #2",
+      "x": 1696,
+      "y": 304,
+      "width": 48,
+      "height": 64,
+      "rotation": 0
+    },
+    {
+      "id": "num_block_3",
+      "label": "Placa Dorsal iRacing #3",
+      "x": 880,
+      "y": 576,
+      "width": 352,
+      "height": 240,
+      "rotation": 0
+    },
+    {
+      "id": "num_block_4",
+      "label": "Placa Dorsal iRacing #4",
+      "x": 688,
+      "y": 1104,
+      "width": 416,
+      "height": 368,
+      "rotation": 0
+    },
+    {
+      "id": "num_block_5",
+      "label": "Placa Dorsal iRacing #5",
+      "x": 896,
+      "y": 1728,
+      "width": 352,
+      "height": 240,
+      "rotation": 0
+    },
+    {
+      "id": "num_block_6",
+      "label": "Placa Dorsal iRacing #6",
+      "x": 496,
+      "y": 1888,
+      "width": 128,
+      "height": 96,
+      "rotation": 0
+    }
+  ]
+}

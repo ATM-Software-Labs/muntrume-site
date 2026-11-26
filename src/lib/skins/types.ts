@@ -2,6 +2,8 @@ export type ResolutionMode = 2048 | 4096;
 
 export type FinishType = "gloss" | "satin" | "matte" | "metallic" | "chrome" | "carbon";
 
+export type NumberPlateMode = "sim-stamped" | "custom-number";
+
 export type ZoneKey =
   | "hood"
   | "roof"
@@ -144,6 +146,7 @@ export interface SkinDesignState {
   spec: SpecConfig;
   fontStyle: "racing-bold" | "condensed-gt" | "mono-tech";
   showNumberOnCar: boolean;
+  numberMode?: NumberPlateMode;
   zones: Record<ZoneKey, ZoneRect>;
   zoneOverrides?: Partial<Record<ZoneKey, ZonePaintOverride>>;
   decals: DecalLayer[];

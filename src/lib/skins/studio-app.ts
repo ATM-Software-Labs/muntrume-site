@@ -15,13 +15,18 @@ import { DEFAULT_STAMPS } from "./stamps-library";
 import {
   exportIracingZipBundle,
   exportPresetJson,
+  exportSingleCustomNumberTga,
   exportSingleDiffuseTga,
   exportSingleSpecTga,
   sanitizeCustomerId,
 } from "./exporter";
 import { buildDefaultPhotoGuide, contrastRatio } from "./photo-guide";
-import { WebGLPreviewEngine, mapCategoryStringToBody, type LightingPreset } from "./preview-3d";
+import { WebGLPreviewEngine, mapCategoryStringToBody, type LightingPreset, type UvMappingMode } from "./preview-3d";
+import { deleteCarModel, loadCarModel, saveCarModel } from "../model-store";
+import { getLocalUvMap } from "./uv-maps-loader";
 import { analyzeTemplateZones, loadTemplateFile, type LoadedTemplate } from "./template-analyzer";
+import { getArchetypeZones, lazyLoadCarUv, saveLocalCalibration } from "./uv-archetypes";
+import carsIndexData from "../../data/cars-index.json";
 import {
   SkinsApiError,
   fetchWorkerAiAssist,
@@ -31,10 +36,12 @@ import {
   mapWorkerPhotoGuideToShots,
   mapWorkerUvToZones,
   setVaultToken,
+  type WorkerUvResponse,
 } from "./vault-client";
 import type {
   DecalLayer,
   FinishType,
+  NumberPlateMode,
   PatternStyle,
   PhotoGuideShot,
   ResolutionMode,
@@ -141,23 +148,58 @@ export function initSkinsStudio(): void {
     const order = [
       "GT3",
       "GTP / Hypercar",
+      "LMP2 / LMP3",
       "LMP2 / Prototipos",
       "GT4 & Cup",
       "Fórmula",
+      "NASCAR / Oval",
       "Stock Cars & Oval",
+      "TCR & Producción",
+      "Dirt / Rallycross",
       "TCR / Turismo / Dirt",
       "Piloto (Casco y Mono)",
     ];
-    const items = workerCarsCatalog.length > 0
-      ? workerCarsCatalog
-      : CAR_PROFILES.map((c) => ({
-          car_slug: c.id,
-          name: c.name,
-          brand: c.brand,
-          category: c.category,
-          iracing_folder: c.iracingFolder,
-          uv_status: "baseline",
-        }));
+    const searchQ = (byId<HTMLInputElement>("skCarSearch")?.value || "").trim().toLowerCase();
+    const mergedMap = new Map<
+      string,
+      { car_slug: string; name: string; brand: string; category: string; iracing_folder: string; uv_status: string }
+    >();
+    for (const c of (carsIndexData?.cars || []) as Array<{
+      car_slug: string;
+      name: string;
+      brand?: string;
+      category?: string;
+      uv_status?: string;
+    }>) {
+      mergedMap.set(c.car_slug, {
+        car_slug: c.car_slug,
+        name: c.name,
+        brand: c.brand || "iRacing",
+        category: c.category || "TCR & Producción",
+        iracing_folder: c.car_slug,
+        uv_status: c.uv_status || "archetype",
+      });
+    }
+    for (const c of CAR_PROFILES) {
+      mergedMap.set(c.id, {
+        car_slug: c.id,
+        name: c.name,
+        brand: c.brand,
+        category: c.category,
+        iracing_folder: c.iracingFolder,
+        uv_status: mergedMap.get(c.id)?.uv_status || "baseline",
+      });
+    }
+    for (const w of workerCarsCatalog) {
+      mergedMap.set(w.car_slug, {
+        ...w,
+        category: w.category || "TCR & Producción",
+      });
+    }
+    const items = Array.from(mergedMap.values()).filter((item) => {
+      if (!searchQ) return true;
+      return `${item.name} ${item.car_slug} ${item.brand} ${item.category}`.toLowerCase().includes(searchQ);
+    });
 
     const groups = new Map<string, typeof items>();
     for (const item of items) {
@@ -184,46 +226,94 @@ export function initSkinsStudio(): void {
     }
   }
 
+  function applyUvResponseToState(carSlug: string, uv: WorkerUvResponse): void {
+    const car = getCarById(carSlug);
+    state.zones = mapWorkerUvToZones(uv, car.defaultZones);
+    const rawZones = uv.zones as Record<string, unknown>;
+    workerSponsorBlocks = Array.isArray(rawZones?.sponsor_blocks)
+      ? (rawZones.sponsor_blocks as Array<{ id: string; cx: number; cy: number; nw: number; nh: number }>)
+      : [];
+    const rawPlates = Array.isArray(uv.restricted_number_plates) ? uv.restricted_number_plates : [];
+    workerRestrictedPlates = rawPlates.map((p, i) => ({
+      x: (p.x > 1 ? p.x / 2048 : p.x),
+      y: (p.y > 1 ? p.y / 2048 : p.y),
+      w: (p.width > 1 ? p.width / 2048 : p.width),
+      h: (p.height > 1 ? p.height / 2048 : p.height),
+      label: p.label || `DORSAL #${i + 1} (iRacing)`,
+    }));
+
+    // Coordenadas verificadas para Acura NSX GT3 EVO 22 (placas IMSA/GTD + dorsales oficiales)
+    if (carSlug === "acuransxevo22gt3" && workerRestrictedPlates.length === 0) {
+      workerRestrictedPlates = [
+        { x: 0.325, y: 0.31, w: 0.075, h: 0.095, label: "DORSAL IZQ. (iRacing)" },
+        { x: 0.295, y: 0.59, w: 0.06, h: 0.09, label: "DORSAL CAPÓ (iRacing)" },
+        { x: 0.325, y: 0.87, w: 0.075, h: 0.095, label: "DORSAL DER. (iRacing)" },
+      ];
+      workerSeriesSlots = [
+        { x: 0.23, y: 0.165, w: 0.09, h: 0.04, label: "SERIE / IMSA FRONTAL" },
+        { x: 0.625, y: 0.33, w: 0.075, h: 0.045, label: "CATEGORÍA / GTD IZQ." },
+        { x: 0.625, y: 0.855, w: 0.075, h: 0.045, label: "CATEGORÍA / GTD DER." },
+      ];
+    } else {
+      workerSeriesSlots = workerSponsorBlocks.slice(0, 4).map((b, i) => ({
+        x: Math.max(0.01, b.cx - b.nw / 2),
+        y: Math.max(0.01, b.cy - b.nh / 2),
+        w: b.nw,
+        h: b.nh,
+        label: i === 0 ? "SERIE / SPONSOR PRINCIPAL" : `DECAL SERIE / CATEGORÍA #${i + 1}`,
+      }));
+    }
+  }
+
+  async function restoreSaved3dModelForCar(carSlug: string): Promise<void> {
+    const car = getCarById(carSlug);
+    const indexed = (carsIndexData?.cars || []).find((c) => c.car_slug === carSlug);
+    const effectiveCategory = indexed?.category || car.category;
+    try {
+      const saved = await loadCarModel(carSlug);
+      if (state.carId !== carSlug) return;
+      if (saved && saved.buffer.byteLength > 0) {
+        await glEngine.loadGltfBuffer(saved.buffer, saved.filename, true);
+        glEngine.updateZones(state.zones);
+        scheduleRender();
+        return;
+      }
+    } catch {
+      // IndexedDB unavailable or corrupted entry; fall back to clean parametric bodywork
+    }
+    if (state.carId !== carSlug) return;
+    glEngine.resetToProofingBuck();
+    glEngine.setCategory(mapCategoryStringToBody(effectiveCategory));
+    glEngine.updateZones(state.zones);
+    scheduleRender();
+  }
+
   async function syncCarUvFromWorker(carSlug: string): Promise<void> {
+    // 1. Apply bundled calibrated UV JSON immediately (src/data/uv-maps/<car_slug>.json)
+    const localUv = getLocalUvMap(carSlug);
+    if (localUv) {
+      applyUvResponseToState(carSlug, localUv);
+      const car = getCarById(carSlug);
+      const infoEl = byId<HTMLElement>("skTemplateSummary");
+      if (infoEl) {
+        infoEl.textContent = `Mapa UV calibrado cargado desde src/data/uv-maps/ (${localUv.car_name} · ${localUv.native_resolution}).`;
+      }
+      const notesEl = byId<HTMLElement>("skCarNotes");
+      if (notesEl) {
+        notesEl.textContent = `Carpeta iRacing: paint/${localUv.iracing_folder}/ · Mapa UV calibrado local ✓`;
+      }
+      renderZoneList();
+      glEngine.setCategory(mapCategoryStringToBody(car.category));
+      glEngine.updateZones(state.zones);
+      scheduleRender();
+    }
+
     if (!vaultAuthenticated) return;
     try {
       const uv = await fetchWorkerUvMap(carSlug);
+      if (state.carId !== carSlug) return;
       const car = getCarById(carSlug);
-      state.zones = mapWorkerUvToZones(uv, car.defaultZones);
-      const rawZones = uv.zones as Record<string, unknown>;
-      workerSponsorBlocks = Array.isArray(rawZones?.sponsor_blocks)
-        ? (rawZones.sponsor_blocks as Array<{ id: string; cx: number; cy: number; nw: number; nh: number }>)
-        : [];
-      const rawPlates = Array.isArray(uv.restricted_number_plates) ? uv.restricted_number_plates : [];
-      workerRestrictedPlates = rawPlates.map((p, i) => ({
-        x: (p.x > 1 ? p.x / 2048 : p.x),
-        y: (p.y > 1 ? p.y / 2048 : p.y),
-        w: (p.width > 1 ? p.width / 2048 : p.width),
-        h: (p.height > 1 ? p.height / 2048 : p.height),
-        label: p.label || `DORSAL #${i + 1} (iRacing)`,
-      }));
-
-      // Coordenadas verificadas para Acura NSX GT3 EVO 22 (placas IMSA/GTD + dorsales oficiales)
-      if (carSlug === "acuransxevo22gt3" && workerRestrictedPlates.length === 0) {
-        workerRestrictedPlates = [
-          { x: 0.325, y: 0.31, w: 0.075, h: 0.095, label: "DORSAL IZQ. (iRacing)" },
-          { x: 0.295, y: 0.59, w: 0.06, h: 0.09, label: "DORSAL CAPÓ (iRacing)" },
-          { x: 0.325, y: 0.87, w: 0.075, h: 0.095, label: "DORSAL DER. (iRacing)" },
-        ];
-        workerSeriesSlots = [
-          { x: 0.23, y: 0.165, w: 0.09, h: 0.04, label: "SERIE / IMSA FRONTAL" },
-          { x: 0.625, y: 0.33, w: 0.075, h: 0.045, label: "CATEGORÍA / GTD IZQ." },
-          { x: 0.625, y: 0.855, w: 0.075, h: 0.045, label: "CATEGORÍA / GTD DER." },
-        ];
-      } else {
-        workerSeriesSlots = workerSponsorBlocks.slice(0, 4).map((b, i) => ({
-          x: Math.max(0.01, b.cx - b.nw / 2),
-          y: Math.max(0.01, b.cy - b.nh / 2),
-          w: b.nw,
-          h: b.nh,
-          label: i === 0 ? "SERIE / SPONSOR PRINCIPAL" : `DECAL SERIE / CATEGORÍA #${i + 1}`,
-        }));
-      }
+      applyUvResponseToState(carSlug, uv);
       workerWireframeCanvas = await renderSvgStringToCanvas(uv.wireframe_svg || "");
       const infoEl = byId<HTMLElement>("skTemplateSummary");
       if (infoEl) {
@@ -243,7 +333,9 @@ export function initSkinsStudio(): void {
         lockStudio(err.message);
         return;
       }
-      setStatus(err instanceof Error ? err.message : "No se pudo sincronizar UV del Worker", "err");
+      if (!localUv) {
+        setStatus(err instanceof Error ? err.message : "No se pudo sincronizar UV del Worker", "err");
+      }
     }
   }
 
@@ -265,6 +357,7 @@ export function initSkinsStudio(): void {
       updateRightTabUI();
       setStatus(`Sesión Vault verificada · ${cars.length} plantillas UV disponibles`, "ok");
       await syncCarUvFromWorker(state.carId);
+      void restoreSaved3dModelForCar(state.carId);
     } catch (err) {
       if (err instanceof SkinsApiError) {
         lockStudio(err.message);
@@ -472,8 +565,22 @@ export function initSkinsStudio(): void {
     if (numIn) numIn.value = state.customNumber;
     const cidIn = byId<HTMLInputElement>("skCustomerId");
     if (cidIn) cidIn.value = state.customerId;
+    const drvNameIn = byId<HTMLInputElement>("skDriverName");
+    if (drvNameIn) drvNameIn.value = state.customDriverName;
     const nameIn = byId<HTMLInputElement>("skDesignName");
     if (nameIn) nameIn.value = state.name;
+
+    const activeNumMode: NumberPlateMode = state.numberMode || "sim-stamped";
+    document.querySelectorAll<HTMLButtonElement>("[data-number-mode]").forEach((btn) => {
+      btn.classList.toggle("is-active", btn.dataset.numberMode === activeNumMode);
+    });
+    const numModeHelp = byId<HTMLElement>("skNumberModeHelp");
+    if (numModeHelp) {
+      numModeHelp.textContent =
+        activeNumMode === "custom-number"
+          ? `Estampa el dorsal #${state.customNumber || "16"} en placas laterales, techo y capó (car_num_${sanitizeCustomerId(state.customerId)}.tga) + base limpia car_${sanitizeCustomerId(state.customerId)}.tga.`
+          : "Protege las placas laterales reglamentarias (zona reservada por iRacing) para que el número oficial nunca se solape.";
+    }
 
     const setVal = (id: string, val: string) => {
       const el = byId<HTMLInputElement | HTMLSelectElement>(id);
@@ -861,10 +968,44 @@ export function initSkinsStudio(): void {
     const box = byId<HTMLElement>("skExportValidation");
     const car = getCarById(state.carId);
     const cid = sanitizeCustomerId(state.customerId);
+    const isCustomNum = (state.numberMode || "sim-stamped") === "custom-number";
+
     const diffName = byId<HTMLElement>("skExportDiffuseName");
     if (diffName) diffName.textContent = `car_${cid}.tga`;
+    const customNumName = byId<HTMLElement>("skExportCustomNumName");
+    if (customNumName) customNumName.textContent = `car_num_${cid}.tga`;
     const specName = byId<HTMLElement>("skExportSpecName");
     if (specName) specName.textContent = `car_spec_${cid}.tga`;
+
+    const customNumCard = byId<HTMLElement>("skExportCustomNumCard");
+    if (customNumCard) customNumCard.classList.toggle("sk-hidden", !isCustomNum);
+
+    const zipBtn = byId<HTMLButtonElement>("skExportZipBtn");
+    if (zipBtn) {
+      zipBtn.textContent = isCustomNum
+        ? `Descargar Pack .ZIP (car_${cid} + car_num_${cid} + car_spec_${cid})`
+        : `Descargar Pack .ZIP (car_${cid} + car_spec_${cid} + Carpeta iRacing)`;
+    }
+
+    const tpGuide = byId<HTMLElement>("skTradingPaintsGuide");
+    if (tpGuide) {
+      tpGuide.innerHTML = isCustomNum
+        ? `
+          <strong>Trading Paints · Dónde subir cada archivo (Modo Custom Number)</strong>
+          <ul>
+            <li>1. <strong>Sim-Stamped Number Paint:</strong> sube <code>car_${escapeHtml(cid)}.tga</code> (base limpia sin solapes).</li>
+            <li>2. <strong>Custom Number Paint:</strong> sube <code>car_num_${escapeHtml(cid)}.tga</code> (con dorsal <strong>#${escapeHtml(state.customNumber)}</strong> estampado) y marca <em>"Hide car numbers"</em> en Trading Paints Downloader.</li>
+            <li>3. <strong>Add spec map or decal layer:</strong> copia <code>car_spec_${escapeHtml(cid)}.tga</code> en <code>Documents\\iRacing\\paint\\${escapeHtml(car.iracingFolder)}\\</code>, abre el coche en iRacing y sube el <code>car_spec_${escapeHtml(cid)}.mip</code> generado.</li>
+          </ul>
+        `
+        : `
+          <strong>Trading Paints · Dónde subir cada archivo (Modo Oficial Sim-Stamped)</strong>
+          <ul>
+            <li>1. <strong>Sim-Stamped Number Paint:</strong> sube <code>car_${escapeHtml(cid)}.tga</code> en <a href="https://www.tradingpaints.com/my-paints" target="_blank" rel="noopener noreferrer" style="color:var(--sk-accent);">Trading Paints → Upload a paint</a> (placas laterales libres para iRacing).</li>
+            <li>2. <strong>Add spec map or decal layer:</strong> copia <code>car_spec_${escapeHtml(cid)}.tga</code> en <code>Documents\\iRacing\\paint\\${escapeHtml(car.iracingFolder)}\\</code>, abre el coche en iRacing para generar <code>car_spec_${escapeHtml(cid)}.mip</code> y sube ese <code>.mip</code>.</li>
+          </ul>
+        `;
+    }
 
     // Render live export previews so the user sees EXACTLY what Trading Paints will receive
     const diffPrev = byId<HTMLCanvasElement>("skExportDiffusePreview");
@@ -874,6 +1015,17 @@ export function initSkinsStudio(): void {
         partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
         psdPatternCanvas: getActivePsdPatternCanvas(),
         forExport: true,
+        numberModeOverride: "sim-stamped",
+      });
+    }
+    const customNumPrev = byId<HTMLCanvasElement>("skExportCustomNumPreview");
+    if (customNumPrev && isCustomNum) {
+      void renderSkinToCanvas(customNumPrev, state, {
+        size: 128,
+        partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
+        psdPatternCanvas: getActivePsdPatternCanvas(),
+        forExport: true,
+        numberModeOverride: "custom-number",
       });
     }
     const specPrev = byId<HTMLCanvasElement>("skExportSpecPreview");
@@ -1228,7 +1380,7 @@ export function initSkinsStudio(): void {
     scheduleRender();
   });
 
-  // 3D camera presets, lighting presets & local .GLB/.GLTF/.OBJ loader
+  // 3D camera presets, lighting presets, UV mapping mode & local .GLB/.GLTF/.OBJ loader (with IndexedDB persistence)
   document.querySelectorAll<HTMLButtonElement>("[data-gl-cam]").forEach((btn) => {
     btn.addEventListener("click", () => {
       glEngine.setCameraPreset(btn.dataset.glCam as "front34" | "side" | "rear34" | "top");
@@ -1243,48 +1395,89 @@ export function initSkinsStudio(): void {
       );
     });
   });
+  document.querySelectorAll<HTMLButtonElement>("[data-gl-uv]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const mode = (btn.dataset.glUv === "native" ? "native" : "autofit") as UvMappingMode;
+      glEngine.setUvMappingMode(mode);
+      document.querySelectorAll<HTMLButtonElement>("[data-gl-uv]").forEach((b) =>
+        b.classList.toggle("is-active", b === btn),
+      );
+      setStatus(
+        mode === "autofit"
+          ? "Proyección 3D: Auto-Fit Zonas iRacing (capó, techo, laterales, paragolpes y alerón calibrados)."
+          : "Proyección 3D: UV Nativo del modelo .GLB.",
+        "ok",
+      );
+    });
+  });
   byId<HTMLInputElement>("skObjInput")?.addEventListener("change", async (e) => {
-    const file = (e.target as HTMLInputElement).files?.[0];
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (!file) return;
     try {
       const lower = file.name.toLowerCase();
       if (lower.endsWith(".glb") || lower.endsWith(".gltf")) {
         await glEngine.loadGltfFile(file);
+        glEngine.updateZones(state.zones);
+        try {
+          await saveCarModel(state.carId, file);
+        } catch {
+          // Non-fatal if IndexedDB quota is full
+        }
+        viewMode = "3d";
+        updateViewModeUI();
+        scheduleRender();
+        setStatus(`Modelo 3D guardado en caché local (${state.carId}): ${file.name} · Auto-cargará al volver.`, "ok");
       } else {
         const text = await file.text();
         glEngine.loadObjMesh(text, file.name);
+        glEngine.updateZones(state.zones);
+        viewMode = "3d";
+        updateViewModeUI();
+        scheduleRender();
+        setStatus(`Modelo .OBJ local cargado: ${file.name} (solo en tu navegador)`, "ok");
       }
-      viewMode = "3d";
-      updateViewModeUI();
-      scheduleRender();
-      setStatus(`Modelo 3D local cargado: ${file.name} (solo en tu navegador)`, "ok");
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Error cargando modelo 3D (.GLB / .GLTF / .OBJ)", "err");
+    } finally {
+      input.value = "";
     }
   });
-  byId<HTMLButtonElement>("skGlResetMesh")?.addEventListener("click", () => {
+  byId<HTMLButtonElement>("skGlResetMesh")?.addEventListener("click", async () => {
+    try {
+      await deleteCarModel(state.carId);
+    } catch {
+      // Ignore IndexedDB error
+    }
+    const car = getCarById(state.carId);
     glEngine.resetToProofingBuck();
+    glEngine.setCategory(mapCategoryStringToBody(car.category));
+    glEngine.updateZones(state.zones);
     scheduleRender();
-    setStatus("Restaurada superficie de pruebas UV.", "neutral");
+    setStatus(`Modelo cacheado eliminado para ${state.carId}. Restaurada carrocería paramétrica.`, "neutral");
   });
 
   // Populate Car select grouped cleanly by class (GT3 > GTP > LMP2/LMP3 > GT4 & Cup > Fórmula > TCR)
   const carSelect = byId<HTMLSelectElement>("skCarSelect");
+  const carSearchInput = byId<HTMLInputElement>("skCarSearch");
+  carSearchInput?.addEventListener("input", () => {
+    populateCarSelectorFromWorker();
+  });
+  byId<HTMLButtonElement>("skSaveCalibLocalBtn")?.addEventListener("click", () => {
+    saveLocalCalibration(state.carId, state.zones);
+    setStatus(`Calibración UV guardada en localStorage para ${state.carId}`, "ok");
+  });
   if (carSelect) {
-    carSelect.innerHTML = CAR_CATEGORY_ORDER.map((cat) => {
-      const groupCars = CAR_PROFILES.filter((c) => c.category === cat).sort((a, b) => a.name.localeCompare(b.name));
-      if (groupCars.length === 0) return "";
-      const opts = groupCars
-        .map((c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`)
-        .join("");
-      return `<optgroup label="${escapeHtml(cat)}">${opts}</optgroup>`;
-    }).join("");
+    populateCarSelectorFromWorker();
     carSelect.addEventListener("change", () => {
       const nextSlug = carSelect.value;
       const nextCar = getCarById(nextSlug);
+      const indexed = (carsIndexData?.cars || []).find((c) => c.car_slug === nextSlug);
+      const effectiveCategory = indexed?.category || nextCar.category;
+      const effectiveName = indexed?.name || nextCar.name;
       state.carId = nextSlug;
       if (!state.name || state.name.startsWith("MMT ")) {
-        state.name = `MMT · ${nextCar.name} #${state.customNumber}`;
+        state.name = `MMT · ${effectiveName} #${state.customNumber}`;
       }
       // Actualizar automáticamente el logo de marca si había uno del coche anterior
       const nextBrandDecal = BRAND_DECALS.find(
@@ -1300,13 +1493,66 @@ export function initSkinsStudio(): void {
           }
         }
       }
-      state.zones = cloneZones(nextCar.defaultZones);
+      const localUv = getLocalUvMap(nextSlug);
+      if (localUv) {
+        applyUvResponseToState(nextSlug, localUv);
+      } else {
+        state.zones = getArchetypeZones(effectiveCategory, nextSlug);
+      }
       loadedTemplate = null;
       customPhotoShots = null;
+      glEngine.setCategory(mapCategoryStringToBody(effectiveCategory));
+      glEngine.updateZones(state.zones);
       syncControlsFromState();
       scheduleRender();
+
+      // Auto-restore cached .GLB / .GLTF for this car_slug from IndexedDB (or clean parametric bodywork)
+      void restoreSaved3dModelForCar(nextSlug);
+
+      // Lazy-load UV map on demand (localStorage -> /uv-maps/<slug>.json -> archetype base)
+      if (!localUv) {
+        void lazyLoadCarUv(nextSlug, effectiveCategory).then((res) => {
+          if (state.carId !== nextSlug) return;
+          state.zones = res.zones;
+          glEngine.updateZones(state.zones);
+          renderZoneList();
+          scheduleRender();
+          const notesEl = byId<HTMLElement>("skCarNotes");
+          if (notesEl) {
+            const badge =
+              res.source === "local-calibration"
+                ? "Calibración local guardada ✓"
+                : res.source === "lazy-json"
+                  ? "UV calibrado (carga bajo demanda) ✓"
+                  : `Arquetipo base (${res.archetype}) · editable en 1 clic`;
+            notesEl.textContent = `Carpeta iRacing: paint/${nextSlug}/ · ${badge}`;
+          }
+        });
+      }
       void syncCarUvFromWorker(nextSlug);
     });
+  }
+
+  const DRIVER_PREFS_KEY = "mmt_skins_driver_prefs_v1";
+  type SavedDriverPref = { customerId: string; number: string; name: string };
+  function loadDriverPrefs(): Record<string, SavedDriverPref> {
+    try {
+      const raw = localStorage.getItem(DRIVER_PREFS_KEY);
+      return raw ? (JSON.parse(raw) as Record<string, SavedDriverPref>) : {};
+    } catch {
+      return {};
+    }
+  }
+  function saveCurrentDriverPref(): void {
+    try {
+      const prefs = loadDriverPrefs();
+      prefs[state.driverId] = {
+        customerId: state.customerId,
+        number: state.customNumber,
+        name: state.customDriverName,
+      };
+      localStorage.setItem(DRIVER_PREFS_KEY, JSON.stringify(prefs));
+    } catch {}
   }
 
   const drvSelect = byId<HTMLSelectElement>("skDriverSelect");
@@ -1316,10 +1562,11 @@ export function initSkinsStudio(): void {
     ).join("");
     drvSelect.addEventListener("change", () => {
       const drv = getDriverById(drvSelect.value);
+      const saved = loadDriverPrefs()[drv.id];
       state.driverId = drv.id;
-      state.customDriverName = drv.name;
-      state.customNumber = drv.number;
-      state.customerId = drv.customerId;
+      state.customDriverName = saved?.name || drv.name;
+      state.customNumber = saved?.number || drv.number;
+      state.customerId = saved?.customerId || drv.customerId;
       customPhotoShots = null;
       syncControlsFromState();
       scheduleRender();
@@ -1328,16 +1575,39 @@ export function initSkinsStudio(): void {
 
   byId<HTMLInputElement>("skDriverNumber")?.addEventListener("input", (e) => {
     state.customNumber = (e.target as HTMLInputElement).value.slice(0, 4);
+    saveCurrentDriverPref();
+    updateExportValidation();
+    scheduleRender();
+  });
+  byId<HTMLInputElement>("skDriverName")?.addEventListener("input", (e) => {
+    state.customDriverName = (e.target as HTMLInputElement).value.slice(0, 28);
+    saveCurrentDriverPref();
     scheduleRender();
   });
   byId<HTMLInputElement>("skCustomerId")?.addEventListener("input", (e) => {
     state.customerId = (e.target as HTMLInputElement).value;
+    saveCurrentDriverPref();
     updateExportValidation();
     persistState();
   });
   byId<HTMLInputElement>("skDesignName")?.addEventListener("input", (e) => {
     state.name = (e.target as HTMLInputElement).value;
     persistState();
+  });
+
+  document.querySelectorAll<HTMLButtonElement>("[data-number-mode]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const mode = (btn.dataset.numberMode === "custom-number" ? "custom-number" : "sim-stamped") as NumberPlateMode;
+      state.numberMode = mode;
+      syncControlsFromState();
+      scheduleRender();
+      setStatus(
+        mode === "custom-number"
+          ? `Modo Dorsal Fijo activo: se exportarán car_${sanitizeCustomerId(state.customerId)}.tga y car_num_${sanitizeCustomerId(state.customerId)}.tga`
+          : "Modo Oficial Sim-Stamped activo: placas laterales protegidas para iRacing.",
+        "ok",
+      );
+    });
   });
 
   // Template Upload & Assisted Zone Detection
@@ -2308,9 +2578,22 @@ export function initSkinsStudio(): void {
     btn.disabled = true;
     try {
       const fn = await exportSingleDiffuseTga(state, (m) => setStatus(m), loadedTemplate?.partsOverlayCanvas, getActivePsdPatternCanvas());
-      setStatus(`Exportado ${fn} (${state.resolution}px)`, "ok");
+      setStatus(`Exportado ${fn} (${state.resolution}px · base Sim-Stamped)`, "ok");
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Error exportando TGA", "err");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  byId<HTMLButtonElement>("skExportCustomNumBtn")?.addEventListener("click", async () => {
+    const btn = byId<HTMLButtonElement>("skExportCustomNumBtn")!;
+    btn.disabled = true;
+    try {
+      const fn = await exportSingleCustomNumberTga(state, (m) => setStatus(m), loadedTemplate?.partsOverlayCanvas, getActivePsdPatternCanvas());
+      setStatus(`Exportado ${fn} (${state.resolution}px · dorsal #${state.customNumber})`, "ok");
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Error exportando car_num TGA", "err");
     } finally {
       btn.disabled = false;
     }

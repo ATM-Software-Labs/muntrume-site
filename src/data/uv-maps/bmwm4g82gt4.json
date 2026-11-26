@@ -1,0 +1,219 @@
+{
+  "car_slug": "bmwm4g82gt4",
+  "car_name": "BMW M4 G82 GT4",
+  "brand": "BMW",
+  "iracing_folder": "bmwm4evogt4",
+  "native_resolution": "2048x2048",
+  "uv_status": "extracted",
+  "zones": {
+    "hood": {
+      "x": 1888,
+      "y": 0,
+      "width": 160,
+      "height": 144,
+      "rotation": 0,
+      "mirror_x": false,
+      "symmetry_axis": "center"
+    },
+    "roof": {
+      "x": 1120,
+      "y": 1664,
+      "width": 144,
+      "height": 80,
+      "rotation": 0,
+      "mirror_x": false,
+      "symmetry_axis": "center"
+    },
+    "left_side": {
+      "x": 144,
+      "y": 1280,
+      "width": 240,
+      "height": 144,
+      "rotation": 0,
+      "mirror_x": false,
+      "flip_horizontal_logo": false,
+      "symmetry_axis": "left"
+    },
+    "right_side": {
+      "x": 1504,
+      "y": 1408,
+      "width": 128,
+      "height": 80,
+      "rotation": 0,
+      "mirror_x": true,
+      "flip_horizontal_logo": true,
+      "symmetry_axis": "right"
+    },
+    "rear_wing": {
+      "top_plane": {
+        "x": 768,
+        "y": 1936,
+        "width": 624,
+        "height": 32,
+        "rotation": 0
+      },
+      "endplate_left": {
+        "x": 287,
+        "y": 1638,
+        "width": 225,
+        "height": 225,
+        "rotation": 0
+      },
+      "endplate_right": {
+        "x": 1536,
+        "y": 1638,
+        "width": 225,
+        "height": 225,
+        "rotation": 0
+      }
+    },
+    "front_bumper": {
+      "x": 960,
+      "y": 1680,
+      "width": 128,
+      "height": 96,
+      "rotation": 0
+    },
+    "rear_bumper": {
+      "x": 800,
+      "y": 1680,
+      "width": 112,
+      "height": 112,
+      "rotation": 0
+    },
+    "mirrors": {
+      "x": 144,
+      "y": 1440,
+      "width": 480,
+      "height": 592,
+      "rotation": 0,
+      "mirror_x": true
+    },
+    "sunstrip": {
+      "x": 635,
+      "y": 20,
+      "width": 778,
+      "height": 82,
+      "rotation": 0
+    },
+    "sponsor_blocks": [
+      {
+        "id": "sponsor_1",
+        "x": 512,
+        "y": 544,
+        "width": 224,
+        "height": 448,
+        "cx": 0.3047,
+        "cy": 0.375,
+        "nw": 0.1094,
+        "nh": 0.2188
+      },
+      {
+        "id": "sponsor_2",
+        "x": 896,
+        "y": 1248,
+        "width": 400,
+        "height": 128,
+        "cx": 0.5352,
+        "cy": 0.6406,
+        "nw": 0.1953,
+        "nh": 0.0625
+      },
+      {
+        "id": "sponsor_3",
+        "x": 896,
+        "y": 160,
+        "width": 400,
+        "height": 112,
+        "cx": 0.5352,
+        "cy": 0.1055,
+        "nw": 0.1953,
+        "nh": 0.0547
+      },
+      {
+        "id": "sponsor_4",
+        "x": 1408,
+        "y": 1184,
+        "width": 336,
+        "height": 80,
+        "cx": 0.7695,
+        "cy": 0.5977,
+        "nw": 0.1641,
+        "nh": 0.0391
+      },
+      {
+        "id": "sponsor_5",
+        "x": 1408,
+        "y": 272,
+        "width": 336,
+        "height": 64,
+        "cx": 0.7695,
+        "cy": 0.1484,
+        "nw": 0.1641,
+        "nh": 0.0313
+      },
+      {
+        "id": "sponsor_6",
+        "x": 208,
+        "y": 1568,
+        "width": 64,
+        "height": 336,
+        "cx": 0.1172,
+        "cy": 0.8477,
+        "nw": 0.0313,
+        "nh": 0.1641
+      },
+      {
+        "id": "sponsor_7",
+        "x": 320,
+        "y": 608,
+        "width": 64,
+        "height": 304,
+        "cx": 0.1719,
+        "cy": 0.3711,
+        "nw": 0.0313,
+        "nh": 0.1484
+      },
+      {
+        "id": "sponsor_8",
+        "x": 1872,
+        "y": 656,
+        "width": 48,
+        "height": 208,
+        "cx": 0.9258,
+        "cy": 0.3711,
+        "nw": 0.0234,
+        "nh": 0.1016
+      }
+    ]
+  },
+  "restricted_number_plates": [
+    {
+      "id": "num_block_1",
+      "label": "Placa Dorsal iRacing #1",
+      "x": 784,
+      "y": 176,
+      "width": 96,
+      "height": 64,
+      "rotation": 0
+    },
+    {
+      "id": "num_block_2",
+      "label": "Placa Dorsal iRacing #2",
+      "x": 1744,
+      "y": 800,
+      "width": 64,
+      "height": 80,
+      "rotation": 0
+    },
+    {
+      "id": "num_block_3",
+      "label": "Placa Dorsal iRacing #3",
+      "x": 784,
+      "y": 1296,
+      "width": 96,
+      "height": 64,
+      "rotation": 0
+    }
+  ]
+}

@@ -130,6 +130,10 @@ const canonical = "https://skins.muntru.me/";
         <section class="sk-card">
           <h2 class="sk-card-title">Coche y Piloto</h2>
           <label class="sk-label">
+            Buscar coche iRacing (catálogo completo)
+            <input id="skCarSearch" type="search" class="sk-input" placeholder="Buscar GT3, GTP, F4, NASCAR, TCR..." autocomplete="off" />
+          </label>
+          <label class="sk-label">
             Coche iRacing (adapta zonas automáticamente)
             <select id="skCarSelect" class="sk-select"></select>
           </label>
@@ -147,9 +151,14 @@ const canonical = "https://skins.muntru.me/";
             </label>
             <label class="sk-label">
               iRacing Customer ID
-              <input id="skCustomerId" type="text" class="sk-input" placeholder="993381" value="993381" />
+              <input id="skCustomerId" type="text" class="sk-input" placeholder="994512" value="994512" />
             </label>
           </div>
+
+          <label class="sk-label">
+            Nombre piloto (techo / ventana)
+            <input id="skDriverName" type="text" class="sk-input" maxlength="28" value="Alberto Trujillo" />
+          </label>
 
           <label class="sk-label">
             Nombre del diseño
@@ -177,9 +186,10 @@ const canonical = "https://skins.muntru.me/";
               <input id="skToggleZones" type="checkbox" checked /> Partes del coche
             </label>
           </div>
-          <div class="sk-row" style="gap:6px;">
+          <div class="sk-row" style="gap:6px;flex-wrap:wrap;">
             <button type="button" id="skEditZonesBtn" class="sk-btn sk-btn-sm" style="flex:1;">Ajustar cajas de zona</button>
-            <button type="button" id="skExportCalibratedUvBtn" class="sk-btn sk-btn-sm" style="flex:1;">JSON calibrado UV</button>
+            <button type="button" id="skSaveCalibLocalBtn" class="sk-btn sk-btn-sm" style="flex:1;">Guardar calibración</button>
+            <button type="button" id="skExportCalibratedUvBtn" class="sk-btn sk-btn-sm" style="width:100%;">Exportar JSON calibrado UV</button>
           </div>
           <label class="sk-label">
             Opacidad guía de plantilla
@@ -270,11 +280,14 @@ const canonical = "https://skins.muntru.me/";
               <button type="button" class="sk-btn sk-btn-sm" data-gl-light="sunset">Atardecer</button>
               <button type="button" class="sk-btn sk-btn-sm" data-gl-light="overcast">Nublado / Boxes</button>
               <span style="width:1px;height:18px;background:rgba(255,255,255,0.14);margin:0 2px;"></span>
+              <button type="button" class="sk-btn sk-btn-sm" data-gl-uv="native" title="Usa las coordenadas UV originales del archivo .GLB">UV Nativo</button>
+              <button type="button" class="sk-btn sk-btn-sm is-active" data-gl-uv="autofit" title="Proyecta capó, techo, laterales, paragolpes y alerón sobre las zonas calibradas de iRacing">Auto-Fit Zonas iRacing</button>
+              <span style="width:1px;height:18px;background:rgba(255,255,255,0.14);margin:0 2px;"></span>
               <label class="sk-btn sk-btn-sm" style="cursor:pointer;">
                 Cargar .GLB / .GLTF / .OBJ
                 <input id="skObjInput" type="file" accept=".glb,.gltf,.obj" class="sk-hidden" />
               </label>
-              <button type="button" id="skGlResetMesh" class="sk-btn sk-btn-sm">Reset</button>
+              <button type="button" id="skGlResetMesh" class="sk-btn sk-btn-sm" title="Eliminar modelo 3D cacheado para este coche y volver a carrocería paramétrica">Reset</button>
             </div>
           </div>
         </div>
@@ -371,6 +384,17 @@ const canonical = "https://skins.muntru.me/";
           <button type="button" id="skMonoColorBtn" class="sk-btn sk-btn-sm" title="Iguala el color Secundario al Primario para un acabado monocolor con contraste tonal sutil">
             Usar mismo color en base (Monocolor)
           </button>
+
+          <div class="sk-psd-patterns" style="margin-top:4px;">
+            <span style="display:block;font-size:10.5px;font-weight:800;color:var(--sk-accent);text-transform:uppercase;letter-spacing:0.05em;">Modo de Dorsales iRacing</span>
+            <div class="sk-seg" style="width:100%;margin-top:6px;" role="group" aria-label="Modo de dorsales iRacing">
+              <button type="button" data-number-mode="sim-stamped" class="is-active" style="flex:1;">Oficial (Sim-Stamped)</button>
+              <button type="button" data-number-mode="custom-number" style="flex:1;">Dorsal Fijo (Custom)</button>
+            </div>
+            <p id="skNumberModeHelp" class="sk-help" style="margin:6px 0 0;">
+              Protege las placas laterales reglamentarias (zona reservada por iRacing) para que el número oficial nunca se solape.
+            </p>
+          </div>
 
           <div class="sk-row" style="justify-content:space-between;">
             <label class="sk-label" style="flex:1;">
@@ -521,20 +545,44 @@ const canonical = "https://skins.muntru.me/";
         <!-- TAB 4: EXPORT & TRADING PAINTS PHOTO GUIDE -->
         <div id="skTab-export" class="sk-card sk-hidden">
           <h2 class="sk-card-title">Exportar para iRacing y Trading Paints</h2>
+
+          <div class="sk-shot-card" style="border-color:rgba(255,255,255,0.14);">
+            <span style="display:block;font-size:10.5px;font-weight:800;color:var(--sk-muted);text-transform:uppercase;letter-spacing:0.05em;">Modo de Dorsal en Exportación</span>
+            <div class="sk-seg" style="width:100%;margin-top:6px;" role="group" aria-label="Modo de dorsal al exportar">
+              <button type="button" data-number-mode="sim-stamped" class="is-active" style="flex:1;">Sim-Stamped (car_&lt;id&gt;)</button>
+              <button type="button" data-number-mode="custom-number" style="flex:1;">Custom Number (car_num_&lt;id&gt;)</button>
+            </div>
+          </div>
+
           <div id="skExportValidation" class="sk-shot-card"></div>
 
-          <!-- PASO 1: PINTURA PRINCIPAL (DIFFUSE) -->
+          <!-- PASO 1: PINTURA PRINCIPAL (DIFFUSE LIMPIA / SIM-STAMPED) -->
           <div class="sk-shot-card" style="border-color:rgba(0,230,153,0.45);">
             <div style="display:flex;gap:10px;align-items:center;">
               <canvas id="skExportDiffusePreview" width="96" height="96" style="width:68px;height:68px;border-radius:6px;border:1px solid rgba(255,255,255,0.18);background:#090d14;flex-shrink:0;"></canvas>
               <div style="flex:1;min-width:0;">
-                <span class="sk-tag" style="background:rgba(0,230,153,0.16);color:var(--sk-accent);border-color:rgba(0,230,153,0.4);">1 · SUBIR DIRECTO (PINTURA)</span>
+                <span class="sk-tag" style="background:rgba(0,230,153,0.16);color:var(--sk-accent);border-color:rgba(0,230,153,0.4);">1 · SIM-STAMPED (BASE LIMPIA)</span>
                 <strong id="skExportDiffuseName" style="display:block;margin-top:4px;font-size:13px;">car_994512.tga</strong>
-                <p class="sk-help" style="margin:2px 0 0;">Archivo principal de color y logos. En Trading Paints se sube primero en <strong>Upload a paint</strong>.</p>
+                <p class="sk-help" style="margin:2px 0 0;">Pintura base sin números en placas laterales. En Trading Paints va en <strong>Sim-Stamped Number Paint</strong>.</p>
               </div>
             </div>
             <button type="button" id="skExportTgaBtn" class="sk-btn sk-btn-primary sk-btn-sm" style="margin-top:8px;width:100%;">
-              Descargar Pintura Principal (car_&lt;id&gt;.tga)
+              Descargar Pintura Base (car_&lt;id&gt;.tga)
+            </button>
+          </div>
+
+          <!-- PASO 1B: DORSAL FIJO / CUSTOM NUMBER (SOLO ACTIVO EN MODO CUSTOM NUMBER) -->
+          <div id="skExportCustomNumCard" class="sk-shot-card sk-hidden" style="border-color:rgba(245,158,11,0.5);">
+            <div style="display:flex;gap:10px;align-items:center;">
+              <canvas id="skExportCustomNumPreview" width="96" height="96" style="width:68px;height:68px;border-radius:6px;border:1px solid rgba(255,255,255,0.18);background:#090d14;flex-shrink:0;"></canvas>
+              <div style="flex:1;min-width:0;">
+                <span class="sk-tag" style="background:rgba(245,158,11,0.16);color:#fcd34d;border-color:rgba(245,158,11,0.45);">1B · CUSTOM NUMBER (DORSAL FIJO)</span>
+                <strong id="skExportCustomNumName" style="display:block;margin-top:4px;font-size:13px;">car_num_994512.tga</strong>
+                <p class="sk-help" style="margin:2px 0 0;">Incluye el dorsal del piloto estampado en placas, techo y capó. En Trading Paints va en <strong>Custom Number Paint</strong>.</p>
+              </div>
+            </div>
+            <button type="button" id="skExportCustomNumBtn" class="sk-btn sk-btn-sm" style="margin-top:8px;width:100%;border-color:rgba(245,158,11,0.45);color:#fcd34d;">
+              Descargar Dorsal Fijo (car_num_&lt;id&gt;.tga)
             </button>
           </div>
 
@@ -558,10 +606,10 @@ const canonical = "https://skins.muntru.me/";
             Descargar Pack .ZIP completo (Pintura + Spec Map + Carpeta iRacing)
           </button>
 
-          <div class="sk-shot-card">
+          <div id="skTradingPaintsGuide" class="sk-shot-card">
             <strong>Resumen rápido Trading Paints</strong>
             <ul>
-              <li>1. Sube <code>car_&lt;id&gt;.tga</code> directo en <a href="https://www.tradingpaints.com/my-paints" target="_blank" rel="noopener noreferrer" style="color:var(--sk-accent);">Trading Paints → Upload a paint</a>.</li>
+              <li>1. Sube <code>car_&lt;id&gt;.tga</code> directo en <a href="https://www.tradingpaints.com/my-paints" target="_blank" rel="noopener noreferrer" style="color:var(--sk-accent);">Trading Paints → Sim-Stamped Number Paint</a>.</li>
               <li>2. Para el acabado (mate/satinado/metálico): pon <code>car_spec_&lt;id&gt;.tga</code> en <code>Documents\iRacing\paint\&lt;coche&gt;\</code>, abre el coche en iRacing para que genere <code>car_spec_&lt;id&gt;.mip</code>, y sube ese <code>.mip</code> en <strong>"Add spec map or decal layer ↓"</strong>.</li>
             </ul>
           </div>

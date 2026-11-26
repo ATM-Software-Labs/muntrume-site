@@ -1,0 +1,186 @@
+{
+  "car_slug": "fordmustanggt4",
+  "car_name": "Ford Mustang GT4",
+  "brand": "Ford",
+  "iracing_folder": "fordmustanggt4",
+  "native_resolution": "2048x2048",
+  "uv_status": "extracted",
+  "zones": {
+    "hood": {
+      "x": 614,
+      "y": 102,
+      "width": 819,
+      "height": 512,
+      "rotation": 0,
+      "mirror_x": false,
+      "symmetry_axis": "center"
+    },
+    "roof": {
+      "x": 696,
+      "y": 676,
+      "width": 655,
+      "height": 451,
+      "rotation": 0,
+      "mirror_x": false,
+      "symmetry_axis": "center"
+    },
+    "left_side": {
+      "x": 304,
+      "y": 496,
+      "width": 272,
+      "height": 112,
+      "rotation": 0,
+      "mirror_x": false,
+      "flip_horizontal_logo": false,
+      "symmetry_axis": "left"
+    },
+    "right_side": {
+      "x": 176,
+      "y": 208,
+      "width": 96,
+      "height": 128,
+      "rotation": 0,
+      "mirror_x": true,
+      "flip_horizontal_logo": true,
+      "symmetry_axis": "right"
+    },
+    "rear_wing": {
+      "top_plane": {
+        "x": 553,
+        "y": 1638,
+        "width": 942,
+        "height": 225,
+        "rotation": 0
+      },
+      "endplate_left": {
+        "x": 287,
+        "y": 1638,
+        "width": 225,
+        "height": 225,
+        "rotation": 0
+      },
+      "endplate_right": {
+        "x": 1536,
+        "y": 1638,
+        "width": 225,
+        "height": 225,
+        "rotation": 0
+      }
+    },
+    "front_bumper": {
+      "x": 512,
+      "y": 1188,
+      "width": 1024,
+      "height": 225,
+      "rotation": 0
+    },
+    "rear_bumper": {
+      "x": 512,
+      "y": 1434,
+      "width": 1024,
+      "height": 184,
+      "rotation": 0
+    },
+    "mirrors": {
+      "x": 102,
+      "y": 164,
+      "width": 369,
+      "height": 205,
+      "rotation": 0,
+      "mirror_x": true
+    },
+    "sunstrip": {
+      "x": 635,
+      "y": 20,
+      "width": 778,
+      "height": 82,
+      "rotation": 0
+    },
+    "sponsor_blocks": [
+      {
+        "id": "sponsor_1",
+        "x": 368,
+        "y": 912,
+        "width": 320,
+        "height": 544,
+        "cx": 0.2578,
+        "cy": 0.5781,
+        "nw": 0.1563,
+        "nh": 0.2656
+      },
+      {
+        "id": "sponsor_2",
+        "x": 800,
+        "y": 496,
+        "width": 400,
+        "height": 192,
+        "cx": 0.4883,
+        "cy": 0.2891,
+        "nw": 0.1953,
+        "nh": 0.0938
+      },
+      {
+        "id": "sponsor_3",
+        "x": 800,
+        "y": 1680,
+        "width": 400,
+        "height": 192,
+        "cx": 0.4883,
+        "cy": 0.8672,
+        "nw": 0.1953,
+        "nh": 0.0938
+      },
+      {
+        "id": "sponsor_4",
+        "x": 1376,
+        "y": 1632,
+        "width": 528,
+        "height": 96,
+        "cx": 0.8008,
+        "cy": 0.8203,
+        "nw": 0.2578,
+        "nh": 0.0469
+      },
+      {
+        "id": "sponsor_5",
+        "x": 1376,
+        "y": 640,
+        "width": 528,
+        "height": 80,
+        "cx": 0.8008,
+        "cy": 0.332,
+        "nw": 0.2578,
+        "nh": 0.0391
+      }
+    ]
+  },
+  "restricted_number_plates": [
+    {
+      "id": "num_block_1",
+      "label": "Placa Dorsal iRacing #1",
+      "x": 656,
+      "y": 576,
+      "width": 112,
+      "height": 80,
+      "rotation": 0
+    },
+    {
+      "id": "num_block_2",
+      "label": "Placa Dorsal iRacing #2",
+      "x": 1936,
+      "y": 896,
+      "width": 80,
+      "height": 96,
+      "rotation": 0
+    },
+    {
+      "id": "num_block_3",
+      "label": "Placa Dorsal iRacing #3",
+      "x": 656,
+      "y": 1712,
+      "width": 112,
+      "height": 80,
+      "rotation": 0
+    }
+  ]
+}

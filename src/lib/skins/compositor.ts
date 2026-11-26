@@ -1,6 +1,6 @@
 import { BUILTIN_DECALS, getCarById } from "./catalog";
 import { DEFAULT_STAMPS } from "./stamps-library";
-import type { DecalLayer, FinishType, PaletteConfig, PatternStyle, SkinDesignState, SurfaceTexture, ZoneKey, ZoneRect } from "./types";
+import type { DecalLayer, FinishType, NumberPlateMode, PaletteConfig, PatternStyle, SkinDesignState, SurfaceTexture, ZoneKey, ZoneRect } from "./types";
 
 export interface ReservedGuideBox {
   x: number;
@@ -24,6 +24,8 @@ export interface CompositeOptions {
   selectedZone?: ZoneKey | null;
   selectedDecalId?: string | null;
   forExport?: boolean;
+  /** Override number rendering mode (used by exporter to generate both clean car_<id>.tga and stamped car_num_<id>.tga) */
+  numberModeOverride?: NumberPlateMode;
 }
 
 const imageCache = new Map<string, HTMLImageElement>();
@@ -677,12 +679,15 @@ function getFontFamily(style: SkinDesignState["fontStyle"]): string {
   return "'Inter', 'Segoe UI', system-ui, sans-serif";
 }
 
-function drawDriverNumbers(ctx: CanvasRenderingContext2D, state: SkinDesignState, size: number): void {
-  if (!state.showNumberOnCar) return;
+function drawDriverNumbers(
+  ctx: CanvasRenderingContext2D,
+  state: SkinDesignState,
+  size: number,
+  effectiveMode: NumberPlateMode,
+): void {
   const num = (state.customNumber || "16").trim();
+  const driverLabel = (state.customDriverName || "").trim().toUpperCase();
   const fontFam = getFontFamily(state.fontStyle);
-
-  // Roof & hood numbers (avoiding official iRacing side door number plates unless user wants them)
   const roof = zonePx(state.zones.roof, size);
   const hood = zonePx(state.zones.hood, size);
 
@@ -690,25 +695,69 @@ function drawDriverNumbers(ctx: CanvasRenderingContext2D, state: SkinDesignState
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  // Roof dorsal
-  ctx.fillStyle = state.palette.numberColor === state.palette.secondary ? state.palette.detail : state.palette.detail;
-  ctx.font = `900 ${Math.round(roof.h * 0.44)}px ${fontFam}`;
-  ctx.fillText(num, roof.x + roof.w * 0.5, roof.y + roof.h * 0.58);
+  // Subtle driver name on top of roof / window header (always synced with selected driver)
+  if (driverLabel) {
+    const nameSize = Math.max(10, Math.round(roof.h * 0.12));
+    ctx.font = `800 ${nameSize}px ${fontFam}`;
+    ctx.fillStyle = state.palette.detail || "#f8fafc";
+    ctx.fillText(driverLabel.slice(0, 22), roof.x + roof.w * 0.5, roof.y + roof.h * 0.16);
+  }
 
-  // Hood corner mini dorsal
-  const badgeW = hood.w * 0.22;
-  const badgeH = hood.h * 0.22;
-  const bx = hood.x + hood.w * 0.74;
-  const by = hood.y + hood.h * 0.72;
-  ctx.fillStyle = state.palette.numberBg;
-  ctx.fillRect(bx, by, badgeW, badgeH);
-  ctx.strokeStyle = state.palette.accent;
-  ctx.lineWidth = Math.max(2, size * 0.0025);
-  ctx.strokeRect(bx, by, badgeW, badgeH);
+  // Optional roof & hood dorsal (permitted in Sim-Stamped when checkbox is enabled, always drawn in Custom Number)
+  if (state.showNumberOnCar || effectiveMode === "custom-number") {
+    ctx.fillStyle = state.palette.numberColor === state.palette.secondary ? state.palette.detail : state.palette.detail;
+    ctx.font = `900 ${Math.round(roof.h * 0.44)}px ${fontFam}`;
+    ctx.fillText(num, roof.x + roof.w * 0.5, roof.y + roof.h * 0.58);
 
-  ctx.fillStyle = state.palette.numberColor;
-  ctx.font = `900 ${Math.round(badgeH * 0.68)}px ${fontFam}`;
-  ctx.fillText(num, bx + badgeW / 2, by + badgeH / 2 + 1);
+    const badgeW = hood.w * 0.22;
+    const badgeH = hood.h * 0.22;
+    const bx = hood.x + hood.w * 0.74;
+    const by = hood.y + hood.h * 0.72;
+    ctx.fillStyle = state.palette.numberBg;
+    ctx.fillRect(bx, by, badgeW, badgeH);
+    ctx.strokeStyle = state.palette.accent;
+    ctx.lineWidth = Math.max(2, size * 0.0025);
+    ctx.strokeRect(bx, by, badgeW, badgeH);
+
+    ctx.fillStyle = state.palette.numberColor;
+    ctx.font = `900 ${Math.round(badgeH * 0.68)}px ${fontFam}`;
+    ctx.fillText(num, bx + badgeW / 2, by + badgeH / 2 + 1);
+  }
+
+  // Custom Number mode: stamp fixed side door number plates directly onto car_num_<id>.tga
+  if (effectiveMode === "custom-number") {
+    const plateKeys: Array<"numberPlateLeft" | "numberPlateRight"> = ["numberPlateLeft", "numberPlateRight"];
+    for (const key of plateKeys) {
+      const z = state.zones[key];
+      if (!z || z.w <= 0.01 || z.h <= 0.01) continue;
+      const p = zonePx(z, size);
+      const radius = Math.max(4, Math.min(p.w, p.h) * 0.08);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(p.x, p.y, p.w, p.h, radius);
+      ctx.fillStyle = state.palette.numberBg;
+      ctx.fill();
+      ctx.lineWidth = Math.max(2.5, size * 0.003);
+      ctx.strokeStyle = state.palette.accent;
+      ctx.stroke();
+
+      // Top accent strip inside plate
+      const barH = Math.max(4, p.h * 0.14);
+      ctx.fillStyle = state.palette.accent;
+      ctx.fillRect(p.x + 2, p.y + 2, Math.max(0, p.w - 4), barH);
+
+      // Driver number centered inside plate
+      const fontSize = Math.max(16, Math.round(Math.min(p.w * 0.62, p.h * 0.62)));
+      ctx.font = `900 ${fontSize}px ${fontFam}`;
+      ctx.fillStyle = state.palette.numberColor;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(num, p.x + p.w * 0.5, p.y + barH + (p.h - barH) * 0.54);
+      ctx.restore();
+    }
+  }
+
   ctx.restore();
 }
 
@@ -999,11 +1048,12 @@ export async function renderSkinToCanvas(
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) throw new Error("No se pudo obtener contexto Canvas 2D.");
 
+  const effectiveNumberMode: NumberPlateMode = opts.numberModeOverride ?? state.numberMode ?? "sim-stamped";
   ctx.clearRect(0, 0, size, size);
   drawPatternGeometry(ctx, state, size, opts.psdPatternCanvas);
   drawZonePaintOverrides(ctx, state, size);
   drawBrushStrokes(ctx, state, size);
-  drawDriverNumbers(ctx, state, size);
+  drawDriverNumbers(ctx, state, size, effectiveNumberMode);
   await drawDecals(ctx, state, size, opts.selectedDecalId, opts.forExport);
 
   // Official iRacing Parts / Decals / Lights / Contingencies layer from local PSD (preserved on export!)
@@ -1020,9 +1070,16 @@ export async function renderSkinToCanvas(
     ctx.restore();
   }
 
-  // Huecos reservados para DORSAL (iRacing) y DECALS DE CATEGORÍA / SERIE (solo guía visual, nunca se exportan)
-  if (!opts.forExport && opts.showTemplateOverlay) {
-    drawReservedGuidesOverlay(ctx, state, size, opts.restrictedPlates, opts.seriesSlots);
+  // En modo Sim-Stamped, mostrar siempre la máscara visual "Zona reservada por iRacing" sobre placas de dorsal
+  if (!opts.forExport && (opts.showTemplateOverlay || effectiveNumberMode === "sim-stamped")) {
+    drawReservedGuidesOverlay(
+      ctx,
+      state,
+      size,
+      opts.restrictedPlates,
+      opts.showTemplateOverlay ? opts.seriesSlots : undefined,
+      effectiveNumberMode === "sim-stamped",
+    );
   }
 
   if (!opts.forExport && opts.showZonesOverlay) {
@@ -1036,6 +1093,7 @@ function drawReservedGuidesOverlay(
   size: number,
   restrictedPlates?: ReservedGuideBox[],
   seriesSlots?: ReservedGuideBox[],
+  showSimStampedMask = true,
 ): void {
   const placedTags: Array<{ x: number; y: number; w: number; h: number }> = [];
 
@@ -1045,6 +1103,7 @@ function drawReservedGuidesOverlay(
     fill: string,
     badgeBg: string,
     shortPrefix: string,
+    hatchLabel?: string,
   ) => {
     boxes.forEach((b, idx) => {
       if (!b || b.w <= 0.01 || b.h <= 0.01) return;
@@ -1056,6 +1115,31 @@ function drawReservedGuidesOverlay(
       ctx.save();
       ctx.fillStyle = fill;
       ctx.fillRect(x, y, w, h);
+
+      // Subtle diagonal safety hatch for Sim-Stamped protected zones
+      if (hatchLabel) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x, y, w, h);
+        ctx.clip();
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.28)";
+        ctx.lineWidth = Math.max(1.5, size * 0.0018);
+        const step = Math.max(12, Math.round(size * 0.014));
+        for (let d = -h; d < w + h; d += step) {
+          ctx.beginPath();
+          ctx.moveTo(x + d, y);
+          ctx.lineTo(x + d - h, y + h);
+          ctx.stroke();
+        }
+        const innerFs = Math.max(9, Math.round(Math.min(w * 0.11, size * 0.0115)));
+        ctx.font = `800 ${innerFs}px Inter, system-ui, sans-serif`;
+        ctx.fillStyle = "rgba(254, 202, 202, 0.92)";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(hatchLabel, x + w / 2, y + h / 2);
+        ctx.restore();
+      }
+
       ctx.strokeStyle = stroke;
       ctx.lineWidth = Math.max(1.8, size * 0.002);
       ctx.setLineDash([Math.max(5, size * 0.006), Math.max(3, size * 0.004)]);
@@ -1070,7 +1154,6 @@ function drawReservedGuidesOverlay(
       const tagW = textW + padX * 2;
       const tagH = fontSize + 5;
       let tagY = Math.max(2, y - tagH - 2);
-      // Avoid overlapping previously drawn tags
       for (const prev of placedTags) {
         if (x < prev.x + prev.w + 2 && x + tagW + 2 > prev.x && tagY < prev.y + prev.h + 2 && tagY + tagH + 2 > prev.y) {
           tagY = y + h + 2;
@@ -1086,32 +1169,35 @@ function drawReservedGuidesOverlay(
     });
   };
 
-  // 1. Huecos reservados de DORSAL iRacing (rojo)
-  const numBoxes: ReservedGuideBox[] =
-    Array.isArray(restrictedPlates) && restrictedPlates.length > 0
-      ? restrictedPlates.slice(0, 4)
-      : [
-          {
-            x: state.zones.numberPlateLeft.x,
-            y: state.zones.numberPlateLeft.y,
-            w: state.zones.numberPlateLeft.w,
-            h: state.zones.numberPlateLeft.h,
-          },
-          {
-            x: state.zones.numberPlateRight.x,
-            y: state.zones.numberPlateRight.y,
-            w: state.zones.numberPlateRight.w,
-            h: state.zones.numberPlateRight.h,
-          },
-        ];
+  // 1. Huecos reservados de DORSAL iRacing (solo en modo Sim-Stamped)
+  if (showSimStampedMask) {
+    const numBoxes: ReservedGuideBox[] =
+      Array.isArray(restrictedPlates) && restrictedPlates.length > 0
+        ? restrictedPlates.slice(0, 4)
+        : [
+            {
+              x: state.zones.numberPlateLeft.x,
+              y: state.zones.numberPlateLeft.y,
+              w: state.zones.numberPlateLeft.w,
+              h: state.zones.numberPlateLeft.h,
+            },
+            {
+              x: state.zones.numberPlateRight.x,
+              y: state.zones.numberPlateRight.y,
+              w: state.zones.numberPlateRight.w,
+              h: state.zones.numberPlateRight.h,
+            },
+          ];
 
-  drawBoxes(
-    numBoxes,
-    "rgba(239, 68, 68, 0.90)",
-    "rgba(239, 68, 68, 0.14)",
-    "rgba(185, 28, 28, 0.92)",
-    "DORSAL",
-  );
+    drawBoxes(
+      numBoxes,
+      "rgba(239, 68, 68, 0.90)",
+      "rgba(239, 68, 68, 0.14)",
+      "rgba(185, 28, 28, 0.92)",
+      "ZONA RESERVADA iRACING",
+      "RESERVADO iRACING",
+    );
+  }
 
   // 2. Huecos reservados de DECALS DE CATEGORÍA / SERIE (ámbar)
   if (Array.isArray(seriesSlots) && seriesSlots.length > 0) {

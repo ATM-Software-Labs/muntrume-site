@@ -1,0 +1,215 @@
+{
+  "car_slug": "cadillacvseriesrgtp",
+  "car_name": "Cadillac V-Series.R GTP",
+  "brand": "Cadillac",
+  "iracing_folder": "cadillacvseriesrgtp",
+  "native_resolution": "2048x2048",
+  "uv_status": "extracted",
+  "zones": {
+    "hood": {
+      "x": 614,
+      "y": 102,
+      "width": 819,
+      "height": 512,
+      "rotation": 0,
+      "mirror_x": false,
+      "symmetry_axis": "center"
+    },
+    "roof": {
+      "x": 696,
+      "y": 676,
+      "width": 655,
+      "height": 451,
+      "rotation": 0,
+      "mirror_x": false,
+      "symmetry_axis": "center"
+    },
+    "left_side": {
+      "x": 1840,
+      "y": 128,
+      "width": 208,
+      "height": 80,
+      "rotation": 0,
+      "mirror_x": false,
+      "flip_horizontal_logo": false,
+      "symmetry_axis": "left"
+    },
+    "right_side": {
+      "x": 1434,
+      "y": 655,
+      "width": 553,
+      "height": 901,
+      "rotation": 0,
+      "mirror_x": true,
+      "flip_horizontal_logo": true,
+      "symmetry_axis": "right"
+    },
+    "rear_wing": {
+      "top_plane": {
+        "x": 553,
+        "y": 1638,
+        "width": 942,
+        "height": 225,
+        "rotation": 0
+      },
+      "endplate_left": {
+        "x": 287,
+        "y": 1638,
+        "width": 225,
+        "height": 225,
+        "rotation": 0
+      },
+      "endplate_right": {
+        "x": 1536,
+        "y": 1638,
+        "width": 225,
+        "height": 225,
+        "rotation": 0
+      }
+    },
+    "front_bumper": {
+      "x": 512,
+      "y": 1188,
+      "width": 1024,
+      "height": 225,
+      "rotation": 0
+    },
+    "rear_bumper": {
+      "x": 512,
+      "y": 1434,
+      "width": 1024,
+      "height": 184,
+      "rotation": 0
+    },
+    "mirrors": {
+      "x": 102,
+      "y": 164,
+      "width": 369,
+      "height": 205,
+      "rotation": 0,
+      "mirror_x": true
+    },
+    "sunstrip": {
+      "x": 635,
+      "y": 20,
+      "width": 778,
+      "height": 82,
+      "rotation": 0
+    },
+    "sponsor_blocks": [
+      {
+        "id": "sponsor_1",
+        "x": 224,
+        "y": 912,
+        "width": 96,
+        "height": 416,
+        "cx": 0.1328,
+        "cy": 0.5469,
+        "nw": 0.0469,
+        "nh": 0.2031
+      },
+      {
+        "id": "sponsor_2",
+        "x": 64,
+        "y": 32,
+        "width": 208,
+        "height": 80,
+        "cx": 0.082,
+        "cy": 0.0352,
+        "nw": 0.1016,
+        "nh": 0.0391
+      },
+      {
+        "id": "sponsor_3",
+        "x": 160,
+        "y": 432,
+        "width": 208,
+        "height": 80,
+        "cx": 0.1289,
+        "cy": 0.2305,
+        "nw": 0.1016,
+        "nh": 0.0391
+      },
+      {
+        "id": "sponsor_4",
+        "x": 1440,
+        "y": 352,
+        "width": 240,
+        "height": 48,
+        "cx": 0.7617,
+        "cy": 0.1836,
+        "nw": 0.1172,
+        "nh": 0.0234
+      },
+      {
+        "id": "sponsor_5",
+        "x": 1440,
+        "y": 1840,
+        "width": 240,
+        "height": 48,
+        "cx": 0.7617,
+        "cy": 0.9102,
+        "nw": 0.1172,
+        "nh": 0.0234
+      },
+      {
+        "id": "sponsor_6",
+        "x": 336,
+        "y": 1008,
+        "width": 48,
+        "height": 224,
+        "cx": 0.1758,
+        "cy": 0.5469,
+        "nw": 0.0234,
+        "nh": 0.1094
+      }
+    ]
+  },
+  "restricted_number_plates": [
+    {
+      "id": "num_block_1",
+      "label": "Placa Dorsal iRacing #1",
+      "x": 272,
+      "y": 32,
+      "width": 96,
+      "height": 80,
+      "rotation": 0
+    },
+    {
+      "id": "num_block_2",
+      "label": "Placa Dorsal iRacing #2",
+      "x": 64,
+      "y": 432,
+      "width": 96,
+      "height": 80,
+      "rotation": 0
+    },
+    {
+      "id": "num_block_3",
+      "label": "Placa Dorsal iRacing #3",
+      "x": 400,
+      "y": 576,
+      "width": 80,
+      "height": 64,
+      "rotation": 0
+    },
+    {
+      "id": "num_block_4",
+      "label": "Placa Dorsal iRacing #4",
+      "x": 448,
+      "y": 1072,
+      "width": 64,
+      "height": 80,
+      "rotation": 0
+    },
+    {
+      "id": "num_block_5",
+      "label": "Placa Dorsal iRacing #5",
+      "x": 400,
+      "y": 1600,
+      "width": 80,
+      "height": 64,
+      "rotation": 0
+    }
+  ]
+}

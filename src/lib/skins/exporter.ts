@@ -30,25 +30,48 @@ async function renderTgaBuffers(
   onProgress?: (msg: string) => void,
   partsOverlayCanvas?: HTMLCanvasElement | null,
   psdPatternCanvas?: HTMLCanvasElement | null,
-): Promise<{ diffuseTga: Uint8Array; specTga: Uint8Array; size: number }> {
+): Promise<{ diffuseTga: Uint8Array; customNumTga: Uint8Array | null; specTga: Uint8Array; size: number }> {
   const size = state.resolution;
+  const cid = sanitizeCustomerId(state.customerId);
+  const isCustomNumber = (state.numberMode || "sim-stamped") === "custom-number";
   onProgress?.(`Renderizando textura base ${size}×${size}px...`);
 
   const workCanvas = document.createElement("canvas");
   workCanvas.width = size;
   workCanvas.height = size;
-  await renderSkinToCanvas(workCanvas, state, { size, partsOverlayCanvas, psdPatternCanvas, forExport: true });
+  // Base car_<id>.tga is ALWAYS rendered clean (sim-stamped) so iRacing never overlaps numbers
+  await renderSkinToCanvas(workCanvas, state, {
+    size,
+    partsOverlayCanvas,
+    psdPatternCanvas,
+    forExport: true,
+    numberModeOverride: "sim-stamped",
+  });
 
   const ctx = workCanvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) throw new Error("No se pudo leer el lienzo de exportación.");
   const diffuseData = ctx.getImageData(0, 0, size, size);
-  // Ensure 100% opaque alpha across the entire TGA texture
   for (let i = 3; i < diffuseData.data.length; i += 4) diffuseData.data[i] = 255;
 
-  onProgress?.(`Codificando car_${sanitizeCustomerId(state.customerId)}.tga (24-bit sin compresión)...`);
+  onProgress?.(`Codificando car_${cid}.tga (base limpia 24-bit)...`);
   const diffuseTga = encodeTgaFromImageData(diffuseData, false);
 
-  onProgress?.(`Generando car_spec_${sanitizeCustomerId(state.customerId)}.tga...`);
+  let customNumTga: Uint8Array | null = null;
+  if (isCustomNumber) {
+    onProgress?.(`Renderizando dorsal fijo car_num_${cid}.tga...`);
+    await renderSkinToCanvas(workCanvas, state, {
+      size,
+      partsOverlayCanvas,
+      psdPatternCanvas,
+      forExport: true,
+      numberModeOverride: "custom-number",
+    });
+    const numData = ctx.getImageData(0, 0, size, size);
+    for (let i = 3; i < numData.data.length; i += 4) numData.data[i] = 255;
+    customNumTga = encodeTgaFromImageData(numData, false);
+  }
+
+  onProgress?.(`Generando car_spec_${cid}.tga...`);
   renderSpecMapToCanvas(workCanvas, state, size);
   const specData = ctx.getImageData(0, 0, size, size);
   const specTga = encodeTgaFromImageData(specData, false);
@@ -57,7 +80,7 @@ async function renderTgaBuffers(
   workCanvas.width = 1;
   workCanvas.height = 1;
 
-  return { diffuseTga, specTga, size };
+  return { diffuseTga, customNumTga, specTga, size };
 }
 
 export async function exportSingleDiffuseTga(
@@ -73,7 +96,13 @@ export async function exportSingleDiffuseTga(
   const workCanvas = document.createElement("canvas");
   workCanvas.width = size;
   workCanvas.height = size;
-  await renderSkinToCanvas(workCanvas, state, { size, partsOverlayCanvas, psdPatternCanvas, forExport: true });
+  await renderSkinToCanvas(workCanvas, state, {
+    size,
+    partsOverlayCanvas,
+    psdPatternCanvas,
+    forExport: true,
+    numberModeOverride: "sim-stamped",
+  });
   const ctx = workCanvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) throw new Error("No se pudo leer el lienzo.");
   const diffuseData = ctx.getImageData(0, 0, size, size);
@@ -84,6 +113,40 @@ export async function exportSingleDiffuseTga(
 
   const prefix = getExportBasePrefix(state.carId);
   const filename = `${prefix}_${cid}.tga`;
+  triggerDownload(new Blob([tga.buffer as ArrayBuffer], { type: "image/x-tga" }), filename);
+  return filename;
+}
+
+export async function exportSingleCustomNumberTga(
+  state: SkinDesignState,
+  onProgress?: (msg: string) => void,
+  partsOverlayCanvas?: HTMLCanvasElement | null,
+  psdPatternCanvas?: HTMLCanvasElement | null,
+): Promise<string> {
+  const cid = sanitizeCustomerId(state.customerId);
+  const size = state.resolution;
+  onProgress?.(`Renderizando dorsal fijo car_num_${cid}.tga (${size}×${size}px)...`);
+
+  const workCanvas = document.createElement("canvas");
+  workCanvas.width = size;
+  workCanvas.height = size;
+  await renderSkinToCanvas(workCanvas, state, {
+    size,
+    partsOverlayCanvas,
+    psdPatternCanvas,
+    forExport: true,
+    numberModeOverride: "custom-number",
+  });
+  const ctx = workCanvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) throw new Error("No se pudo leer el lienzo.");
+  const numData = ctx.getImageData(0, 0, size, size);
+  for (let i = 3; i < numData.data.length; i += 4) numData.data[i] = 255;
+  const tga = encodeTgaFromImageData(numData, false);
+  workCanvas.width = 1;
+  workCanvas.height = 1;
+
+  const prefix = getExportBasePrefix(state.carId);
+  const filename = `${prefix}_num_${cid}.tga`;
   triggerDownload(new Blob([tga.buffer as ArrayBuffer], { type: "image/x-tga" }), filename);
   return filename;
 }
@@ -114,6 +177,7 @@ export async function exportSingleSpecTga(
 
 function buildReadmeTxt(car: CarProfile, state: SkinDesignState, shots: PhotoGuideShot[]): string {
   const cid = sanitizeCustomerId(state.customerId);
+  const isCustomNum = (state.numberMode || "sim-stamped") === "custom-number";
   const lines = [
     `MUNTRUME MOTORSPORT — PAQUETE DE SKIN iRACING (skins.muntru.me)`,
     `================================================================`,
@@ -121,6 +185,7 @@ function buildReadmeTxt(car: CarProfile, state: SkinDesignState, shots: PhotoGui
     `Coche:        ${car.name} (carpeta: ${car.iracingFolder})`,
     `Piloto:       ${state.customDriverName} #${state.customNumber}`,
     `Customer ID:  ${cid}`,
+    `Modo Dorsal:  ${isCustomNum ? "Custom Number (car_num_<id>.tga + base limpia)" : "Oficial / Sim-Stamped (placas protegidas para iRacing)"}`,
     `Resolución:   ${state.resolution}x${state.resolution} px (TGA 24-bit sin compresión RLE)`,
     `Acabado Spec: ${state.spec.finish} (Metallic ${state.spec.metallic}% / Roughness ${state.spec.roughness}% / Clearcoat ${state.spec.clearcoat}%)`,
     ``,
@@ -128,19 +193,26 @@ function buildReadmeTxt(car: CarProfile, state: SkinDesignState, shots: PhotoGui
     `--------------------------------`,
     `Copia los archivos TGA dentro de:`,
     `  Documents\\iRacing\\paint\\${car.iracingFolder}\\`,
-    `  - car_${cid}.tga`,
-    `  - car_spec_${cid}.tga`,
+    `  - car_${cid}.tga          (Pintura base limpia / Sim-Stamped)`,
+    ...(isCustomNum ? [`  - car_num_${cid}.tga      (Pintura con dorsal fijo #${state.customNumber} / Custom Number)`] : []),
+    `  - car_spec_${cid}.tga     (Acabado metálico/mate/carbono)`,
     `Pulsa Ctrl+R dentro del simulador para recargar la pintura al instante.`,
     ``,
-    `2) SUBIDA A TRADING PAINTS (PASOS MANUALES)`,
-    `-------------------------------------------`,
-    `Trading Paints no ofrece API pública de subida automática.`,
-    `  a) Entra en https://www.tradingpaints.com/ y abre "My Paints" -> ${car.name}`,
-    `  b) Sube car_${cid}.tga DIRECTO como archivo principal (Upload a paint).`,
-    `  c) Para el Spec Map: Trading Paints requiere el archivo .mip compilado por iRacing.`,
-    `     Copia car_spec_${cid}.tga en Documents\\iRacing\\paint\\${car.iracingFolder}\\, abre el coche en iRacing`,
-    `     (genera automaticamente car_spec_${cid}.mip en esa carpeta) y sube ese .mip en "Add spec map or decal layer".`,
-    `  d) Añade las capturas recomendadas abajo en la galería de Showroom.`,
+    `2) SUBIDA A TRADING PAINTS (QUÉ ARCHIVO VA EN CADA CASILLA)`,
+    `-----------------------------------------------------------`,
+    `  a) Entra en https://www.tradingpaints.com/ -> "My Paints" -> ${car.name}`,
+    `  b) Casilla "Sim-Stamped Number Paint (Upload a paint)":`,
+    `     -> Sube car_${cid}.tga (respeta las placas oficiales de iRacing).`,
+    ...(isCustomNum
+      ? [
+          `  c) Casilla "Custom Number Paint" (ligas / endurance / dorsal personalizado):`,
+          `     -> Sube car_num_${cid}.tga (incluye el dorsal #${state.customNumber} estampado).`,
+          `     -> Asegúrate de activar "Hide car numbers" en Trading Paints Downloader.`,
+        ]
+      : []),
+    `  d) Casilla "Add spec map or decal layer":`,
+    `     -> Copia car_spec_${cid}.tga en Documents\\iRacing\\paint\\${car.iracingFolder}\\, abre el coche en iRacing`,
+    `        (genera car_spec_${cid}.mip) y sube ese archivo .mip.`,
     ``,
     `3) GUÍA DE CAPTURAS PARA TRADING PAINTS / MUNTRU.ME`,
     `---------------------------------------------------`,
@@ -165,18 +237,22 @@ export async function exportIracingZipBundle(
   psdPatternCanvas?: HTMLCanvasElement | null,
 ): Promise<string> {
   const cid = sanitizeCustomerId(state.customerId);
-  const { diffuseTga, specTga } = await renderTgaBuffers(state, onProgress, partsOverlayCanvas, psdPatternCanvas);
+  const { diffuseTga, customNumTga, specTga } = await renderTgaBuffers(state, onProgress, partsOverlayCanvas, psdPatternCanvas);
 
   onProgress?.("Empaquetando archivo .ZIP listo para iRacing...");
   const zip = new JSZip();
   const folderPath = `paint/${car.iracingFolder}`;
   zip.file(`${folderPath}/car_${cid}.tga`, diffuseTga);
+  if (customNumTga) {
+    zip.file(`${folderPath}/car_num_${cid}.tga`, customNumTga);
+  }
   zip.file(`${folderPath}/car_spec_${cid}.tga`, specTga);
   zip.file("design-preset.json", JSON.stringify(state, null, 2));
   zip.file("LEEME-TRADING-PAINTS.txt", buildReadmeTxt(car, state, shots));
 
   const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } });
-  const zipName = `MMT_${car.iracingFolder}_${cid}_${state.resolution}px.zip`;
+  const modeTag = customNumTga ? "CustomNum" : "SimStamped";
+  const zipName = `MMT_${car.iracingFolder}_${cid}_${modeTag}_${state.resolution}px.zip`;
   triggerDownload(blob, zipName);
   return zipName;
 }

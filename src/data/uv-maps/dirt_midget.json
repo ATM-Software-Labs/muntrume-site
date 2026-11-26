@@ -1,0 +1,197 @@
+{
+  "car_slug": "dirt_midget",
+  "car_name": "Dirt Midget",
+  "brand": "Dirt",
+  "iracing_folder": "dirt_midget",
+  "native_resolution": "2048x2048",
+  "uv_status": "extracted",
+  "zones": {
+    "hood": {
+      "x": 16,
+      "y": 0,
+      "width": 1440,
+      "height": 832,
+      "rotation": 0,
+      "mirror_x": false,
+      "symmetry_axis": "center"
+    },
+    "roof": {
+      "x": 0,
+      "y": 1200,
+      "width": 1456,
+      "height": 752,
+      "rotation": 0,
+      "mirror_x": false,
+      "symmetry_axis": "center"
+    },
+    "left_side": {
+      "x": 0,
+      "y": 528,
+      "width": 2048,
+      "height": 1424,
+      "rotation": 0,
+      "mirror_x": false,
+      "flip_horizontal_logo": false,
+      "symmetry_axis": "left"
+    },
+    "right_side": {
+      "x": 1536,
+      "y": 416,
+      "width": 80,
+      "height": 80,
+      "rotation": 0,
+      "mirror_x": true,
+      "flip_horizontal_logo": true,
+      "symmetry_axis": "right"
+    },
+    "rear_wing": {
+      "top_plane": {
+        "x": 1568,
+        "y": 0,
+        "width": 176,
+        "height": 96,
+        "rotation": 0
+      },
+      "endplate_left": {
+        "x": 287,
+        "y": 1638,
+        "width": 225,
+        "height": 225,
+        "rotation": 0
+      },
+      "endplate_right": {
+        "x": 1536,
+        "y": 1638,
+        "width": 225,
+        "height": 225,
+        "rotation": 0
+      }
+    },
+    "front_bumper": {
+      "x": 0,
+      "y": 1456,
+      "width": 128,
+      "height": 80,
+      "rotation": 0
+    },
+    "rear_bumper": {
+      "x": 1872,
+      "y": 1488,
+      "width": 128,
+      "height": 464,
+      "rotation": 0
+    },
+    "mirrors": {
+      "x": 1536,
+      "y": 288,
+      "width": 80,
+      "height": 80,
+      "rotation": 0,
+      "mirror_x": true
+    },
+    "sunstrip": {
+      "x": 635,
+      "y": 20,
+      "width": 778,
+      "height": 82,
+      "rotation": 0
+    },
+    "sponsor_blocks": [
+      {
+        "id": "sponsor_1",
+        "x": 512,
+        "y": 272,
+        "width": 672,
+        "height": 240,
+        "cx": 0.4141,
+        "cy": 0.1914,
+        "nw": 0.3281,
+        "nh": 0.1172
+      },
+      {
+        "id": "sponsor_2",
+        "x": 480,
+        "y": 1392,
+        "width": 688,
+        "height": 160,
+        "cx": 0.4023,
+        "cy": 0.7188,
+        "nw": 0.3359,
+        "nh": 0.0781
+      },
+      {
+        "id": "sponsor_3",
+        "x": 288,
+        "y": 864,
+        "width": 144,
+        "height": 304,
+        "cx": 0.1758,
+        "cy": 0.4961,
+        "nw": 0.0703,
+        "nh": 0.1484
+      },
+      {
+        "id": "sponsor_4",
+        "x": 880,
+        "y": 704,
+        "width": 304,
+        "height": 80,
+        "cx": 0.5039,
+        "cy": 0.3633,
+        "nw": 0.1484,
+        "nh": 0.0391
+      },
+      {
+        "id": "sponsor_5",
+        "x": 928,
+        "y": 1248,
+        "width": 304,
+        "height": 80,
+        "cx": 0.5273,
+        "cy": 0.6289,
+        "nw": 0.1484,
+        "nh": 0.0391
+      },
+      {
+        "id": "sponsor_6",
+        "x": 752,
+        "y": 848,
+        "width": 48,
+        "height": 336,
+        "cx": 0.3789,
+        "cy": 0.4961,
+        "nw": 0.0234,
+        "nh": 0.1641
+      }
+    ]
+  },
+  "restricted_number_plates": [
+    {
+      "id": "num_block_1",
+      "label": "Placa Dorsal iRacing #1",
+      "x": 1600,
+      "y": 736,
+      "width": 240,
+      "height": 144,
+      "rotation": 0
+    },
+    {
+      "id": "num_block_2",
+      "label": "Placa Dorsal iRacing #2",
+      "x": 32,
+      "y": 896,
+      "width": 208,
+      "height": 240,
+      "rotation": 0
+    },
+    {
+      "id": "num_block_3",
+      "label": "Placa Dorsal iRacing #3",
+      "x": 1600,
+      "y": 1104,
+      "width": 240,
+      "height": 160,
+      "rotation": 0
+    }
+  ]
+}

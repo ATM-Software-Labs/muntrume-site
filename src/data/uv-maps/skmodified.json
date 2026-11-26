@@ -1,0 +1,180 @@
+{
+  "car_slug": "skmodified",
+  "car_name": "SK Modified",
+  "brand": "iRacing",
+  "iracing_folder": "skmodified",
+  "native_resolution": "2048x2048",
+  "uv_status": "extracted",
+  "zones": {
+    "hood": {
+      "x": 0,
+      "y": 0,
+      "width": 2048,
+      "height": 800,
+      "rotation": 0,
+      "mirror_x": false,
+      "symmetry_axis": "center"
+    },
+    "roof": {
+      "x": 704,
+      "y": 816,
+      "width": 448,
+      "height": 112,
+      "rotation": 0,
+      "mirror_x": false,
+      "symmetry_axis": "center"
+    },
+    "left_side": {
+      "x": 0,
+      "y": 800,
+      "width": 2016,
+      "height": 1232,
+      "rotation": 0,
+      "mirror_x": false,
+      "flip_horizontal_logo": false,
+      "symmetry_axis": "left"
+    },
+    "right_side": {
+      "x": 1536,
+      "y": 544,
+      "width": 480,
+      "height": 480,
+      "rotation": 0,
+      "mirror_x": true,
+      "flip_horizontal_logo": true,
+      "symmetry_axis": "right"
+    },
+    "rear_wing": {
+      "top_plane": {
+        "x": 1312,
+        "y": 1472,
+        "width": 384,
+        "height": 32,
+        "rotation": 0
+      },
+      "endplate_left": {
+        "x": 287,
+        "y": 1638,
+        "width": 225,
+        "height": 225,
+        "rotation": 0
+      },
+      "endplate_right": {
+        "x": 1536,
+        "y": 1638,
+        "width": 225,
+        "height": 225,
+        "rotation": 0
+      }
+    },
+    "front_bumper": {
+      "x": 1216,
+      "y": 800,
+      "width": 304,
+      "height": 176,
+      "rotation": 0
+    },
+    "rear_bumper": {
+      "x": 1328,
+      "y": 1472,
+      "width": 704,
+      "height": 288,
+      "rotation": 0
+    },
+    "mirrors": {
+      "x": 368,
+      "y": 352,
+      "width": 192,
+      "height": 80,
+      "rotation": 0,
+      "mirror_x": true
+    },
+    "sunstrip": {
+      "x": 635,
+      "y": 20,
+      "width": 778,
+      "height": 82,
+      "rotation": 0
+    },
+    "sponsor_blocks": [
+      {
+        "id": "sponsor_1",
+        "x": 80,
+        "y": 80,
+        "width": 576,
+        "height": 128,
+        "cx": 0.1797,
+        "cy": 0.0703,
+        "nw": 0.2813,
+        "nh": 0.0625
+      },
+      {
+        "id": "sponsor_2",
+        "x": 32,
+        "y": 1056,
+        "width": 112,
+        "height": 304,
+        "cx": 0.043,
+        "cy": 0.5898,
+        "nw": 0.0547,
+        "nh": 0.1484
+      },
+      {
+        "id": "sponsor_3",
+        "x": 32,
+        "y": 1696,
+        "width": 320,
+        "height": 144,
+        "cx": 0.0938,
+        "cy": 0.8633,
+        "nw": 0.1563,
+        "nh": 0.0703
+      },
+      {
+        "id": "sponsor_4",
+        "x": 80,
+        "y": 512,
+        "width": 272,
+        "height": 112,
+        "cx": 0.1055,
+        "cy": 0.2773,
+        "nw": 0.1328,
+        "nh": 0.0547
+      },
+      {
+        "id": "sponsor_5",
+        "x": 1680,
+        "y": 1088,
+        "width": 64,
+        "height": 336,
+        "cx": 0.8359,
+        "cy": 0.6133,
+        "nw": 0.0313,
+        "nh": 0.1641
+      },
+      {
+        "id": "sponsor_6",
+        "x": 288,
+        "y": 1632,
+        "width": 224,
+        "height": 80,
+        "cx": 0.1953,
+        "cy": 0.8164,
+        "nw": 0.1094,
+        "nh": 0.0391
+      },
+      {
+        "id": "sponsor_7",
+        "x": 288,
+        "y": 624,
+        "width": 224,
+        "height": 64,
+        "cx": 0.1953,
+        "cy": 0.3203,
+        "nw": 0.1094,
+        "nh": 0.0313
+      }
+    ]
+  },
+  "restricted_number_plates": []
+}

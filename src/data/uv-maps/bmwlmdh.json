@@ -1,0 +1,169 @@
+{
+  "car_slug": "bmwlmdh",
+  "car_name": "BMW M Hybrid V8 GTP",
+  "brand": "BMW",
+  "iracing_folder": "bmwlmdh",
+  "native_resolution": "2048x2048",
+  "uv_status": "extracted",
+  "zones": {
+    "hood": {
+      "x": 614,
+      "y": 102,
+      "width": 819,
+      "height": 512,
+      "rotation": 0,
+      "mirror_x": false,
+      "symmetry_axis": "center"
+    },
+    "roof": {
+      "x": 696,
+      "y": 676,
+      "width": 655,
+      "height": 451,
+      "rotation": 0,
+      "mirror_x": false,
+      "symmetry_axis": "center"
+    },
+    "left_side": {
+      "x": 61,
+      "y": 655,
+      "width": 553,
+      "height": 901,
+      "rotation": 0,
+      "mirror_x": false,
+      "flip_horizontal_logo": false,
+      "symmetry_axis": "left"
+    },
+    "right_side": {
+      "x": 1434,
+      "y": 655,
+      "width": 553,
+      "height": 901,
+      "rotation": 0,
+      "mirror_x": true,
+      "flip_horizontal_logo": true,
+      "symmetry_axis": "right"
+    },
+    "rear_wing": {
+      "top_plane": {
+        "x": 553,
+        "y": 1638,
+        "width": 942,
+        "height": 225,
+        "rotation": 0
+      },
+      "endplate_left": {
+        "x": 287,
+        "y": 1638,
+        "width": 225,
+        "height": 225,
+        "rotation": 0
+      },
+      "endplate_right": {
+        "x": 1536,
+        "y": 1638,
+        "width": 225,
+        "height": 225,
+        "rotation": 0
+      }
+    },
+    "front_bumper": {
+      "x": 512,
+      "y": 1188,
+      "width": 1024,
+      "height": 225,
+      "rotation": 0
+    },
+    "rear_bumper": {
+      "x": 512,
+      "y": 1434,
+      "width": 1024,
+      "height": 184,
+      "rotation": 0
+    },
+    "mirrors": {
+      "x": 102,
+      "y": 164,
+      "width": 369,
+      "height": 205,
+      "rotation": 0,
+      "mirror_x": true
+    },
+    "sunstrip": {
+      "x": 635,
+      "y": 20,
+      "width": 778,
+      "height": 82,
+      "rotation": 0
+    },
+    "sponsor_blocks": [
+      {
+        "id": "sponsor_1",
+        "x": 0,
+        "y": 160,
+        "width": 912,
+        "height": 1888,
+        "cx": 0.2227,
+        "cy": 0.5391,
+        "nw": 0.2004,
+        "nh": 0.14
+      },
+      {
+        "id": "sponsor_2",
+        "x": 736,
+        "y": 736,
+        "width": 1312,
+        "height": 1168,
+        "cx": 0.6797,
+        "cy": 0.6445,
+        "nw": 0.22,
+        "nh": 0.14
+      },
+      {
+        "id": "sponsor_3",
+        "x": 720,
+        "y": 0,
+        "width": 1328,
+        "height": 816,
+        "cx": 0.6758,
+        "cy": 0.1992,
+        "nw": 0.22,
+        "nh": 0.14
+      },
+      {
+        "id": "sponsor_4",
+        "x": 0,
+        "y": 0,
+        "width": 384,
+        "height": 128,
+        "cx": 0.0938,
+        "cy": 0.0313,
+        "nw": 0.0844,
+        "nh": 0.06
+      },
+      {
+        "id": "sponsor_5",
+        "x": 720,
+        "y": 656,
+        "width": 192,
+        "height": 160,
+        "cx": 0.3984,
+        "cy": 0.3594,
+        "nw": 0.08,
+        "nh": 0.06
+      },
+      {
+        "id": "sponsor_6",
+        "x": 1840,
+        "y": 1712,
+        "width": 208,
+        "height": 192,
+        "cx": 0.9492,
+        "cy": 0.8828,
+        "nw": 0.08,
+        "nh": 0.06
+      }
+    ]
+  },
+  "restricted_number_plates": []
+}
