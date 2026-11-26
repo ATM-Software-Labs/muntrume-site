@@ -256,22 +256,22 @@ export function mapWorkerUvToZones(
   const [wStr, hStr] = (uv.native_resolution || "2048x2048").split("x");
   const W = Number(wStr) || 2048;
   const H = Number(hStr) || 2048;
-  const norm = (r: WorkerUvRect | undefined, base: ZoneRect): ZoneRect => {
+  const norm = (r: WorkerUvRect | undefined, base: ZoneRect, minW = 0.06, minH = 0.05): ZoneRect => {
     if (!r || !r.width || !r.height) return { ...base };
     const isAlreadyNorm = r.x <= 1.05 && r.y <= 1.05 && r.width <= 1.05 && r.height <= 1.05;
     const nx = isAlreadyNorm ? r.x : r.x / W;
     const ny = isAlreadyNorm ? r.y : r.y / H;
     const nw = isAlreadyNorm ? r.width : r.width / W;
     const nh = isAlreadyNorm ? r.height : r.height / H;
-    // Reject corrupted full-canvas boxes (> 82%) or tiny/out-of-bounds boxes (< 5% x 4%)
+    // Reject corrupted full-canvas boxes (> 82%) or tiny/out-of-bounds boxes
     if (
       !Number.isFinite(nx) ||
       !Number.isFinite(ny) ||
       !Number.isFinite(nw) ||
       !Number.isFinite(nh) ||
       (nw > 0.82 && nh > 0.82) ||
-      nw < 0.05 ||
-      nh < 0.04 ||
+      nw < minW ||
+      nh < minH ||
       nx < 0 ||
       ny < 0 ||
       nx + nw > 1.02 ||
@@ -289,16 +289,16 @@ export function mapWorkerUvToZones(
   };
 
   const out: Record<ZoneKey, ZoneRect> = {
-    hood: norm(uv.zones.hood, fallback.hood),
-    roof: norm(uv.zones.roof, fallback.roof),
-    leftSide: norm(uv.zones.left_side, fallback.leftSide),
-    rightSide: norm(uv.zones.right_side, fallback.rightSide),
-    rearWing: norm(uv.zones.rear_wing?.top_plane, fallback.rearWing),
-    mirrors: norm(uv.zones.mirrors, fallback.mirrors),
-    frontBumper: norm(uv.zones.front_bumper, fallback.frontBumper),
-    rearBumper: norm(uv.zones.rear_bumper, fallback.rearBumper),
-    numberPlateLeft: norm(uv.restricted_number_plates?.[0], fallback.numberPlateLeft),
-    numberPlateRight: norm(uv.restricted_number_plates?.[1], fallback.numberPlateRight),
+    hood: norm(uv.zones.hood, fallback.hood, 0.14, 0.10),
+    roof: norm(uv.zones.roof, fallback.roof, 0.12, 0.09),
+    leftSide: norm(uv.zones.left_side, fallback.leftSide, 0.12, 0.12),
+    rightSide: norm(uv.zones.right_side, fallback.rightSide, 0.12, 0.12),
+    rearWing: norm(uv.zones.rear_wing?.top_plane, fallback.rearWing, 0.12, 0.05),
+    mirrors: norm(uv.zones.mirrors, fallback.mirrors, 0.06, 0.04),
+    frontBumper: norm(uv.zones.front_bumper, fallback.frontBumper, 0.14, 0.05),
+    rearBumper: norm(uv.zones.rear_bumper, fallback.rearBumper, 0.14, 0.05),
+    numberPlateLeft: norm(uv.restricted_number_plates?.[0], fallback.numberPlateLeft, 0.04, 0.04),
+    numberPlateRight: norm(uv.restricted_number_plates?.[1], fallback.numberPlateRight, 0.04, 0.04),
   };
   return out;
 }

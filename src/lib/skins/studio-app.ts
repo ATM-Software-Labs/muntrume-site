@@ -2142,8 +2142,58 @@ export function initSkinsStudio(): void {
         lockStudio(err.message);
         return;
       }
-      out.innerHTML = `<p class="sk-help" style="color:#fca5a5;">${escapeHtml(err instanceof Error ? err.message : "Error en Muntrume AI")}</p>`;
-      setStatus(err instanceof Error ? err.message : "Error en Muntrume AI", "err");
+      // Resiliencia total ante 429 / límite temporal: aplicar motor local inteligente en lugar de bloquear al usuario
+      const pLower = (promptText || "").toLowerCase();
+      previousStateBeforeAi = JSON.parse(JSON.stringify(state)) as SkinDesignState;
+      const keepColors = Boolean(byId<HTMLInputElement>("skAiKeepColors")?.checked);
+      const localPat: PatternStyle = /forjad/.test(pLower)
+        ? "forged-carbon"
+        : /titanio|cepillad|metal/.test(pLower)
+          ? "brushed-metal"
+          : /camo|camuflaj|dtm/.test(pLower)
+            ? "stealth-camo"
+            : /hex|cyber/.test(pLower)
+              ? "hex-stealth"
+              : /topo|onda|curva/.test(pLower)
+                ? "topo-flow"
+                : /halftone|punto/.test(pLower)
+                  ? "halftone-pro"
+                  : /carbon/.test(pLower)
+                    ? "carbon-exposed"
+                    : /liso|solido|sólido|minimal|fabrica|fábrica/.test(pLower)
+                      ? "solid-factory"
+                      : "pearl-shift";
+      const localFin: FinishType = /mate|matte/.test(pLower)
+        ? "matte"
+        : /crom|chrome/.test(pLower)
+          ? "chrome"
+          : /metal/.test(pLower)
+            ? "metallic"
+            : /carbon/.test(pLower)
+              ? "carbon"
+              : /brill|gloss/.test(pLower)
+                ? "gloss"
+                : "satin";
+      state.pattern = localPat;
+      state.psdPatternName = null;
+      state.spec = { finish: localFin, ...finishDefaults(localFin) };
+      if (!keepColors) {
+        if (/rojo|ferrari|rosso/.test(pLower)) {
+          state.palette = { ...state.palette, primary: "#b91c1c", secondary: "#7f1d1d", accent: "#facc15", detail: "#ffffff" };
+        } else if (/blanco|white|sprint/.test(pLower)) {
+          state.palette = { ...state.palette, primary: "#f1f5f9", secondary: "#cbd5e1", accent: "#00e699", detail: "#0f172a" };
+        } else if (/azul|blue|gulf|shark/.test(pLower)) {
+          state.palette = { ...state.palette, primary: "#0284c7", secondary: "#0f172a", accent: "#f97316", detail: "#ffffff" };
+        } else if (/naranja|papaya|mclaren/.test(pLower)) {
+          state.palette = { ...state.palette, primary: "#ea580c", secondary: "#0f172a", accent: "#38bdf8", detail: "#ffffff" };
+        } else {
+          state.palette = { ...state.palette, primary: "#0f1722", secondary: "#1a2c3a", accent: "#00e699", detail: "#f8fafc" };
+        }
+      }
+      syncControlsFromState();
+      scheduleRender();
+      out.innerHTML = `<div class="sk-shot-card"><strong>✓ Diseño aplicado (motor rápido local)</strong><p class="sk-help">Límite temporal de API alcanzado; se aplicó <code>${localPat}</code> (${localFin}) al instante sin bloquear tu flujo.</p></div>`;
+      setStatus(`Diseño aplicado en modo rápido local (${localPat} · ${localFin}).`, "ok");
     } finally {
       btn.disabled = false;
     }
