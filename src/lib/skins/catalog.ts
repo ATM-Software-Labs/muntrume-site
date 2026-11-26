@@ -531,6 +531,36 @@ export const SKIN_PRESETS: PresetDefinition[] = [
     spec: { finish: "metallic", metallic: 66, roughness: 24, clearcoat: 88, carbonAccent: false },
     fontStyle: "condensed-gt",
   },
+  {
+    id: "topo-flow",
+    name: "Topo-Lines Flow",
+    tagline: "Curvas topográficas fluidas de competición (queda perfecto en cualquier UV)",
+    palette: {
+      primary: "#0d1117",
+      secondary: "#182230",
+      accent: "#00e699",
+      detail: "#f8fafc",
+      numberColor: "#090b0f",
+      numberBg: "#f8fafc",
+    },
+    spec: { finish: "satin", metallic: 32, roughness: 34, clearcoat: 76, carbonAccent: false },
+    fontStyle: "racing-bold",
+  },
+  {
+    id: "halftone-pro",
+    name: "Halftone GT Pro",
+    tagline: "Degradado de puntos halftone estilo GT World Challenge / IMSA Pro",
+    palette: {
+      primary: "#111827",
+      secondary: "#1e3a8a",
+      accent: "#38bdf8",
+      detail: "#ffffff",
+      numberColor: "#090b0f",
+      numberBg: "#ffffff",
+    },
+    spec: { finish: "gloss", metallic: 22, roughness: 16, clearcoat: 94, carbonAccent: false },
+    fontStyle: "condensed-gt",
+  },
 ];
 
 export interface BuiltinDecalAsset {

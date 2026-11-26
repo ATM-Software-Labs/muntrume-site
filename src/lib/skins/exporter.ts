@@ -42,6 +42,8 @@ async function renderTgaBuffers(
   const ctx = workCanvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) throw new Error("No se pudo leer el lienzo de exportación.");
   const diffuseData = ctx.getImageData(0, 0, size, size);
+  // Ensure 100% opaque alpha across the entire TGA texture
+  for (let i = 3; i < diffuseData.data.length; i += 4) diffuseData.data[i] = 255;
 
   onProgress?.(`Codificando car_${sanitizeCustomerId(state.customerId)}.tga (24-bit sin compresión)...`);
   const diffuseTga = encodeTgaFromImageData(diffuseData, false);
@@ -74,7 +76,9 @@ export async function exportSingleDiffuseTga(
   await renderSkinToCanvas(workCanvas, state, { size, partsOverlayCanvas, psdPatternCanvas, forExport: true });
   const ctx = workCanvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) throw new Error("No se pudo leer el lienzo.");
-  const tga = encodeTgaFromImageData(ctx.getImageData(0, 0, size, size), false);
+  const diffuseData = ctx.getImageData(0, 0, size, size);
+  for (let i = 3; i < diffuseData.data.length; i += 4) diffuseData.data[i] = 255;
+  const tga = encodeTgaFromImageData(diffuseData, false);
   workCanvas.width = 1;
   workCanvas.height = 1;
 

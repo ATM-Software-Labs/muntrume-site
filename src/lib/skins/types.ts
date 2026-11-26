@@ -61,7 +61,9 @@ export type PatternStyle =
   | "apex-fade"
   | "heritage-gulf"
   | "factory-chevron"
-  | "lightning-drift";
+  | "lightning-drift"
+  | "topo-flow"
+  | "halftone-pro";
 
 export type SurfaceTexture = "none" | "carbon" | "hex-mesh" | "speed-lines" | "metallic-flake";
 

@@ -278,19 +278,21 @@ const canonical = "https://skins.muntru.me/";
         <div id="skTab-design" class="sk-card">
           <h2 class="sk-card-title">Patrón y Paleta</h2>
           <label class="sk-label">
-            Distribución base (12 estilos pro)
+            Distribución base (14 estilos pro)
             <select id="skPatternSelect" class="sk-select">
+              <option value="topo-flow">Topo-Lines Flow (Curvas Topográficas)</option>
+              <option value="halftone-pro">Halftone GT Pro (Degradado Puntos)</option>
               <option value="endurance">MMT Endurance (Cuñas IMSA / WEC)</option>
               <option value="geo-camo">DTM Geo-Camo (Camuflaje Splinter)</option>
               <option value="hex-tech">Hex Carbon Tech (Malla Hexagonal)</option>
               <option value="apex-fade">Apex Gradient Fade (Degradado GTWC)</option>
               <option value="factory-chevron">Factory V-Chevron (Equipo Oficial)</option>
               <option value="lightning-drift">Apex Lightning (Rayos Eléctricos)</option>
-              <option value="heritage-gulf">Heritage Classic (Banda Ancha Gulf)</option>
+              <option value="heritage-gulf">Heritage Modern (Ondas + Banda)</option>
               <option value="sprint">MMT Sprint (Doble Franja + Faldones)</option>
               <option value="carbon-stealth">Carbono Stealth (Facetas Neón)</option>
               <option value="tricolor">Tricolor Motorsport (Diagonales)</option>
-              <option value="clean-minimal">Limpio Minimal (Escudería Bitono)</option>
+              <option value="clean-minimal">Limpio Minimal (Curvas de Fábrica)</option>
               <option value="freeform">Diseño Libre (Base limpia sin gráfico)</option>
             </select>
           </label>
@@ -340,6 +342,9 @@ const canonical = "https://skins.muntru.me/";
             <label class="sk-color-item"><span>Texto Dorsal</span><input id="skColorNum" type="color" /></label>
             <label class="sk-color-item"><span>Fondo Dorsal</span><input id="skColorNumBg" type="color" /></label>
           </div>
+          <button type="button" id="skMonoColorBtn" class="sk-btn sk-btn-sm" title="Iguala el color Secundario al Primario para un acabado monocolor con contraste tonal sutil">
+            Usar mismo color en base (Monocolor)
+          </button>
 
           <div class="sk-row" style="justify-content:space-between;">
             <label class="sk-label" style="flex:1;">
@@ -417,7 +422,10 @@ const canonical = "https://skins.muntru.me/";
             <input id="skUploadLogoInput" type="file" accept=".png,.svg,.webp" class="sk-hidden" />
           </label>
 
-          <h2 class="sk-card-title" style="margin-top:4px;">Capas activas</h2>
+          <h2 class="sk-card-title" style="margin-top:4px;">
+            <span>Capas activas</span>
+            <button type="button" id="skClearAllDecalsBtn" class="sk-btn sk-btn-sm sk-btn-danger">Quitar todos</button>
+          </h2>
           <div id="skDecalList" class="sk-layer-list"></div>
 
           <h2 class="sk-card-title" style="margin-top:4px;">Ajuste de capa seleccionada</h2>
@@ -442,6 +450,15 @@ const canonical = "https://skins.muntru.me/";
               <option value="24H Special Event">24H Special Event</option>
             </select>
           </label>
+
+          <div class="sk-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+            <label class="sk-row" style="font-size:11.5px;cursor:pointer;">
+              <input id="skAiKeepColors" type="checkbox" /> Mantener mis colores actuales (permite diseño monocolor)
+            </label>
+            <label class="sk-row" style="font-size:11.5px;cursor:pointer;">
+              <input id="skAiIncludeLogos" type="checkbox" /> Añadir logos MMT automáticamente (sin logos de marca sueltos)
+            </label>
+          </div>
 
           <div class="sk-row" style="flex-wrap:wrap;">
             <button type="button" class="sk-btn sk-btn-sm" data-ai-quick="Endurance oscuro carbono y verde esmeralda MMT elegante">Carbono MMT</button>

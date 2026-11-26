@@ -508,6 +508,8 @@ export function initSkinsStudio(): void {
   }
 
   const GALLERY_PATTERNS: Array<{ id: PatternStyle; label: string }> = [
+    { id: "topo-flow", label: "Topo Flow" },
+    { id: "halftone-pro", label: "Halftone" },
     { id: "endurance", label: "Endurance" },
     { id: "geo-camo", label: "Geo-Camo" },
     { id: "hex-tech", label: "Hex Tech" },
@@ -1299,6 +1301,22 @@ export function initSkinsStudio(): void {
   bindColor("skColorNum", "numberColor");
   bindColor("skColorNumBg", "numberBg");
 
+  byId<HTMLButtonElement>("skMonoColorBtn")?.addEventListener("click", () => {
+    state.palette.secondary = state.palette.primary;
+    syncControlsFromState();
+    scheduleRender();
+    setStatus("Base monocolor activada (Secundario = Primario con contraste tonal automático).", "ok");
+  });
+
+  byId<HTMLButtonElement>("skClearAllDecalsBtn")?.addEventListener("click", () => {
+    state.decals = [];
+    selectedDecalId = null;
+    renderDecalList();
+    renderDecalEditor();
+    scheduleRender();
+    setStatus("Todos los logos/decals eliminados del coche.", "ok");
+  });
+
   byId<HTMLSelectElement>("skPatternSelect")?.addEventListener("change", (e) => {
     state.pattern = (e.target as HTMLSelectElement).value as SkinDesignState["pattern"];
     state.psdPatternName = null;
@@ -1641,40 +1659,52 @@ export function initSkinsStudio(): void {
         "heritage-gulf",
         "factory-chevron",
         "lightning-drift",
+        "topo-flow",
+        "halftone-pro",
       ]);
-      state.pattern = (allowedPatterns.has(plan.pattern) ? plan.pattern : "endurance") as SkinDesignState["pattern"];
+      const keepColors = Boolean(byId<HTMLInputElement>("skAiKeepColors")?.checked);
+      const includeLogos = Boolean(byId<HTMLInputElement>("skAiIncludeLogos")?.checked);
+
+      state.pattern = (allowedPatterns.has(plan.pattern) ? plan.pattern : "topo-flow") as SkinDesignState["pattern"];
       state.psdPatternName = null;
       state.strokes = [];
-      state.palette = {
-        ...state.palette,
-        primary: plan.palette.primary || state.palette.primary,
-        secondary: plan.palette.secondary || state.palette.secondary,
-        accent: plan.palette.accent || state.palette.accent,
-        detail: plan.palette.detail || state.palette.detail,
-      };
+      if (!keepColors) {
+        state.palette = {
+          ...state.palette,
+          primary: plan.palette.primary || state.palette.primary,
+          secondary: plan.palette.secondary || state.palette.secondary,
+          accent: plan.palette.accent || state.palette.accent,
+          detail: plan.palette.detail || state.palette.detail,
+        };
+      }
       state.spec = { finish: plan.finish || "satin", ...finishDefaults(plan.finish || "satin") };
 
       const newDecals: DecalLayer[] = [];
-      const rawLayers = Array.isArray(plan.layers) ? plan.layers.slice(0, 8) : [];
-      for (let i = 0; i < rawLayers.length; i++) {
-        const l = rawLayers[i];
-        const nx = l.x > 1 ? l.x / 2048 : l.x;
-        const ny = l.y > 1 ? l.y / 2048 : l.y;
-        const asset = resolveAiDecalAsset(l.asset_hint, l.kind, car.brand);
-        newDecals.push({
-          id: `ai-layer-${Date.now()}-${i}`,
-          name: l.element || asset.label,
-          kind: asset.kind,
-          dataUrl: asset.dataUrl,
-          shapeType: asset.shapeType,
-          color: l.color || state.palette.accent,
-          x: Math.max(0.06, Math.min(0.94, Number.isFinite(nx) ? nx : 0.5)),
-          y: Math.max(0.06, Math.min(0.94, Number.isFinite(ny) ? ny : 0.5)),
-          scale: Math.max(0.06, Math.min(0.45, Number.isFinite(l.scale) ? l.scale : 0.16)),
-          rotation: Number.isFinite(l.rotation) ? l.rotation : 0,
-          opacity: 1,
-          mirrorX: Boolean(l.mirror_x),
-        });
+      if (includeLogos) {
+        // Nunca inyectar logos sueltos de fabricante (kind === "brand") porque iRacing ya los incluye en el modelo 3D
+        const rawLayers = (Array.isArray(plan.layers) ? plan.layers : [])
+          .filter((l) => l && l.kind !== "brand" && String(l.asset_hint || "").toLowerCase() !== "brand")
+          .slice(0, 6);
+        for (let i = 0; i < rawLayers.length; i++) {
+          const l = rawLayers[i];
+          const nx = l.x > 1 ? l.x / 2048 : l.x;
+          const ny = l.y > 1 ? l.y / 2048 : l.y;
+          const asset = resolveAiDecalAsset(l.asset_hint, l.kind, car.brand);
+          newDecals.push({
+            id: `ai-layer-${Date.now()}-${i}`,
+            name: l.element || asset.label,
+            kind: asset.kind,
+            dataUrl: asset.dataUrl,
+            shapeType: asset.shapeType,
+            color: l.color || state.palette.accent,
+            x: Math.max(0.06, Math.min(0.94, Number.isFinite(nx) ? nx : 0.5)),
+            y: Math.max(0.06, Math.min(0.94, Number.isFinite(ny) ? ny : 0.5)),
+            scale: Math.max(0.06, Math.min(0.38, Number.isFinite(l.scale) ? l.scale : 0.14)),
+            rotation: Number.isFinite(l.rotation) ? l.rotation : 0,
+            opacity: 1,
+            mirrorX: Boolean(l.mirror_x),
+          });
+        }
       }
 
       // Si Muntrume AI no devolvió capas, colocar un kit limpio MMT + Marca + Serie automáticamente

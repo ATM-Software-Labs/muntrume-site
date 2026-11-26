@@ -66,6 +66,25 @@ function hexToRgb(hex: string): [number, number, number] {
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 }
 
+function rgbToHex(r: number, g: number, b: number): string {
+  const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
+  return `#${[clamp(r), clamp(g), clamp(b)].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+}
+
+/**
+ * If the user picks the same color for Primary & Secondary (monochrome livery),
+ * derive a subtle tonal step so layered graphics remain sleek instead of vanishing.
+ */
+function resolveTonalSecondary(primary: string, secondary: string): string {
+  const [r1, g1, b1] = hexToRgb(primary);
+  const [r2, g2, b2] = hexToRgb(secondary);
+  const diff = Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2);
+  if (diff >= 18) return secondary;
+  const lum = 0.299 * r1 + 0.587 * g1 + 0.114 * b1;
+  const delta = lum > 140 ? -22 : 24;
+  return rgbToHex(r1 + delta, g1 + delta, b1 + delta);
+}
+
 let psdPatternCacheKey = "";
 let psdPatternCacheCanvas: HTMLCanvasElement | null = null;
 
@@ -134,25 +153,71 @@ function drawRecoloredPsdPattern(
   ctx.restore();
 }
 
+/**
+ * Authentic diagonal 2×2 twill carbon fiber weave (never looks like a transparency checkerboard).
+ */
 function drawCarbonPattern(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, scalePx: number): void {
   const tile = document.createElement("canvas");
-  const s = Math.max(8, Math.round(scalePx));
+  const s = Math.max(8, Math.min(16, Math.round(scalePx)));
   tile.width = s;
   tile.height = s;
   const tctx = tile.getContext("2d");
   if (!tctx) return;
-  tctx.fillStyle = "rgba(255,255,255,0.045)";
-  tctx.fillRect(0, 0, s / 2, s / 2);
-  tctx.fillRect(s / 2, s / 2, s / 2, s / 2);
-  tctx.fillStyle = "rgba(0,0,0,0.24)";
-  tctx.fillRect(s / 2, 0, s / 2, s / 2);
-  tctx.fillRect(0, s / 2, s / 2, s / 2);
+
+  // Fine diagonal 2x2 twill weave lines instead of blocky 50% checkerboard squares
+  tctx.strokeStyle = "rgba(0,0,0,0.11)";
+  tctx.lineWidth = Math.max(1.2, s * 0.16);
+  tctx.beginPath();
+  tctx.moveTo(-s * 0.25, s * 0.75);
+  tctx.lineTo(s * 0.75, -s * 0.25);
+  tctx.moveTo(s * 0.25, s * 1.25);
+  tctx.lineTo(s * 1.25, s * 0.25);
+  tctx.stroke();
+
+  tctx.strokeStyle = "rgba(255,255,255,0.045)";
+  tctx.lineWidth = Math.max(1, s * 0.1);
+  tctx.beginPath();
+  tctx.moveTo(0, s * 0.5);
+  tctx.lineTo(s * 0.5, 0);
+  tctx.moveTo(s * 0.5, s);
+  tctx.lineTo(s, s * 0.5);
+  tctx.stroke();
 
   const pat = ctx.createPattern(tile, "repeat");
   if (!pat) return;
   ctx.save();
   ctx.fillStyle = pat;
   ctx.fillRect(x, y, w, h);
+  ctx.restore();
+}
+
+function drawHalftoneDots(
+  ctx: CanvasRenderingContext2D,
+  size: number,
+  color: string,
+  angleRad: number,
+  density = 34,
+): void {
+  ctx.save();
+  ctx.fillStyle = color;
+  const step = size / density;
+  const cos = Math.cos(angleRad);
+  const sin = Math.sin(angleRad);
+  for (let gy = 0; gy <= density; gy++) {
+    for (let gx = 0; gx <= density; gx++) {
+      const u = gx / density;
+      const v = gy / density;
+      // Smooth diagonal wave intensity (0..1)
+      const proj = (u - 0.5) * cos + (v - 0.5) * sin + 0.5;
+      const t = Math.max(0, Math.min(1, (proj - 0.22) / 0.65));
+      if (t <= 0.06) continue;
+      const radius = step * 0.42 * Math.pow(t, 1.25);
+      ctx.globalAlpha = 0.18 + t * 0.68;
+      ctx.beginPath();
+      ctx.arc(gx * step, gy * step, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
   ctx.restore();
 }
 
@@ -291,16 +356,16 @@ function drawPatternCore(
     return;
   }
 
-  if (carbonBase) {
-    drawCarbonPattern(ctx, 0, 0, size, size, size / 112);
-  }
-
   // Modo Diseño Libre: pintura base sólida limpia sin gráficos impuestos
   if (pattern === "freeform") {
+    if (carbonBase) drawCarbonPattern(ctx, 0, 0, size, size, size / 112);
     drawSurfaceTexture(ctx, surfaceTexture, palette, size);
     ctx.restore();
     return;
   }
+
+  // Si el piloto elige el mismo color en Primario y Secundario, calculamos un contraste tonal sutil
+  const secColor = resolveTonalSecondary(palette.primary, palette.secondary);
 
   if (pattern === "endurance") {
     // Livery pro Endurance (bloques aerodinámicos opacos multi-capa estilo IMSA / WEC)
@@ -462,13 +527,29 @@ function drawPatternCore(
       ctx.fill();
     });
   } else if (pattern === "clean-minimal") {
-    // Clean Minimal Factory: carrocería bitono sólida de escudería oficial con doble banda de cintura
-    ctx.fillStyle = palette.secondary;
-    ctx.fillRect(0, size * 0.56, size, size * 0.44);
-    ctx.fillStyle = palette.accent;
-    ctx.fillRect(0, size * 0.54, size, size * 0.028);
-    ctx.fillStyle = palette.detail;
-    ctx.fillRect(0, size * 0.525, size, size * 0.01);
+    // Clean Minimal Pro: degradado suave de fábrica + curvas fluidas aerodinámicas (sin cajas planas)
+    const g = ctx.createLinearGradient(0, 0, size, size);
+    g.addColorStop(0, palette.primary);
+    g.addColorStop(0.62, palette.primary);
+    g.addColorStop(1, secColor);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, size, size);
+
+    // Curva fluida aerodinámica principal en acento
+    ctx.strokeStyle = palette.accent;
+    ctx.lineWidth = Math.max(6, size * 0.022);
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.05, size * 0.72);
+    ctx.bezierCurveTo(size * 0.30, size * 0.56, size * 0.65, size * 0.44, size * 1.05, size * 0.24);
+    ctx.stroke();
+
+    // Segundo hilo paralelo en color detalle
+    ctx.strokeStyle = palette.detail;
+    ctx.lineWidth = Math.max(2.5, size * 0.007);
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.05, size * 0.68);
+    ctx.bezierCurveTo(size * 0.30, size * 0.52, size * 0.65, size * 0.40, size * 1.05, size * 0.20);
+    ctx.stroke();
   } else if (pattern === "geo-camo") {
     // DTM / Audi Sport Geo-Camo: camuflaje geométrico splinter de polígonos angulares en 4 tonos
     const drawPoly = (pts: Array<[number, number]>, color: string) => {
@@ -592,27 +673,43 @@ function drawPatternCore(
       ctx.fill();
     }
   } else if (pattern === "heritage-gulf") {
-    // Heritage Classic: banda ancha de resistencia morro-cola + doble filete oscuro + faldones
-    ctx.fillStyle = palette.secondary;
-    ctx.fillRect(0, size * 0.76, size, size * 0.24);
+    // Heritage Modern Racing: degradado suave de base + doble onda aerodinámica elegante + filetes (sin cruz básica)
+    const g = ctx.createLinearGradient(0, 0, 0, size);
+    g.addColorStop(0, palette.primary);
+    g.addColorStop(0.75, palette.primary);
+    g.addColorStop(1, secColor);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, size, size);
 
-    // Banda central icónica
-    const bw = size * 0.24;
+    // Onda fluida superior-inferior estilo Gulf / Porsche moderno
+    ctx.fillStyle = secColor;
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.78);
+    ctx.bezierCurveTo(size * 0.32, size * 0.66, size * 0.68, size * 0.86, size, size * 0.70);
+    ctx.lineTo(size, size);
+    ctx.lineTo(0, size);
+    ctx.closePath();
+    ctx.fill();
+
+    // Banda central estilizada con degradado sutil
+    const bw = size * 0.16;
     const bx = (size - bw) / 2;
     ctx.fillStyle = palette.accent;
     ctx.fillRect(bx, 0, bw, size);
 
-    // Filetes nítidos exteriores
-    const pin = Math.max(4, size * 0.01);
+    // Doble filete de contraste nítido
+    const pin = Math.max(3, size * 0.008);
     ctx.fillStyle = palette.detail;
-    ctx.fillRect(bx - pin * 1.6, 0, pin, size);
-    ctx.fillRect(bx + bw + pin * 0.6, 0, pin, size);
+    ctx.fillRect(bx - pin * 2.1, 0, pin, size);
+    ctx.fillRect(bx + bw + pin * 1.1, 0, pin, size);
 
-    // Banda horizontal de cintura en acento + filete
-    ctx.fillStyle = palette.accent;
-    ctx.fillRect(0, size * 0.73, size, size * 0.035);
-    ctx.fillStyle = palette.detail;
-    ctx.fillRect(0, size * 0.72, size, size * 0.009);
+    // Curva de acento acompañando la onda inferior
+    ctx.strokeStyle = palette.accent;
+    ctx.lineWidth = Math.max(5, size * 0.016);
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.77);
+    ctx.bezierCurveTo(size * 0.32, size * 0.65, size * 0.68, size * 0.85, size, size * 0.69);
+    ctx.stroke();
   } else if (pattern === "factory-chevron") {
     // Factory V-Chevron: chevrones simétricos en V estilo equipo oficial Porsche / BMW Motorsport
     ctx.fillStyle = palette.secondary;
@@ -682,8 +779,60 @@ function drawPatternCore(
     ctx.lineTo(0, size * 0.75);
     ctx.closePath();
     ctx.fill();
+  } else if (pattern === "topo-flow") {
+    // Topo-Lines Flow: curvas topográficas fluidas de competición (queda brutal en cualquier orientación UV)
+    const g = ctx.createRadialGradient(size * 0.5, size * 0.45, size * 0.05, size * 0.5, size * 0.5, size * 0.75);
+    g.addColorStop(0, secColor);
+    g.addColorStop(1, palette.primary);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, size, size);
+
+    // Curvas topográficas concéntricas fluidas en 2 capas (acento + detalle)
+    const rings = 14;
+    for (let i = 0; i < rings; i++) {
+      const t = i / rings;
+      ctx.strokeStyle = i % 3 === 0 ? palette.accent : i % 3 === 1 ? palette.detail : secColor;
+      ctx.globalAlpha = i % 3 === 0 ? 0.88 : i % 3 === 1 ? 0.35 : 0.55;
+      ctx.lineWidth = Math.max(2, size * (i % 3 === 0 ? 0.0065 : 0.0035));
+      ctx.beginPath();
+      const baseY = size * (0.04 + t * 0.94);
+      const amp = size * (0.06 + Math.sin(t * Math.PI) * 0.08);
+      ctx.moveTo(-size * 0.05, baseY);
+      ctx.bezierCurveTo(
+        size * 0.28,
+        baseY - amp,
+        size * 0.62,
+        baseY + amp * 1.15,
+        size * 1.05,
+        baseY - amp * 0.4,
+      );
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  } else if (pattern === "halftone-pro") {
+    // Halftone GT Pro: degradado fluido + puntos halftone de competición estilo GT World Challenge / IMSA
+    const g = ctx.createLinearGradient(0, 0, size, size);
+    g.addColorStop(0, palette.primary);
+    g.addColorStop(0.55, secColor);
+    g.addColorStop(1, palette.primary);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, size, size);
+
+    drawHalftoneDots(ctx, size, palette.accent, Math.PI * 0.25, 32);
+    drawHalftoneDots(ctx, size, palette.detail, -Math.PI * 0.75, 28);
+
+    // Sweep diagonal limpio de contraste
+    ctx.strokeStyle = palette.detail;
+    ctx.lineWidth = Math.max(4, size * 0.012);
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.74);
+    ctx.bezierCurveTo(size * 0.35, size * 0.62, size * 0.68, size * 0.38, size, size * 0.22);
+    ctx.stroke();
   }
 
+  if (carbonBase) {
+    drawCarbonPattern(ctx, 0, 0, size, size, size / 112);
+  }
   drawSurfaceTexture(ctx, surfaceTexture, palette, size);
   ctx.restore();
 }
