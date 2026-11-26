@@ -288,54 +288,91 @@ export function initSkinsStudio(): void {
     scheduleRender();
   }
 
+  function resolveCarMeta(carSlug: string): { name: string; category: string; iracingFolder: string } {
+    const fallback = getCarById(carSlug);
+    const indexed = (carsIndexData?.cars || []).find((c) => c.car_slug.toLowerCase() === carSlug.toLowerCase());
+    const fromWorker = workerCarsCatalog.find((c) => c.car_slug.toLowerCase() === carSlug.toLowerCase());
+    return {
+      name: fromWorker?.name || indexed?.name || (fallback.id === carSlug ? fallback.name : carSlug),
+      category: fromWorker?.category || indexed?.category || fallback.category,
+      iracingFolder: fromWorker?.iracing_folder || carSlug,
+    };
+  }
+
   async function syncCarUvFromWorker(carSlug: string): Promise<void> {
-    // 1. Apply bundled calibrated UV JSON immediately (src/data/uv-maps/<car_slug>.json)
+    const meta = resolveCarMeta(carSlug);
+    const infoEl = byId<HTMLElement>("skTemplateSummary");
+    const notesEl = byId<HTMLElement>("skCarNotes");
+
+    // 1. Always resolve immediately from localStorage / bundled src/data/uv-maps/ / clean category archetype
     const localUv = getLocalUvMap(carSlug);
     if (localUv) {
       applyUvResponseToState(carSlug, localUv);
-      const car = getCarById(carSlug);
-      const infoEl = byId<HTMLElement>("skTemplateSummary");
       if (infoEl) {
-        infoEl.textContent = `Mapa UV calibrado cargado desde src/data/uv-maps/ (${localUv.car_name} · ${localUv.native_resolution}).`;
+        infoEl.textContent = `Plantilla UV limpia cargada automáticamente (${localUv.car_name} · ${localUv.native_resolution}). Cambia colores, patrón y sponsors encima.`;
       }
-      const notesEl = byId<HTMLElement>("skCarNotes");
       if (notesEl) {
         notesEl.textContent = `Carpeta iRacing: paint/${localUv.iracing_folder}/ · Mapa UV calibrado local ✓`;
       }
       renderZoneList();
-      glEngine.setCategory(mapCategoryStringToBody(car.category));
+      glEngine.setCategory(mapCategoryStringToBody(meta.category));
       glEngine.updateZones(state.zones);
       scheduleRender();
+      setStatus(`Plantilla UV lista (${localUv.car_name})`, "ok");
+    } else {
+      const resolved = await lazyLoadCarUv(carSlug, meta.category);
+      if (state.carId !== carSlug) return;
+      state.zones = resolved.zones;
+      workerWireframeCanvas = null;
+      workerSponsorBlocks = [];
+      workerRestrictedPlates = [];
+      workerSeriesSlots = [];
+      const archLabels: Record<string, string> = {
+        open_wheel: "Fórmula / Open-Wheel",
+        gt3_gt4: "GT3 / GT4",
+        prototype_gtp: "GTP / Prototipo",
+        stock_nascar: "Oval / Stock Car",
+        tcr_touring: "Touring / Producción",
+      };
+      const archLabel = archLabels[resolved.archetype] || resolved.archetype;
+      if (infoEl) {
+        infoEl.textContent = `Plantilla UV limpia cargada automáticamente (${meta.name} · Arquetipo ${archLabel} · ${state.resolution}×${state.resolution}). Cambia colores, patrón y sponsors encima.`;
+      }
+      if (notesEl) {
+        notesEl.textContent = `Carpeta iRacing: paint/${meta.iracingFolder}/ · Arquetipo ${archLabel} listo ✓`;
+      }
+      renderZoneList();
+      glEngine.setCategory(mapCategoryStringToBody(meta.category));
+      glEngine.updateZones(state.zones);
+      scheduleRender();
+      setStatus(`Plantilla UV lista (${meta.name})`, "ok");
     }
 
+    // 2. Optionally enrich with Worker wireframe SVG & official plates if available in D1 (never fail UI on 404)
     if (!vaultAuthenticated) return;
     try {
       const uv = await fetchWorkerUvMap(carSlug);
       if (state.carId !== carSlug) return;
-      const car = getCarById(carSlug);
       applyUvResponseToState(carSlug, uv);
       workerWireframeCanvas = await renderSvgStringToCanvas(uv.wireframe_svg || "");
-      const infoEl = byId<HTMLElement>("skTemplateSummary");
       if (infoEl) {
-        infoEl.textContent = `Plantilla UV limpia sin copy cargada automáticamente (${uv.car_name} · ${uv.native_resolution}). Cambia colores, patrón y sponsors encima.`;
+        infoEl.textContent = `Plantilla UV limpia cargada automáticamente (${uv.car_name} · ${uv.native_resolution}). Cambia colores, patrón y sponsors encima.`;
       }
-      const notesEl = byId<HTMLElement>("skCarNotes");
       if (notesEl) {
-        notesEl.textContent = `Carpeta iRacing: paint/${uv.iracing_folder}/ · Estado UV: ${uv.uv_status === "extracted" ? "Plantilla vectorial calibrada ✓" : "Base"}`;
+        notesEl.textContent = `Carpeta iRacing: paint/${uv.iracing_folder}/ · Estado UV: ${uv.uv_status === "extracted" ? "Plantilla vectorial calibrada ✓" : "Base calibrada ✓"}`;
       }
       renderZoneList();
-      glEngine.setCategory(mapCategoryStringToBody(car.category));
+      glEngine.setCategory(mapCategoryStringToBody(meta.category));
       glEngine.updateZones(state.zones);
       scheduleRender();
-      setStatus(`Plantilla UV cargada (${uv.car_name})`, "ok");
+      setStatus(`Plantilla UV lista (${uv.car_name})`, "ok");
     } catch (err) {
       if (err instanceof SkinsApiError && err.status === 401) {
         lockStudio(err.message);
         return;
       }
-      if (!localUv) {
-        setStatus(err instanceof Error ? err.message : "No se pudo sincronizar UV del Worker", "err");
-      }
+      // Keep the clean local UV map / archetype active without showing a red error
+      setStatus(`Plantilla UV lista (${localUv?.car_name || meta.name})`, "ok");
     }
   }
 
@@ -1494,6 +1531,10 @@ export function initSkinsStudio(): void {
         }
       }
       const localUv = getLocalUvMap(nextSlug);
+      workerWireframeCanvas = null;
+      workerSponsorBlocks = [];
+      workerRestrictedPlates = [];
+      workerSeriesSlots = [];
       if (localUv) {
         applyUvResponseToState(nextSlug, localUv);
       } else {
@@ -1506,29 +1547,8 @@ export function initSkinsStudio(): void {
       syncControlsFromState();
       scheduleRender();
 
-      // Auto-restore cached .GLB / .GLTF for this car_slug from IndexedDB (or clean parametric bodywork)
+      // Auto-restore cached .GLB / .GLTF for this car_slug from IndexedDB (or sculpted category bodywork)
       void restoreSaved3dModelForCar(nextSlug);
-
-      // Lazy-load UV map on demand (localStorage -> /uv-maps/<slug>.json -> archetype base)
-      if (!localUv) {
-        void lazyLoadCarUv(nextSlug, effectiveCategory).then((res) => {
-          if (state.carId !== nextSlug) return;
-          state.zones = res.zones;
-          glEngine.updateZones(state.zones);
-          renderZoneList();
-          scheduleRender();
-          const notesEl = byId<HTMLElement>("skCarNotes");
-          if (notesEl) {
-            const badge =
-              res.source === "local-calibration"
-                ? "Calibración local guardada ✓"
-                : res.source === "lazy-json"
-                  ? "UV calibrado (carga bajo demanda) ✓"
-                  : `Arquetipo base (${res.archetype}) · editable en 1 clic`;
-            notesEl.textContent = `Carpeta iRacing: paint/${nextSlug}/ · ${badge}`;
-          }
-        });
-      }
       void syncCarUvFromWorker(nextSlug);
     });
   }

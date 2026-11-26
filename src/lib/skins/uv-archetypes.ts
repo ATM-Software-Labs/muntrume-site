@@ -1,4 +1,6 @@
 import type { ZoneKey, ZoneRect } from "./types";
+import { getLocalUvMap } from "./uv-maps-loader";
+import { mapWorkerUvToZones } from "./vault-client";
 
 export type UvArchetype = "gt3_gt4" | "prototype_gtp" | "open_wheel" | "stock_nascar" | "tcr_touring";
 
@@ -131,8 +133,8 @@ export function saveLocalCalibration(carSlug: string, zones: Record<ZoneKey, Zon
 }
 
 /**
- * Lazily loads a car's UV map on demand (never bundled in main JS).
- * Priority: 1) User localStorage calibration -> 2) /uv-maps/<slug>.json -> 3) Category archetype base.
+ * Resolves a car's UV map with zero broken HTTP fetches.
+ * Priority: 1) User localStorage calibration -> 2) Bundled src/data/uv-maps/<slug>.json -> 3) Category archetype base.
  */
 export async function lazyLoadCarUv(carSlug: string, category?: string): Promise<LazyUvResult> {
   const archetype = resolveArchetypeFromCategory(category, carSlug);
@@ -145,38 +147,18 @@ export async function lazyLoadCarUv(carSlug: string, category?: string): Promise
   if (cached) return cached;
 
   const baseZones = getArchetypeZones(category, carSlug);
-  try {
-    const res = await fetch(`/uv-maps/${encodeURIComponent(carSlug)}.json`, { cache: "force-cache" });
-    if (res.ok) {
-      const data = await res.json();
-      const z = data?.zones || {};
-      const mapRect = (raw: any, fallback: ZoneRect): ZoneRect =>
-        raw && typeof raw.x === "number" && typeof raw.w === "number" && raw.w > 0.01
-          ? { ...fallback, x: raw.x, y: raw.y, w: raw.w, h: raw.h }
-          : fallback;
-
-      const zones: Record<ZoneKey, ZoneRect> = {
-        hood: mapRect(z.hood, baseZones.hood),
-        roof: mapRect(z.roof, baseZones.roof),
-        leftSide: mapRect(z.left_side, baseZones.leftSide),
-        rightSide: mapRect(z.right_side, baseZones.rightSide),
-        rearWing: mapRect(z.rear_wing, baseZones.rearWing),
-        mirrors: mapRect(z.mirrors, baseZones.mirrors),
-        frontBumper: mapRect(z.front_bumper, baseZones.frontBumper),
-        rearBumper: mapRect(z.rear_bumper, baseZones.rearBumper),
-        numberPlateLeft: mapRect(z.number_plates, baseZones.numberPlateLeft),
-        numberPlateRight: mapRect(z.number_plates_right, baseZones.numberPlateRight),
-      };
-      const result: LazyUvResult = {
-        zones,
-        archetype,
-        source: "lazy-json",
-        wireframeUrl: typeof data.wireframe_url === "string" ? data.wireframe_url : null,
-      };
-      lazyUvCache.set(carSlug, result);
-      return result;
-    }
-  } catch {}
+  const bundled = getLocalUvMap(carSlug);
+  if (bundled) {
+    const zones = mapWorkerUvToZones(bundled, baseZones);
+    const result: LazyUvResult = {
+      zones,
+      archetype,
+      source: "lazy-json",
+      wireframeUrl: null,
+    };
+    lazyUvCache.set(carSlug, result);
+    return result;
+  }
 
   const fallbackResult: LazyUvResult = {
     zones: baseZones,
