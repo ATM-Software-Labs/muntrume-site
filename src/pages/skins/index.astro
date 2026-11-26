@@ -116,6 +116,8 @@ const canonical = "https://skins.muntru.me/";
           <button type="button" data-res-mode="2048" class="is-active">2048 px</button>
           <button type="button" data-res-mode="4096">4096 px (4K)</button>
         </div>
+        <button type="button" id="skUndoBtn" class="sk-btn sk-btn-sm" title="Deshacer (Ctrl+Z)">↶</button>
+        <button type="button" id="skRedoBtn" class="sk-btn sk-btn-sm" title="Rehacer (Ctrl+Y)">↷</button>
         <button type="button" id="skCleanCanvasBtn" class="sk-btn sk-btn-sm">Limpiar lienzo</button>
         <button type="button" id="skSaveLocalBtn" class="sk-btn sk-btn-sm">Guardar preset</button>
       </div>
@@ -145,7 +147,7 @@ const canonical = "https://skins.muntru.me/";
             </label>
             <label class="sk-label">
               iRacing Customer ID
-              <input id="skCustomerId" type="text" class="sk-input" placeholder="994512" />
+              <input id="skCustomerId" type="text" class="sk-input" placeholder="993381" value="993381" />
             </label>
           </div>
 
@@ -408,6 +410,13 @@ const canonical = "https://skins.muntru.me/";
             <button type="button" id="skKitAddSeries" class="sk-btn sk-btn-sm">+ Placas GT3 / Dorsales</button>
             <button type="button" id="skKitAddWire" class="sk-btn sk-btn-sm">+ Cascarón UV</button>
           </div>
+
+          <h2 class="sk-card-title" style="margin-top:6px;">Default Stamps / Gráficos (Paint Builder)</h2>
+          <div class="sk-row" style="gap:6px;">
+            <input id="skStampSearch" type="search" class="sk-input" placeholder="Buscar stamp (llamas, cuadros, chevrón, FIA)..." style="flex:1;" />
+            <input id="skStampColor" type="color" value="#00e699" title="Color del stamp" style="width:34px;height:32px;border-radius:6px;border:1px solid var(--sk-line);background:transparent;cursor:pointer;" />
+          </div>
+          <div id="skDefaultStampsGrid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-height:190px;overflow-y:auto;padding-right:2px;"></div>
 
           <h2 class="sk-card-title" style="margin-top:4px;">Escudería Muntrume (MMT)</h2>
           <div id="skTeamDecals" class="sk-row" style="flex-wrap:wrap;"></div>

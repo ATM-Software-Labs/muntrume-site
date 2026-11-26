@@ -1,4 +1,5 @@
 import { BUILTIN_DECALS, getCarById } from "./catalog";
+import { DEFAULT_STAMPS } from "./stamps-library";
 import type { DecalLayer, PaletteConfig, PatternStyle, SkinDesignState, SurfaceTexture, ZoneKey, ZoneRect } from "./types";
 
 export interface ReservedGuideBox {
@@ -94,6 +95,12 @@ function getDecalSource(decal: DecalLayer): { key: string; src: string } | null 
     return { key: `custom:${decal.id}:${decal.dataUrl.slice(0, 48)}`, src: decal.dataUrl };
   }
   if (decal.kind === "builtin" && decal.assetId) {
+    const stamp = DEFAULT_STAMPS.find((s) => s.id === decal.assetId);
+    if (stamp) {
+      const svg = stamp.svg(decal.color || "#00e699");
+      const encoded = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      return { key: `stamp:${stamp.id}:${decal.color}`, src: encoded };
+    }
     const asset = BUILTIN_DECALS.find((b) => b.id === decal.assetId);
     if (!asset) return null;
     const svg = asset.svg(decal.color || "#ffffff");
@@ -707,6 +714,9 @@ function drawDriverNumbers(ctx: CanvasRenderingContext2D, state: SkinDesignState
 
 async function drawDecals(ctx: CanvasRenderingContext2D, state: SkinDesignState, size: number, selectedDecalId?: string | null, forExport?: boolean): Promise<void> {
   for (const decal of state.decals) {
+    // Skip hidden layers (eye toggle) and never bake wireframe guide into exported TGA
+    if (decal.opacity <= 0.001) continue;
+    if (forExport && decal.id.includes("-wireframe")) continue;
     const positions = decal.mirrorX
       ? [
           { x: decal.x, y: decal.y, rot: decal.rotation },

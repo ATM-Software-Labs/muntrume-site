@@ -118,7 +118,8 @@ export class WebGLPreviewEngine {
 
   private rafId = 0;
   private isCustomModel = false;
-  private meshLabel = "Cargando coche 3D GT de estudio (.GLB)...";
+  private currentCategory: CarBodyCategory = "gt3";
+  private meshLabel = "Showroom 3D GT PBR (Three.js · arrastra para orbitar)";
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -245,65 +246,171 @@ export class WebGLPreviewEngine {
       });
 
       this.setLightingPreset("noon");
-      void this.loadDefaultGtShowroomModel();
+      this.buildProceduralMotorsportCar(this.currentCategory);
       this.startLoop();
     } catch {
       this.renderer = null;
     }
   }
 
-  private async loadDefaultGtShowroomModel(): Promise<void> {
+  private buildProceduralMotorsportCar(category: CarBodyCategory): void {
     if (!this.scene || !this.paintMaterial || !this.glassMaterial || !this.detailsMaterial) return;
-    try {
-      const loader = this.createGltfLoader();
-      const gltf = await loader.loadAsync("/assets/models/gt-showroom.glb");
-      const root = gltf.scene;
+    this.clearCarGroup();
 
-      // Normalize to exact showroom scale and rest tires flush on y = 0
-      const box = new THREE.Box3().setFromObject(root);
-      const size = new THREE.Vector3();
-      const center = new THREE.Vector3();
-      box.getSize(size);
-      box.getCenter(center);
-      const maxSpan = Math.max(size.x, size.y, size.z) || 1;
-      const scale = 4.4 / maxSpan;
-      root.scale.setScalar(scale);
-      root.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
-      root.updateMatrixWorld(true);
+    const group = new THREE.Group();
+    const paintMat = this.paintMaterial;
+    const glassMat = this.glassMaterial;
+    const carbonMat = new THREE.MeshStandardMaterial({ color: "#151922", roughness: 0.45, metalness: 0.35 });
+    const tireMat = new THREE.MeshStandardMaterial({ color: "#14161a", roughness: 0.85, metalness: 0.08 });
+    const rimMat = this.detailsMaterial;
+    const brakeMat = new THREE.MeshStandardMaterial({ color: "#dc2626", roughness: 0.35, metalness: 0.6 });
+    const headLightMat = new THREE.MeshStandardMaterial({ color: "#ffffff", emissive: "#e0f2fe", emissiveIntensity: 2.2 });
+    const tailLightMat = new THREE.MeshStandardMaterial({ color: "#ef4444", emissive: "#dc2626", emissiveIntensity: 2.4 });
 
-      const finalBox = new THREE.Box3().setFromObject(root);
-      const paintMat = this.paintMaterial;
-      const glassMat = this.glassMaterial;
-      const detailMat = this.detailsMaterial;
+    const isFormula = category === "formula";
+    const isGtp = category === "gtp";
+    const bodyWidth = isFormula ? 1.05 : isGtp ? 1.98 : 1.94;
+    const bodyLen = isFormula ? 4.85 : isGtp ? 4.85 : 4.55;
 
-      root.traverse((obj) => {
-        if (!(obj instanceof THREE.Mesh)) return;
-        const name = (obj.name || "").toLowerCase();
-        const matName =
-          !Array.isArray(obj.material) && obj.material && "name" in obj.material
-            ? String(obj.material.name || "").toLowerCase()
-            : "";
-
-        if (name === "body" || matName === "body" || matName.includes("carpaint") || matName.includes("paint")) {
-          applyCleanBodyUVs(obj, finalBox);
-          obj.material = paintMat;
-        } else if (name.includes("glass") || matName.includes("glass")) {
-          obj.material = glassMat;
-        } else if (name.includes("rim") || matName.includes("rim")) {
-          obj.material = detailMat;
-        }
-      });
-
-      this.clearCarGroup();
-      const wrapper = new THREE.Group();
-      wrapper.add(root);
-      this.carGroup = wrapper;
-      this.scene.add(wrapper);
-      this.isCustomModel = false;
-      this.meshLabel = "Showroom 3D GT Real (Three.js PBR + reflejos de estudio · arrastra para orbitar)";
-    } catch {
-      this.meshLabel = "No se pudo cargar /assets/models/gt-showroom.glb — carga tu .GLB/.OBJ local.";
+    // 1. Sculpted side profile extruded cleanly across width
+    const profile = new THREE.Shape();
+    if (isFormula) {
+      profile.moveTo(-2.4, 0.16);
+      profile.lineTo(-1.3, 0.34);
+      profile.lineTo(-0.3, 0.56);
+      profile.lineTo(0.45, 0.92);
+      profile.lineTo(1.5, 0.62);
+      profile.lineTo(2.25, 0.45);
+      profile.lineTo(2.25, 0.14);
+      profile.lineTo(-2.4, 0.12);
+    } else if (isGtp) {
+      profile.moveTo(-2.38, 0.14);
+      profile.lineTo(-2.15, 0.56);
+      profile.lineTo(-1.25, 0.68);
+      profile.lineTo(-0.55, 1.06);
+      profile.lineTo(0.45, 1.04);
+      profile.lineTo(1.75, 0.72);
+      profile.lineTo(2.36, 0.64);
+      profile.lineTo(2.36, 0.16);
+      profile.lineTo(-2.38, 0.12);
+    } else {
+      // GT3 / Touring wide-body silhouette
+      profile.moveTo(-2.22, 0.14);
+      profile.lineTo(-2.08, 0.58);
+      profile.lineTo(-1.18, 0.74);
+      profile.lineTo(-0.48, 1.22);
+      profile.lineTo(0.62, 1.20);
+      profile.lineTo(1.52, 0.84);
+      profile.lineTo(2.22, 0.78);
+      profile.lineTo(2.22, 0.18);
+      profile.lineTo(-2.22, 0.14);
     }
+    profile.closePath();
+
+    const bodyGeo = new THREE.ExtrudeGeometry(profile, {
+      depth: bodyWidth,
+      bevelEnabled: true,
+      bevelThickness: 0.11,
+      bevelSize: 0.08,
+      bevelSegments: 4,
+      curveSegments: 16,
+    });
+    bodyGeo.translate(0, 0, -bodyWidth / 2);
+    bodyGeo.rotateY(Math.PI / 2); // Align nose along +Z / -Z
+    const bodyMesh = new THREE.Mesh(bodyGeo, paintMat);
+    group.add(bodyMesh);
+
+    // 2. Sculpted fenders / sidepods for GT3/GTP
+    if (!isFormula) {
+      for (const side of [-1, 1]) {
+        const pod = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.42, bodyLen * 0.78), paintMat);
+        pod.position.set(side * (bodyWidth * 0.5 + 0.02), 0.44, 0);
+        group.add(pod);
+      }
+      // Windshield & cockpit canopy
+      const canopy = new THREE.Mesh(
+        new THREE.BoxGeometry(bodyWidth * 0.78, isGtp ? 0.34 : 0.44, isGtp ? 1.55 : 1.85),
+        glassMat,
+      );
+      canopy.position.set(0, isGtp ? 0.88 : 1.02, 0.08);
+      group.add(canopy);
+    }
+
+    // 3. Carbon front splitter & rear diffuser
+    const splitter = new THREE.Mesh(new THREE.BoxGeometry(bodyWidth + 0.16, 0.05, 0.62), carbonMat);
+    splitter.position.set(0, 0.12, bodyLen / 2 - 0.15);
+    group.add(splitter);
+
+    const diffuser = new THREE.Mesh(new THREE.BoxGeometry(bodyWidth + 0.08, 0.14, 0.5), carbonMat);
+    diffuser.position.set(0, 0.16, -bodyLen / 2 + 0.16);
+    group.add(diffuser);
+
+    // 4. Rear motorsport wing + swan-neck pylons + endplates
+    const wingY = isFormula ? 0.96 : isGtp ? 1.02 : 1.16;
+    const wingZ = -bodyLen / 2 + 0.18;
+    const wingMain = new THREE.Mesh(new THREE.BoxGeometry(bodyWidth + 0.12, 0.06, 0.36), paintMat);
+    wingMain.position.set(0, wingY, wingZ);
+    wingMain.rotation.x = 0.12;
+    group.add(wingMain);
+    for (const side of [-1, 1]) {
+      const endplate = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.34, 0.46), paintMat);
+      endplate.position.set(side * (bodyWidth / 2 + 0.06), wingY - 0.03, wingZ);
+      group.add(endplate);
+      const pylon = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.42, 0.18), carbonMat);
+      pylon.position.set(side * 0.32, wingY - 0.22, wingZ + 0.04);
+      group.add(pylon);
+    }
+
+    // 5. LED Headlights & Taillights
+    for (const side of [-1, 1]) {
+      const hl = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.09, 0.06), headLightMat);
+      hl.position.set(side * (bodyWidth * 0.34), 0.46, bodyLen / 2 + 0.02);
+      group.add(hl);
+      const tl = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.08, 0.05), tailLightMat);
+      tl.position.set(side * (bodyWidth * 0.32), 0.62, -bodyLen / 2 - 0.02);
+      group.add(tl);
+    }
+
+    // 6. Four Motorsport Wheels (slick tires + alloy rims + red brake calipers)
+    const wheelPositions: Array<[number, number]> = [
+      [-bodyWidth * 0.5 - 0.06, bodyLen * 0.31],
+      [bodyWidth * 0.5 + 0.06, bodyLen * 0.31],
+      [-bodyWidth * 0.5 - 0.06, -bodyLen * 0.31],
+      [bodyWidth * 0.5 + 0.06, -bodyLen * 0.31],
+    ];
+    for (const [wx, wz] of wheelPositions) {
+      const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.30, 32), tireMat);
+      tire.rotation.z = Math.PI / 2;
+      tire.position.set(wx, 0.34, wz);
+      group.add(tire);
+
+      const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.31, 24), rimMat);
+      rim.rotation.z = Math.PI / 2;
+      rim.position.set(wx, 0.34, wz);
+      group.add(rim);
+
+      const caliper = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.12), brakeMat);
+      caliper.position.set(wx * 0.92, 0.38, wz);
+      group.add(caliper);
+    }
+
+    // Apply unified planar UVs to all painted meshes so the live 2D livery wraps cleanly
+    group.updateMatrixWorld(true);
+    const carBox = new THREE.Box3().setFromObject(group);
+    group.traverse((obj) => {
+      if (obj instanceof THREE.Mesh && obj.material === paintMat) {
+        applyCleanBodyUVs(obj, carBox);
+      }
+    });
+
+    this.carGroup = group;
+    this.scene.add(group);
+    const catName = category === "gtp" ? "GTP Prototipo" : category === "formula" ? "Fórmula" : "GT3";
+    this.meshLabel = `Showroom 3D ${catName} PBR (Three.js · arrastra para orbitar · carga .GLB/.OBJ opcional)`;
+  }
+
+  private async loadDefaultGtShowroomModel(): Promise<void> {
+    this.buildProceduralMotorsportCar(this.currentCategory);
   }
 
   private startLoop(): void {
@@ -326,8 +433,11 @@ export class WebGLPreviewEngine {
     this.carGroup = null;
   }
 
-  public setCategory(_category: CarBodyCategory): void {
-    // Real GT showroom model stays active regardless of category; user can load custom GLB/OBJ anytime.
+  public setCategory(category: CarBodyCategory): void {
+    if (this.isCustomModel) return;
+    if (this.currentCategory === category && this.carGroup) return;
+    this.currentCategory = category;
+    this.buildProceduralMotorsportCar(category);
   }
 
   public updateZones(_zones: Record<ZoneKey, UvRect>): void {

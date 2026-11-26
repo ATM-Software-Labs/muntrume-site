@@ -11,6 +11,7 @@ import {
 import { renderPatternThumbnail, renderSkinToCanvas, renderSpecMapToCanvas, type ReservedGuideBox } from "./compositor";
 import { renderShowroomCarView, type ShowroomAngle } from "./car-showroom-view";
 import { BRAND_DECALS, SERIES_DECALS, TEAM_DECALS, type LibraryDecalItem } from "./decals-library";
+import { DEFAULT_STAMPS } from "./stamps-library";
 import {
   exportIracingZipBundle,
   exportPresetJson,
@@ -600,25 +601,75 @@ export function initSkinsStudio(): void {
     const host = byId<HTMLElement>("skDecalList");
     if (!host) return;
     if (state.decals.length === 0) {
-      host.innerHTML = `<p class="sk-help">No hay logos activos. Añade un logo MMT o sube un PNG/SVG.</p>`;
+      host.innerHTML = `<p class="sk-help">No hay capas activas. Añade un Default Stamp, capa oficial iRacing o logo.</p>`;
       return;
     }
     host.innerHTML = state.decals
-      .map((d) => {
+      .map((d, idx) => {
         const active = selectedDecalId === d.id ? " is-active" : "";
+        const hidden = d.opacity <= 0.001;
         const sym = d.mirrorX ? `<span class="sk-tag sk-tag-ok">L↔R</span>` : `<span class="sk-tag">1×</span>`;
-        return `<div class="sk-list-item${active}" data-select-decal="${d.id}"><span>${escapeHtml(d.name)}</span>${sym}</div>`;
+        return `<div class="sk-list-item${active}" data-select-decal="${d.id}" style="gap:6px;${hidden ? "opacity:0.48;" : ""}">
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(d.name)}</span>
+          <span style="display:inline-flex;align-items:center;gap:3px;flex-shrink:0;">
+            ${sym}
+            <button type="button" class="sk-btn sk-btn-sm" data-decal-eye="${d.id}" title="${hidden ? "Mostrar capa" : "Ocultar capa"}" style="padding:1px 5px;font-size:11px;">${hidden ? "🙈" : "👁"}</button>
+            <button type="button" class="sk-btn sk-btn-sm" data-decal-up="${idx}" title="Subir capa" style="padding:1px 4px;font-size:10px;" ${idx === state.decals.length - 1 ? "disabled" : ""}>▲</button>
+            <button type="button" class="sk-btn sk-btn-sm" data-decal-dn="${idx}" title="Bajar capa" style="padding:1px 4px;font-size:10px;" ${idx === 0 ? "disabled" : ""}>▼</button>
+          </span>
+        </div>`;
       })
       .join("");
 
     host.querySelectorAll<HTMLElement>("[data-select-decal]").forEach((el) => {
-      el.addEventListener("click", () => {
+      el.addEventListener("click", (ev) => {
+        if ((ev.target as HTMLElement | null)?.closest("button")) return;
         selectedDecalId = el.dataset.selectDecal || null;
         selectedZone = null;
         renderZoneList();
         renderDecalList();
         renderDecalEditor();
         scheduleRender();
+      });
+    });
+
+    host.querySelectorAll<HTMLButtonElement>("[data-decal-eye]").forEach((btn) => {
+      btn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        const d = state.decals.find((item) => item.id === btn.dataset.decalEye);
+        if (!d) return;
+        d.opacity = d.opacity <= 0.001 ? 1 : 0;
+        renderDecalList();
+        renderDecalEditor();
+        scheduleRender();
+      });
+    });
+
+    host.querySelectorAll<HTMLButtonElement>("[data-decal-up]").forEach((btn) => {
+      btn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        const idx = Number(btn.dataset.decalUp);
+        if (idx >= 0 && idx < state.decals.length - 1) {
+          const tmp = state.decals[idx];
+          state.decals[idx] = state.decals[idx + 1];
+          state.decals[idx + 1] = tmp;
+          renderDecalList();
+          scheduleRender();
+        }
+      });
+    });
+
+    host.querySelectorAll<HTMLButtonElement>("[data-decal-dn]").forEach((btn) => {
+      btn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        const idx = Number(btn.dataset.decalDn);
+        if (idx > 0 && idx < state.decals.length) {
+          const tmp = state.decals[idx];
+          state.decals[idx] = state.decals[idx - 1];
+          state.decals[idx - 1] = tmp;
+          renderDecalList();
+          scheduleRender();
+        }
       });
     });
   }
@@ -1653,6 +1704,111 @@ export function initSkinsStudio(): void {
   byId<HTMLButtonElement>("skKitAddImsa")?.addEventListener("click", () => toggleOfficialUvLayer("imsa_decals", "Etiquetas IMSA"));
   byId<HTMLButtonElement>("skKitAddSeries")?.addEventListener("click", () => toggleOfficialUvLayer("series_blocks", "Placas GT3 / Dorsales"));
   byId<HTMLButtonElement>("skKitAddWire")?.addEventListener("click", () => toggleOfficialUvLayer("wireframe", "Cascarón UV Wireframe"));
+
+  // Default Stamps Gallery (Trading Paints Paint Builder Pro style)
+  const renderDefaultStamps = () => {
+    const grid = byId<HTMLElement>("skDefaultStampsGrid");
+    if (!grid) return;
+    const query = (byId<HTMLInputElement>("skStampSearch")?.value || "").trim().toLowerCase();
+    const color = byId<HTMLInputElement>("skStampColor")?.value || state.palette.accent || "#00e699";
+    const list = query
+      ? DEFAULT_STAMPS.filter((s) => s.label.toLowerCase().includes(query) || s.category.includes(query))
+      : DEFAULT_STAMPS;
+    grid.innerHTML = list
+      .map((s) => {
+        const dataUri = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(s.svg(color))}`;
+        return `<button type="button" class="sk-btn sk-btn-sm" data-add-stamp="${s.id}" title="${escapeHtml(s.label)}" style="flex-direction:column;gap:4px;padding:6px 4px;height:auto;">
+          <img src="${dataUri}" alt="" width="34" height="34" style="object-fit:contain;pointer-events:none;" />
+          <span style="font-size:10px;line-height:1.1;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(s.label)}</span>
+        </button>`;
+      })
+      .join("");
+
+    grid.querySelectorAll<HTMLButtonElement>("[data-add-stamp]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const stamp = DEFAULT_STAMPS.find((s) => s.id === btn.dataset.addStamp);
+        if (!stamp) return;
+        pushUndoSnapshot();
+        const chosenColor = byId<HTMLInputElement>("skStampColor")?.value || state.palette.accent || "#00e699";
+        const z = state.zones[selectedZone || "hood"] || state.zones.hood;
+        const layer: DecalLayer = {
+          id: `stamp-${Date.now()}`,
+          name: `Stamp: ${stamp.label}`,
+          kind: "builtin",
+          assetId: stamp.id,
+          color: chosenColor,
+          x: Math.max(0.08, Math.min(0.92, z.x + z.w * 0.5)),
+          y: Math.max(0.08, Math.min(0.92, z.y + z.h * 0.5)),
+          scale: stamp.defaultScale,
+          rotation: 0,
+          opacity: 1,
+          mirrorX: stamp.category === "stripes" || stamp.category === "racing",
+          zoneHint: selectedZone || "hood",
+        };
+        state.decals.push(layer);
+        selectedDecalId = layer.id;
+        if (viewMode === "showroom") {
+          viewMode = "uv";
+          updateViewModeUI();
+        }
+        renderDecalList();
+        renderDecalEditor();
+        scheduleRender();
+        setStatus(`Stamp "${stamp.label}" añadido · Arrástralo, escala desde la esquina verde o cambia su color`, "ok");
+      });
+    });
+  };
+
+  byId<HTMLInputElement>("skStampSearch")?.addEventListener("input", renderDefaultStamps);
+  byId<HTMLInputElement>("skStampColor")?.addEventListener("input", renderDefaultStamps);
+  renderDefaultStamps();
+
+  // Undo / Redo stack (Ctrl+Z / Ctrl+Y)
+  const undoStack: string[] = [];
+  const redoStack: string[] = [];
+  const pushUndoSnapshot = () => {
+    try {
+      undoStack.push(JSON.stringify({ decals: state.decals, palette: state.palette }));
+      if (undoStack.length > 35) undoStack.shift();
+      redoStack.length = 0;
+    } catch {}
+  };
+  const applySnapshot = (raw: string) => {
+    try {
+      const snap = JSON.parse(raw) as { decals: DecalLayer[]; palette: SkinDesignState["palette"] };
+      state.decals = snap.decals;
+      state.palette = snap.palette;
+      if (selectedDecalId && !state.decals.some((d) => d.id === selectedDecalId)) selectedDecalId = null;
+      renderDecalList();
+      renderDecalEditor();
+      scheduleRender();
+    } catch {}
+  };
+  const doUndo = () => {
+    if (!undoStack.length) return;
+    redoStack.push(JSON.stringify({ decals: state.decals, palette: state.palette }));
+    const prev = undoStack.pop();
+    if (prev) applySnapshot(prev);
+  };
+  const doRedo = () => {
+    if (!redoStack.length) return;
+    undoStack.push(JSON.stringify({ decals: state.decals, palette: state.palette }));
+    const next = redoStack.pop();
+    if (next) applySnapshot(next);
+  };
+  byId<HTMLButtonElement>("skUndoBtn")?.addEventListener("click", doUndo);
+  byId<HTMLButtonElement>("skRedoBtn")?.addEventListener("click", doRedo);
+  window.addEventListener("keydown", (e) => {
+    const tag = (e.target as HTMLElement | null)?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA") return;
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !e.shiftKey) {
+      e.preventDefault();
+      doUndo();
+    } else if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "y" || (e.shiftKey && e.key.toLowerCase() === "z"))) {
+      e.preventDefault();
+      doRedo();
+    }
+  });
 
   byId<HTMLButtonElement>("skAddTextDecal")?.addEventListener("click", () => {
     const txtInput = byId<HTMLInputElement>("skCustomTextInput");
