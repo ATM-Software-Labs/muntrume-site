@@ -1,4 +1,6 @@
-import type { CarProfile, DecalLayer, DriverProfile, PresetDefinition, SkinDesignState, ZoneKey, ZoneRect } from "./types";
+import type { CarCategory, CarProfile, DecalLayer, DriverProfile, PresetDefinition, SkinDesignState, ZoneKey, ZoneRect } from "./types";
+import { getArchetypeZones } from "./uv-archetypes";
+import carsIndexData from "../../data/cars-index.json";
 
 function makeBaseZones(overrides: Partial<Record<ZoneKey, Partial<ZoneRect>>> = {}): Record<ZoneKey, ZoneRect> {
   const base: Record<ZoneKey, ZoneRect> = {
@@ -686,7 +688,30 @@ export function createInitialDesign(carId = "porsche992rgt3", driverId = "albert
 }
 
 export function getCarById(id: string): CarProfile {
-  return CAR_PROFILES.find((c) => c.id === id) ?? CAR_PROFILES[0];
+  const exact = CAR_PROFILES.find((c) => c.id === id);
+  if (exact) return exact;
+
+  const slug = (id || "").toLowerCase();
+  const indexed = (carsIndexData?.cars || []).find((c) => c.car_slug.toLowerCase() === slug);
+  if (indexed) {
+    const validCat = (
+      ["GT3", "GTP / Hypercar", "LMP2 / LMP3", "GT4 & Cup", "Fórmula", "TCR & Producción"].includes(indexed.category)
+        ? indexed.category
+        : "TCR & Producción"
+    ) as CarCategory;
+    return {
+      id: indexed.car_slug,
+      name: indexed.name,
+      brand: indexed.brand || "iRacing",
+      category: validCat,
+      iracingFolder: indexed.car_slug,
+      logoPath: "/assets/brand/muntrume-mono-white.svg",
+      notes: `Vehículo oficial iRacing (${indexed.category}) · Arquetipo ${indexed.archetype}.`,
+      defaultZones: getArchetypeZones(indexed.category, indexed.car_slug),
+    };
+  }
+
+  return CAR_PROFILES[0];
 }
 
 export function getDriverById(id: string): DriverProfile {

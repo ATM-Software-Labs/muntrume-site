@@ -257,6 +257,44 @@ export async function exportIracingZipBundle(
   return zipName;
 }
 
+export async function exportDirectToIracingFolder(
+  paintRootHandle: any,
+  car: CarProfile,
+  state: SkinDesignState,
+  onProgress?: (msg: string) => void,
+  partsOverlayCanvas?: HTMLCanvasElement | null,
+  psdPatternCanvas?: HTMLCanvasElement | null,
+): Promise<string[]> {
+  const cid = sanitizeCustomerId(state.customerId);
+  const { diffuseTga, customNumTga, specTga } = await renderTgaBuffers(state, onProgress, partsOverlayCanvas, psdPatternCanvas);
+
+  const folderName = (car.iracingFolder || state.carId || "generic").toLowerCase();
+  const targetDir =
+    paintRootHandle.name?.toLowerCase() === folderName
+      ? paintRootHandle
+      : await paintRootHandle.getDirectoryHandle(folderName, { create: true });
+
+  const writeFile = async (filename: string, data: Uint8Array) => {
+    const fh = await targetDir.getFileHandle(filename, { create: true });
+    const writable = await fh.createWritable();
+    await writable.write(data.buffer as ArrayBuffer);
+    await writable.close();
+  };
+
+  const written: string[] = [];
+  onProgress?.(`Escribiendo directamente en paint\\${folderName}\\...`);
+  await writeFile(`car_${cid}.tga`, diffuseTga);
+  written.push(`car_${cid}.tga`);
+  if (customNumTga) {
+    await writeFile(`car_num_${cid}.tga`, customNumTga);
+    written.push(`car_num_${cid}.tga`);
+  }
+  await writeFile(`car_spec_${cid}.tga`, specTga);
+  written.push(`car_spec_${cid}.tga`);
+
+  return written;
+}
+
 export function exportPresetJson(state: SkinDesignState): string {
   const filename = `mmt-skin-${state.carId}-${sanitizeCustomerId(state.customerId)}.json`;
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });

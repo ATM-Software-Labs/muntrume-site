@@ -13,6 +13,7 @@ import { renderShowroomCarView, type ShowroomAngle } from "./car-showroom-view";
 import { BRAND_DECALS, SERIES_DECALS, TEAM_DECALS, type LibraryDecalItem } from "./decals-library";
 import { DEFAULT_STAMPS } from "./stamps-library";
 import {
+  exportDirectToIracingFolder,
   exportIracingZipBundle,
   exportPresetJson,
   exportSingleCustomNumberTga,
@@ -1603,7 +1604,9 @@ export function initSkinsStudio(): void {
       }
       loadedTemplate = null;
       customPhotoShots = null;
-      glEngine.setCategory(mapCategoryStringToBody(effectiveCategory));
+      const bodyCat = mapCategoryStringToBody(effectiveCategory);
+      glEngine.setCategory(bodyCat);
+      void glEngine.tryLoadCategoryBaseModel(bodyCat, nextSlug);
       glEngine.updateZones(state.zones);
       syncControlsFromState();
       scheduleRender();
@@ -2705,6 +2708,115 @@ export function initSkinsStudio(): void {
       setStatus(err instanceof Error ? err.message : "Error generando ZIP", "err");
     } finally {
       btn.disabled = false;
+    }
+  });
+
+  // Auto-match real-world works livery palette/finish for ANY of the 128 iRacing cars
+  byId<HTMLButtonElement>("skAutoRealLiveryBtn")?.addEventListener("click", () => {
+    const car = getCarById(state.carId);
+    const key = `${car.id} ${car.brand} ${car.name}`.toLowerCase();
+    const WORKS_RULES: Array<[RegExp, string, string, string, string, string, PatternStyle, FinishType]> = [
+      [/ferrari|296|499p|488/, "AF Corse Works", "#b91c1c", "#7f1d1d", "#facc15", "#ffffff", "pearl-shift", "gloss"],
+      [/porsche|992|963|718|991/, "Porsche Penske / Manthey", "#f8fafc", "#dc2626", "#0f172a", "#facc15", "solid-factory", "gloss"],
+      [/bmw|m4|m8|m2|lmdh|hybridv8/, "BMW M Motorsport Works", "#f8fafc", "#0f172a", "#2563eb", "#ef4444", "solid-factory", "gloss"],
+      [/cadillac|vseries/, "Cadillac Whelen / Action Express", "#dc2626", "#090b0f", "#f8fafc", "#facc15", "pearl-shift", "gloss"],
+      [/acura|arx06|nsx/, "Wayne Taylor / Meyer Shank", "#0284c7", "#090b0f", "#38bdf8", "#ffffff", "pearl-shift", "gloss"],
+      [/mclaren|720s|570s|mp4/, "McLaren Papaya Works", "#ea580c", "#0f172a", "#38bdf8", "#ffffff", "solid-factory", "satin"],
+      [/aston|vantage|valkyrie/, "Aston Martin AMR Works", "#065f46", "#022c22", "#a3e635", "#ffffff", "pearl-shift", "gloss"],
+      [/mercedes|amg|w12|w13/, "Mercedes-AMG Petronas", "#475569", "#0f172a", "#00d2be", "#ffffff", "brushed-metal", "metallic"],
+      [/audi|r8|rs3/, "Audi Sport Customer Racing", "#e2e8f0", "#0f172a", "#dc2626", "#ffffff", "solid-factory", "satin"],
+      [/lamborghini|huracan/, "Iron Lynx / Squadra Corse", "#16a34a", "#090b0f", "#facc15", "#ffffff", "forged-carbon", "satin"],
+      [/corvette|chevy|camaro|silverado/, "Corvette Racing Works", "#facc15", "#090b0f", "#ef4444", "#ffffff", "solid-factory", "gloss"],
+      [/ford|mustang/, "Ford Multimatic Motorsport", "#1d4ed8", "#0f172a", "#38bdf8", "#ffffff", "pearl-shift", "gloss"],
+      [/hyundai|elantra|veloster/, "Hyundai Motorsport N", "#38bdf8", "#0f172a", "#ef4444", "#ffffff", "solid-factory", "gloss"],
+      [/honda|civic/, "Honda Racing HRC", "#f8fafc", "#dc2626", "#1d4ed8", "#0f172a", "solid-factory", "gloss"],
+      [/toyota|gr86|tundra/, "Toyota Gazoo Racing", "#f8fafc", "#090b0f", "#dc2626", "#ffffff", "solid-factory", "gloss"],
+      [/mazda|mx5/, "Mazda Motorsports", "#991b1b", "#090b0f", "#f8fafc", "#facc15", "pearl-shift", "gloss"],
+    ];
+    const match = WORKS_RULES.find(([re]) => re.test(key));
+    const [, label, primary, secondary, accent, detail, pat, fin] = match ?? [
+      /.*/,
+      "Muntrume Factory Works",
+      "#0f1722",
+      "#1a2c3a",
+      "#00e699",
+      "#f8fafc",
+      "pearl-shift" as PatternStyle,
+      "satin" as FinishType,
+    ];
+    state.palette.primary = primary;
+    state.palette.secondary = secondary;
+    state.palette.accent = accent;
+    state.palette.detail = detail;
+    state.pattern = pat;
+    state.spec = { finish: fin, ...finishDefaults(fin) };
+    syncControlsFromState();
+    scheduleRender();
+    setStatus(`Auto-Livery aplicada para ${car.name}: ${label} (${fin})`, "ok");
+  });
+
+  // Real-world motorsport livery inspiration presets (WEC / IMSA / GTWC)
+  document.querySelectorAll<HTMLButtonElement>("[data-real-livery]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const parts = (btn.dataset.realLivery || "").split(",");
+      if (parts.length < 6) return;
+      const [primary, secondary, accent, detail, pat, fin] = parts;
+      state.palette.primary = primary;
+      state.palette.secondary = secondary;
+      state.palette.accent = accent;
+      state.palette.detail = detail;
+      state.pattern = pat as PatternStyle;
+      const finish = fin as FinishType;
+      state.spec = { finish, ...finishDefaults(finish) };
+      syncControlsFromState();
+      scheduleRender();
+      setStatus(`Livery real aplicada: ${btn.textContent?.trim() || "Motorsport"} (${finish})`, "ok");
+    });
+  });
+
+  // Direct Live Bridge to Documents\iRacing\paint\<car>\ for instant Ctrl+R 3D preview in iRacing
+  let iracingPaintDirHandle: any = null;
+  const linkDirBtn = byId<HTMLButtonElement>("skLinkIracingDirBtn");
+  const sendLiveBtn = byId<HTMLButtonElement>("skSendLiveIracingBtn");
+  const dirStatusEl = byId<HTMLElement>("skIracingDirStatus");
+
+  linkDirBtn?.addEventListener("click", async () => {
+    const picker = (window as any).showDirectoryPicker;
+    if (typeof picker !== "function") {
+      setStatus("Tu navegador no soporta File System Access API (usa Chrome o Edge).", "err");
+      return;
+    }
+    try {
+      iracingPaintDirHandle = await picker({ mode: "readwrite" });
+      if (sendLiveBtn) sendLiveBtn.disabled = false;
+      if (dirStatusEl) {
+        dirStatusEl.innerHTML = `Carpeta vinculada: <strong style="color:#34d399">${escapeHtml(iracingPaintDirHandle.name)}</strong> · Pulsa <strong>Enviar a iRacing</strong> y luego <strong>Ctrl+R</strong> en el simulador.`;
+      }
+      setStatus(`Carpeta vinculada (${iracingPaintDirHandle.name}). Listo para Ctrl+R en vivo.`, "ok");
+    } catch {}
+  });
+
+  sendLiveBtn?.addEventListener("click", async () => {
+    if (!iracingPaintDirHandle) {
+      setStatus("Vincula primero tu carpeta Documents\\iRacing\\paint\\.", "err");
+      return;
+    }
+    sendLiveBtn.disabled = true;
+    try {
+      const car = getCarById(state.carId);
+      const written = await exportDirectToIracingFolder(
+        iracingPaintDirHandle,
+        car,
+        state,
+        (m) => setStatus(m),
+        loadedTemplate?.partsOverlayCanvas,
+        getActivePsdPatternCanvas(),
+      );
+      setStatus(`Guardados ${written.join(", ")} en paint\\${car.iracingFolder}\\ — ¡Pulsa Ctrl+R en iRacing!`, "ok");
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Error escribiendo en carpeta iRacing", "err");
+    } finally {
+      sendLiveBtn.disabled = false;
     }
   });
 

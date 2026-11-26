@@ -19,7 +19,7 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { ZoneKey, ZoneRect } from "./types";
 
-export type CarBodyCategory = "gt3" | "gtp" | "formula" | "touring";
+export type CarBodyCategory = "gt3" | "gtp" | "formula" | "touring" | "nascar";
 export type LightingPreset = "noon" | "sunset" | "overcast";
 export type UvMappingMode = "native" | "autofit";
 
@@ -40,8 +40,9 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: "/assets/models/gt3-base.glb",
-  touring: "/assets/models/gt3-base.glb",
-  gtp: "/assets/models/gt3-base.glb",
+  touring: "/assets/models/touring-base.glb",
+  gtp: "/assets/models/gtp-base.glb",
+  nascar: "/assets/models/nascar-base.glb",
   formula: "/assets/models/formula-base.glb",
 };
 
@@ -59,7 +60,8 @@ export function mapCategoryStringToBody(category?: string): CarBodyCategory {
   const c = String(category || "").toLowerCase();
   if (c.includes("gtp") || c.includes("lmp") || c.includes("proto")) return "gtp";
   if (c.includes("fórmula") || c.includes("formula") || c.includes("indy") || c.includes("open")) return "formula";
-  if (c.includes("tcr") || c.includes("touring") || c.includes("stock") || c.includes("nascar") || c.includes("arca") || c.includes("dirt")) return "touring";
+  if (c.includes("nascar") || c.includes("oval") || c.includes("stock") || c.includes("arca")) return "nascar";
+  if (c.includes("tcr") || c.includes("touring") || c.includes("producción") || c.includes("dirt")) return "touring";
   return "gt3";
 }
 
@@ -454,37 +456,43 @@ export class WebGLPreviewEngine {
    */
   public async tryLoadCategoryBaseModel(category: CarBodyCategory, carSlug = ""): Promise<boolean> {
     this.currentCategory = category;
-    const slugKey = (carSlug || "").toLowerCase();
-    const url = CAR_SPECIFIC_GLB_PATHS[slugKey] || CATEGORY_BASE_GLB_PATHS[category];
-    if (!url || this.missingBasePaths.has(url)) {
-      this.buildAutomotiveSpeedform();
-      return false;
-    }
-    try {
-      const res = await fetch(url, { cache: "force-cache" });
-      if (!res.ok) {
+    const slugKey = (carSlug || "").toLowerCase().replace(/[^a-z0-9_-]/g, "");
+    const candidates = Array.from(
+      new Set(
+        [
+          slugKey ? `/assets/models/${slugKey}.glb` : "",
+          CAR_SPECIFIC_GLB_PATHS[slugKey] || "",
+          CATEGORY_BASE_GLB_PATHS[category],
+          category === "formula" ? "/assets/models/formula-base.glb" : "/assets/models/gt3-base.glb",
+        ].filter(Boolean),
+      ),
+    );
+
+    for (const url of candidates) {
+      if (this.missingBasePaths.has(url)) continue;
+      try {
+        const res = await fetch(url, { cache: "force-cache" });
+        if (!res.ok) {
+          this.missingBasePaths.add(url);
+          continue;
+        }
+        const buffer = await res.arrayBuffer();
+        const bytes = new Uint8Array(buffer, 0, Math.min(4, buffer.byteLength));
+        const isGlb = bytes.length === 4 && bytes[0] === 0x67 && bytes[1] === 0x6c && bytes[2] === 0x54 && bytes[3] === 0x46;
+        const isGltfJson = bytes.length > 0 && bytes[0] === 0x7b;
+        if (!isGlb && !isGltfJson) {
+          this.missingBasePaths.add(url);
+          continue;
+        }
+        await this.loadGltfBuffer(buffer, url.split("/").pop() || `${category}-base.glb`, false, true);
+        return true;
+      } catch {
         this.missingBasePaths.add(url);
-        this.buildAutomotiveSpeedform();
-        return false;
       }
-      const buffer = await res.arrayBuffer();
-      // Validate binary glTF magic header ("glTF" = 0x46546C67) or JSON glTF
-      const bytes = new Uint8Array(buffer, 0, Math.min(4, buffer.byteLength));
-      const isGlb = bytes.length === 4 && bytes[0] === 0x67 && bytes[1] === 0x6c && bytes[2] === 0x54 && bytes[3] === 0x46;
-      const isGltfJson = bytes.length > 0 && bytes[0] === 0x7b;
-      if (!isGlb && !isGltfJson) {
-        this.missingBasePaths.add(url);
-        this.buildAutomotiveSpeedform();
-        return false;
-      }
-      await this.loadGltfBuffer(buffer, url.split("/").pop() || `${category}-base.glb`, false, true);
-      return true;
-    } catch (err) {
-      console.warn("[skins-3d] Base GLB load failed:", url, err);
-      this.missingBasePaths.add(url);
-      this.buildAutomotiveSpeedform();
-      return false;
     }
+
+    this.buildAutomotiveSpeedform();
+    return false;
   }
 
   private sanitizeSceneGroup(group: THREE.Object3D, refBox: THREE.Box3): void {
@@ -762,7 +770,11 @@ export class WebGLPreviewEngine {
     const finalBox = new THREE.Box3().setFromObject(root);
     this.sanitizeSceneGroup(root, finalBox);
 
-    // Apply live paint ONLY to exterior bodywork panels; keep original GLB materials for glass/tires/rims/lights/interior/carbon
+    // Apply live paint ONLY to exterior bodywork panels; refine blown-out base GLB rims/tires/glass into realistic motorsport PBR
+    const gunmetalRimMat = new THREE.MeshStandardMaterial({ color: "#2b323d", roughness: 0.28, metalness: 0.86, envMapIntensity: 1.2 });
+    const rubberTireMat = new THREE.MeshStandardMaterial({ color: "#15181d", roughness: 0.88, metalness: 0.06 });
+    const smokedGlassMat = new THREE.MeshPhysicalMaterial({ color: "#0b121c", roughness: 0.08, metalness: 0.12, transparent: true, opacity: 0.78, clearcoat: 1.0 });
+
     let paintedCount = 0;
     let preservedCount = 0;
     root.traverse((obj) => {
@@ -777,6 +789,12 @@ export class WebGLPreviewEngine {
         obj.material = this.paintMaterial!;
         paintedCount++;
       } else {
+        if (isBaseModel && filename === "gt3-base.glb") {
+          const id = `${(obj.name || "").toLowerCase()} ${getMeshMaterialNames(obj)}`;
+          if (/(rim1|rim2|wheel|alloy)/.test(id)) obj.material = gunmetalRimMat;
+          else if (/(tireside|tiretread|tire|tyre)/.test(id)) obj.material = rubberTireMat;
+          else if (/(glass|windshield)/.test(id)) obj.material = smokedGlassMat;
+        }
         preservedCount++;
       }
     });
