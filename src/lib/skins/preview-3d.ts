@@ -39,10 +39,10 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
-  gt3: "/models/gt3-base.glb",
-  touring: "/models/gt3-base.glb",
-  gtp: "/models/gt3-base.glb",
-  formula: "/models/formula-base.glb",
+  gt3: "/assets/models/gt3-base.glb",
+  touring: "/assets/models/gt3-base.glb",
+  gtp: "/assets/models/gt3-base.glb",
+  formula: "/assets/models/formula-base.glb",
 };
 
 export function mapCategoryStringToBody(category?: string): CarBodyCategory {
@@ -723,6 +723,7 @@ export class WebGLPreviewEngine {
     if (!this.scene || !this.paintMaterial) {
       throw new Error("Visor Three.js no inicializado.");
     }
+    await MeshoptDecoder.ready;
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
     const gltf = await new Promise<{ scene: THREE.Group }>((resolve, reject) => {
