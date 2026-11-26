@@ -426,8 +426,13 @@ export class WebGLPreviewEngine {
       const glassMat = this.glassMaterial;
       const detailMat = this.detailsMaterial;
 
+      // Ensure smooth normals and strip any orphan floating meshes outside the car's main footprint
       root.traverse((obj) => {
         if (!(obj instanceof THREE.Mesh)) return;
+        const geo = obj.geometry;
+        if (geo && !geo.getAttribute("normal")) {
+          geo.computeVertexNormals();
+        }
         const name = (obj.name || "").toLowerCase();
         const matName =
           !Array.isArray(obj.material) && obj.material && "name" in obj.material
@@ -444,34 +449,45 @@ export class WebGLPreviewEngine {
         }
       });
 
-      // Add a sleek GT3 carbon rear wing on the rear deck
-      const carbonMat = new THREE.MeshStandardMaterial({ color: "#141821", roughness: 0.35, metalness: 0.4 });
-      const wingGroup = new THREE.Group();
-      const wingBlade = new THREE.Mesh(new THREE.BoxGeometry(1.78, 0.045, 0.28), carbonMat);
-      wingBlade.position.set(0, finalBox.max.y + 0.04, finalBox.min.z + 0.28);
-      wingBlade.rotation.x = 0.1;
-      wingGroup.add(wingBlade);
-      for (const side of [-1, 1]) {
-        const ep = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.24, 0.34), paintMat);
-        ep.position.set(side * 0.89, finalBox.max.y + 0.02, finalBox.min.z + 0.28);
-        wingGroup.add(ep);
-        const strut = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.30, 0.14), carbonMat);
-        strut.position.set(side * 0.32, finalBox.max.y - 0.12, finalBox.min.z + 0.32);
-        wingGroup.add(strut);
-      }
+      this.sanitizeSceneGroup(root, finalBox);
 
       this.clearCarGroup();
       const wrapper = new THREE.Group();
       wrapper.add(root);
-      wrapper.add(wingGroup);
       this.carGroup = wrapper;
       this.scene.add(wrapper);
-      this.meshLabel = "Showroom 3D GT3 Real (Three.js PBR + reflejos de estudio · arrastra para orbitar)";
+      this.meshLabel = "Showroom 3D GT Coupé Real (Three.js PBR · sin piezas flotantes · arrastra para orbitar)";
       const notice = document.getElementById("skGlNotice");
       if (notice) notice.textContent = this.meshLabel;
       this.render();
     } catch {
       this.buildProceduralMotorsportCar(this.currentCategory);
+    }
+  }
+
+  /**
+   * Traverses a loaded or built car group to remove any stray/floating meshes detached outside
+   * the main vehicle bounding box and ensure smooth vertex normals.
+   */
+  private sanitizeSceneGroup(group: THREE.Object3D, refBox: THREE.Box3): void {
+    const allowed = refBox.clone().expandByScalar(0.18);
+    const toRemove: THREE.Object3D[] = [];
+    const mBox = new THREE.Box3();
+    group.updateMatrixWorld(true);
+    group.traverse((obj) => {
+      if (!(obj instanceof THREE.Mesh)) return;
+      if (obj.geometry && !obj.geometry.getAttribute("normal")) {
+        obj.geometry.computeVertexNormals();
+      }
+      mBox.setFromObject(obj);
+      if (mBox.isEmpty()) return;
+      // Remove any detached floating mesh completely above or outside the vehicle envelope
+      if (!allowed.intersectsBox(mBox) || mBox.min.y > refBox.max.y + 0.08) {
+        toRemove.push(obj);
+      }
+    });
+    for (const orphan of toRemove) {
+      orphan.parent?.remove(orphan);
     }
   }
 
@@ -496,7 +512,16 @@ export class WebGLPreviewEngine {
   }
 
   public setCategory(category: CarBodyCategory): void {
+    if (this.currentCategory === category && this.carGroup) return;
     this.currentCategory = category;
+    if (category === "gt3") {
+      void this.loadDefaultGtShowroomModel();
+    } else {
+      this.buildProceduralMotorsportCar(category);
+      const notice = document.getElementById("skGlNotice");
+      if (notice) notice.textContent = this.meshLabel;
+      this.render();
+    }
   }
 
   public updateZones(_zones: Record<ZoneKey, UvRect>): void {

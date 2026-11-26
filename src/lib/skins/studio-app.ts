@@ -1391,6 +1391,75 @@ export function initSkinsStudio(): void {
     setStatus("Zonas y colores por pieza restaurados al mapa base del coche.", "ok");
   });
 
+  // Modo "Ajustar cajas de zona" + Exportar JSON calibrado UV del coche actual
+  let zoneEditMode = false;
+  const editZonesBtn = byId<HTMLButtonElement>("skEditZonesBtn");
+  editZonesBtn?.addEventListener("click", () => {
+    zoneEditMode = !zoneEditMode;
+    showZonesOverlay = true;
+    const zChk = byId<HTMLInputElement>("skToggleZones");
+    if (zChk) zChk.checked = true;
+    if (zoneEditMode) {
+      brushMode = false;
+      const bBtn = byId<HTMLButtonElement>("skBrushToggle");
+      if (bBtn) {
+        bBtn.textContent = "Pincel libre: OFF";
+        bBtn.classList.remove("sk-btn-primary");
+      }
+      if (viewMode !== "uv") {
+        viewMode = "uv";
+        updateViewModeUI();
+      }
+    }
+    editZonesBtn.classList.toggle("sk-btn-primary", zoneEditMode);
+    editZonesBtn.textContent = zoneEditMode ? "Ajustando cajas: ON" : "Ajustar cajas de zona";
+    scheduleRender();
+    setStatus(
+      zoneEditMode
+        ? "Modo ajuste activo: arrastra cualquier pieza o su esquina inferior derecha para calibrarla sobre el wireframe."
+        : "Modo ajuste de cajas desactivado.",
+      "ok",
+    );
+  });
+
+  byId<HTMLButtonElement>("skExportCalibratedUvBtn")?.addEventListener("click", () => {
+    const car = getCarById(state.carId);
+    const toPx = (z: { x: number; y: number; w: number; h: number }) => ({
+      x: Math.round(z.x * 2048),
+      y: Math.round(z.y * 2048),
+      width: Math.round(z.w * 2048),
+      height: Math.round(z.h * 2048),
+    });
+    const payload = {
+      car_slug: state.carId,
+      car_name: car.name,
+      native_resolution: "2048x2048",
+      exported_at: new Date().toISOString(),
+      zones: {
+        hood: toPx(state.zones.hood),
+        roof: toPx(state.zones.roof),
+        left_side: { ...toPx(state.zones.leftSide), mirror_x: false },
+        right_side: { ...toPx(state.zones.rightSide), mirror_x: true },
+        rear_wing: { top_plane: toPx(state.zones.rearWing) },
+        front_bumper: toPx(state.zones.frontBumper),
+        rear_bumper: toPx(state.zones.rearBumper),
+        mirrors: toPx(state.zones.mirrors),
+      },
+      restricted_number_plates: [
+        { id: "left_plate", label: "Placa Dorsal Izq.", ...toPx(state.zones.numberPlateLeft) },
+        { id: "right_plate", label: "Placa Dorsal Der.", ...toPx(state.zones.numberPlateRight) },
+      ],
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `uv_${state.carId}_calibrated.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setStatus(`JSON UV calibrado descargado: uv_${state.carId}_calibrated.json`, "ok");
+  });
+
   // Per-part car paint & Spec Map override bindings
   byId<HTMLInputElement>("skZonePaintColor")?.addEventListener("input", (e) => {
     const zk = selectedZone && !state.zones[selectedZone]?.restricted ? selectedZone : "hood";
