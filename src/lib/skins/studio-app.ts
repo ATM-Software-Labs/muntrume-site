@@ -1454,6 +1454,8 @@ export function initSkinsStudio(): void {
     return { kind: "custom", dataUrl: TEAM_DECALS[0].src, label: TEAM_DECALS[0].label };
   }
 
+  let previousStateBeforeAi: SkinDesignState | null = null;
+
   byId<HTMLButtonElement>("skGeminiDesignBtn")?.addEventListener("click", async () => {
     const btn = byId<HTMLButtonElement>("skGeminiDesignBtn")!;
     const out = byId<HTMLElement>("skGeminiOutput")!;
@@ -1467,6 +1469,8 @@ export function initSkinsStudio(): void {
         series: seriesVal,
         style: promptText || "MMT Endurance agresivo y limpio",
         driver_number: state.customNumber,
+        finish: state.spec.finish,
+        zones: state.zones,
         colors: {
           primary: state.palette.primary,
           secondary: state.palette.secondary,
@@ -1475,6 +1479,9 @@ export function initSkinsStudio(): void {
       });
       const plan = aiRes.design_plan;
       const car = getCarById(state.carId);
+
+      // Guardar instantánea previa para poder deshacer en 1 clic
+      previousStateBeforeAi = JSON.parse(JSON.stringify(state)) as SkinDesignState;
 
       // AUTO-APLICAR TODO LIMPIO (aplica el patrón real de pintura + paleta + acabado + logos en Sponsor Blocks)
       state.name = `${plan.title} · #${state.customNumber}`;
@@ -1529,7 +1536,7 @@ export function initSkinsStudio(): void {
 
       state.decals = newDecals;
       selectedDecalId = newDecals[0]?.id ?? null;
-      customPhotoShots = mapWorkerPhotoGuideToShots(state.carId, state.customNumber, aiRes.photo_guide);
+      customPhotoShots = mapWorkerPhotoGuideToShots(state.carId, state.customNumber, aiRes.photo_guide, state.customerId);
       syncControlsFromState();
       renderPhotoGuide();
       scheduleRender();
@@ -1545,9 +1552,23 @@ export function initSkinsStudio(): void {
               .join("")}
             <span class="sk-tag">${escapeHtml(plan.finish)} · ${newDecals.length} capas</span>
           </div>
-          <p class="sk-help" style="color:var(--sk-accent);">Ya está listo en el lienzo. Ve a <strong>Exportar</strong> para descargar tu <code>car_&lt;id&gt;.tga</code> y el pack ZIP.</p>
+          <div class="sk-row" style="margin-top:8px;">
+            <button type="button" id="skAiUndoBtn" class="sk-btn sk-btn-sm">↩ Deshacer diseño IA</button>
+          </div>
+          <p class="sk-help" style="color:var(--sk-accent);margin-top:6px;">Ya está listo en el lienzo. Ve a <strong>Exportar</strong> para descargar tu <code>car_&lt;id&gt;.tga</code> y ver la guía de fotos Trading Paints.</p>
         </div>
       `;
+      byId<HTMLButtonElement>("skAiUndoBtn")?.addEventListener("click", () => {
+        if (!previousStateBeforeAi) return;
+        state = JSON.parse(JSON.stringify(previousStateBeforeAi)) as SkinDesignState;
+        previousStateBeforeAi = null;
+        selectedDecalId = state.decals[0]?.id ?? null;
+        syncControlsFromState();
+        renderPhotoGuide();
+        scheduleRender();
+        out.innerHTML = `<p class="sk-help" style="color:var(--sk-muted);">↩ Cambios de Muntrume AI deshechos. Se restauró tu diseño anterior.</p>`;
+        setStatus("Diseño anterior restaurado.", "neutral");
+      });
       setStatus(`Muntrume AI aplicó "${plan.title}" (${newDecals.length} capas limpias).`, "ok");
     } catch (err) {
       if (err instanceof SkinsApiError && err.status === 401) {
@@ -1556,6 +1577,40 @@ export function initSkinsStudio(): void {
       }
       out.innerHTML = `<p class="sk-help" style="color:#fca5a5;">${escapeHtml(err instanceof Error ? err.message : "Error en Muntrume AI")}</p>`;
       setStatus(err instanceof Error ? err.message : "Error en Muntrume AI", "err");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // Guía de circuito, luz y ángulos Trading Paints generada con Muntrume AI desde Exportar
+  byId<HTMLButtonElement>("skAiPhotoGuideBtn")?.addEventListener("click", async () => {
+    const btn = byId<HTMLButtonElement>("skAiPhotoGuideBtn")!;
+    btn.disabled = true;
+    setStatus("Muntrume AI generando guía de circuito, luz y ángulos Ctrl+F12...");
+    try {
+      const seriesVal = byId<HTMLSelectElement>("skAiSeriesSelect")?.value || "IMSA Endurance";
+      const aiRes = await fetchWorkerAiAssist({
+        car_slug: state.carId,
+        series: seriesVal,
+        style: `Guía de fotografía Trading Paints para acabado ${state.spec.finish}, patrón ${state.pattern} y paleta actual`,
+        driver_number: state.customNumber,
+        finish: state.spec.finish,
+        zones: state.zones,
+        colors: {
+          primary: state.palette.primary,
+          secondary: state.palette.secondary,
+          accent: state.palette.accent,
+        },
+      });
+      customPhotoShots = mapWorkerPhotoGuideToShots(state.carId, state.customNumber, aiRes.photo_guide, state.customerId);
+      renderPhotoGuide();
+      setStatus(`Guía de fotos actualizada (${aiRes.photo_guide.circuit})`, "ok");
+    } catch (err) {
+      if (err instanceof SkinsApiError && err.status === 401) {
+        lockStudio(err.message);
+        return;
+      }
+      setStatus(err instanceof Error ? err.message : "Error generando guía de fotos con IA", "err");
     } finally {
       btn.disabled = false;
     }

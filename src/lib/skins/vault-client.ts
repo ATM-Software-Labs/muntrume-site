@@ -239,6 +239,8 @@ export async function fetchWorkerAiAssist(params: {
   style: string;
   series?: string;
   driver_number: string;
+  finish?: FinishType;
+  zones?: Record<ZoneKey, ZoneRect>;
   colors: { primary: string; secondary: string; accent: string };
 }): Promise<WorkerAiAssistResponse> {
   return apiFetch<WorkerAiAssistResponse>("/api/skins/ai-assist", {
@@ -288,15 +290,33 @@ export function mapWorkerPhotoGuideToShots(
   carSlug: string,
   driverNumber: string,
   guide: WorkerAiAssistResponse["photo_guide"],
+  customerId?: string,
 ): PhotoGuideShot[] {
   const num = (driverNumber || "16").replace(/[^0-9A-Za-z]/g, "") || "16";
-  return (guide.shots || []).slice(0, 4).map((s, idx) => ({
+  const cid = (customerId || "").replace(/[^0-9]/g, "") || "000000";
+  const defaults = [
+    { angle: "Frontal 3/4", camera_ctrl_f12: "Ctrl+F12 · Chase/Rear Chase, FOV 38°, altura 1.05m, ángulo 35°", focus_check: "Comprobar logo frontal, capó y encaje de franjas." },
+    { angle: "Perfil Lateral Completo", camera_ctrl_f12: "Ctrl+F12 · Plano lateral ortogonal, FOV 30°, altura 1.10m", focus_check: "Verificar que el dorsal lateral no queda tapado y los logos están rectos." },
+    { angle: "Trasera 3/4", camera_ctrl_f12: "Ctrl+F12 · Altura 1.10m, FOV 38°, enfoque en alerón y difusor", focus_check: "Revisar alerón trasero, endplates y contraste del difusor." },
+    { angle: "Detalle Superior / Dorsal", camera_ctrl_f12: "Ctrl+F12 · Cenital 65°, FOV 34°, centrado en techo y capó", focus_check: "Comprobar legibilidad del dorsal superior y simetría izquierda/derecha." },
+  ];
+  const raw = Array.isArray(guide.shots) && guide.shots.length > 0 ? guide.shots : defaults;
+  const merged = [...raw];
+  while (merged.length < 4) {
+    merged.push(defaults[merged.length]);
+  }
+  return merged.slice(0, 4).map((s, idx) => ({
     id: `ai-shot-${idx}`,
     title: `${idx + 1}. ${s.angle}`,
-    filename: `mmt_${carSlug}_${num}_0${idx + 1}.png`,
-    circuit: guide.circuit || "Spa-Francorchamps",
-    timeAndWeather: guide.lighting_and_weather || "16:45 Partly Cloudy",
-    cameraSetup: s.camera_ctrl_f12 || "Ctrl+F12 · FOV 35°",
-    checklist: s.focus_check ? [s.focus_check] : [],
+    filename: `mmt_${carSlug}_${num}_0${idx + 1}.png · (subir car_${cid}.tga + car_spec_${cid}.mip)`,
+    circuit: guide.circuit || "Circuit de Spa-Francorchamps",
+    timeAndWeather: guide.lighting_and_weather || "16:30 · Partly Cloudy",
+    cameraSetup: s.camera_ctrl_f12 || defaults[idx].camera_ctrl_f12,
+    checklist: [
+      s.focus_check || defaults[idx].focus_check,
+      idx === 0
+        ? `Archivo principal Trading Paints: car_${cid}.tga`
+        : `Spec Map (compilado en iRacing): car_spec_${cid}.mip`,
+    ],
   }));
 }
