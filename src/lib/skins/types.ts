@@ -50,7 +50,17 @@ export interface DriverProfile {
 }
 
 export type PatternStyle =
+  | "solid-factory"
+  | "pearl-shift"
+  | "carbon-exposed"
+  | "forged-carbon"
+  | "stealth-camo"
+  | "hex-stealth"
+  | "topo-flow"
+  | "halftone-pro"
+  | "brushed-metal"
   | "freeform"
+  // Legacy aliases kept for backwards compatibility with saved presets
   | "endurance"
   | "sprint"
   | "carbon-stealth"
@@ -61,9 +71,7 @@ export type PatternStyle =
   | "apex-fade"
   | "heritage-gulf"
   | "factory-chevron"
-  | "lightning-drift"
-  | "topo-flow"
-  | "halftone-pro";
+  | "lightning-drift";
 
 export type SurfaceTexture = "none" | "carbon" | "hex-mesh" | "speed-lines" | "metallic-flake";
 

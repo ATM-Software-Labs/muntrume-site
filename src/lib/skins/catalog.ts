@@ -657,7 +657,7 @@ export function createDefaultDecals(): DecalLayer[] {
   ];
 }
 
-export function createInitialDesign(carId = "porsche992rgt3", driverId = "albertot", presetId: PresetDefinition["id"] = "endurance"): SkinDesignState {
+export function createInitialDesign(carId = "porsche992rgt3", driverId = "albertot", presetId: PresetDefinition["id"] = "pearl-shift"): SkinDesignState {
   const car = CAR_PROFILES.find((c) => c.id === carId) ?? CAR_PROFILES[0];
   const driver = DRIVER_PROFILES.find((d) => d.id === driverId) ?? DRIVER_PROFILES[0];
   const preset = SKIN_PRESETS.find((p) => p.id === presetId) ?? SKIN_PRESETS[0];
@@ -671,11 +671,11 @@ export function createInitialDesign(carId = "porsche992rgt3", driverId = "albert
     customNumber: driver.number,
     customerId: driver.customerId,
     resolution: 2048,
-    pattern: preset.id,
+    pattern: "pearl-shift",
     surfaceTexture: "none",
     psdPatternName: null,
     palette: { ...preset.palette },
-    spec: { ...preset.spec },
+    spec: { ...preset.spec, carbonAccent: false },
     fontStyle: preset.fontStyle,
     showNumberOnCar: false,
     zones: cloneZones(car.defaultZones),

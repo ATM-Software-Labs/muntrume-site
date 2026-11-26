@@ -508,20 +508,15 @@ export function initSkinsStudio(): void {
   }
 
   const GALLERY_PATTERNS: Array<{ id: PatternStyle; label: string }> = [
+    { id: "solid-factory", label: "Fábrica" },
+    { id: "pearl-shift", label: "Perlado" },
+    { id: "carbon-exposed", label: "Carbono 2×2" },
+    { id: "forged-carbon", label: "Forjado" },
+    { id: "stealth-camo", label: "Proto Camo" },
+    { id: "hex-stealth", label: "Hex Tonal" },
     { id: "topo-flow", label: "Topo Flow" },
     { id: "halftone-pro", label: "Halftone" },
-    { id: "endurance", label: "Endurance" },
-    { id: "geo-camo", label: "Geo-Camo" },
-    { id: "hex-tech", label: "Hex Tech" },
-    { id: "apex-fade", label: "Apex Fade" },
-    { id: "factory-chevron", label: "V-Chevron" },
-    { id: "lightning-drift", label: "Lightning" },
-    { id: "heritage-gulf", label: "Heritage" },
-    { id: "sprint", label: "Sprint" },
-    { id: "carbon-stealth", label: "Stealth" },
-    { id: "tricolor", label: "Tricolor" },
-    { id: "clean-minimal", label: "Minimal" },
-    { id: "freeform", label: "Libre" },
+    { id: "brushed-metal", label: "Titanio" },
   ];
 
   function renderPatternGallery(): void {
@@ -1647,6 +1642,15 @@ export function initSkinsStudio(): void {
       // AUTO-APLICAR TODO LIMPIO (aplica el patrón real de pintura + paleta + acabado + logos en Sponsor Blocks)
       state.name = `${plan.title} · #${state.customNumber}`;
       const allowedPatterns = new Set([
+        "solid-factory",
+        "pearl-shift",
+        "carbon-exposed",
+        "forged-carbon",
+        "stealth-camo",
+        "hex-stealth",
+        "topo-flow",
+        "halftone-pro",
+        "brushed-metal",
         "freeform",
         "endurance",
         "sprint",
@@ -1659,13 +1663,11 @@ export function initSkinsStudio(): void {
         "heritage-gulf",
         "factory-chevron",
         "lightning-drift",
-        "topo-flow",
-        "halftone-pro",
       ]);
       const keepColors = Boolean(byId<HTMLInputElement>("skAiKeepColors")?.checked);
       const includeLogos = Boolean(byId<HTMLInputElement>("skAiIncludeLogos")?.checked);
 
-      state.pattern = (allowedPatterns.has(plan.pattern) ? plan.pattern : "topo-flow") as SkinDesignState["pattern"];
+      state.pattern = (allowedPatterns.has(plan.pattern) ? plan.pattern : "pearl-shift") as SkinDesignState["pattern"];
       state.psdPatternName = null;
       state.strokes = [];
       if (!keepColors) {
