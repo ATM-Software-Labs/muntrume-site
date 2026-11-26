@@ -246,7 +246,7 @@ export class WebGLPreviewEngine {
       });
 
       this.setLightingPreset("noon");
-      this.buildProceduralMotorsportCar(this.currentCategory);
+      void this.loadDefaultGtShowroomModel();
       this.startLoop();
     } catch {
       this.renderer = null;
@@ -410,7 +410,73 @@ export class WebGLPreviewEngine {
   }
 
   private async loadDefaultGtShowroomModel(): Promise<void> {
-    this.buildProceduralMotorsportCar(this.currentCategory);
+    if (!this.scene || !this.paintMaterial || !this.glassMaterial || !this.detailsMaterial) return;
+    try {
+      const loader = this.createGltfLoader();
+      const gltf = await loader.loadAsync("/assets/models/gt-showroom.glb");
+      const root = gltf.scene;
+
+      const box = new THREE.Box3().setFromObject(root);
+      const size = new THREE.Vector3();
+      const center = new THREE.Vector3();
+      box.getSize(size);
+      box.getCenter(center);
+      const maxSpan = Math.max(size.x, size.y, size.z) || 1;
+      const scale = 4.4 / maxSpan;
+      root.scale.setScalar(scale);
+      root.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
+      root.updateMatrixWorld(true);
+
+      const finalBox = new THREE.Box3().setFromObject(root);
+      const paintMat = this.paintMaterial;
+      const glassMat = this.glassMaterial;
+      const detailMat = this.detailsMaterial;
+
+      root.traverse((obj) => {
+        if (!(obj instanceof THREE.Mesh)) return;
+        const name = (obj.name || "").toLowerCase();
+        const matName =
+          !Array.isArray(obj.material) && obj.material && "name" in obj.material
+            ? String(obj.material.name || "").toLowerCase()
+            : "";
+
+        if (name === "body" || matName === "body" || matName.includes("carpaint") || matName.includes("paint")) {
+          applyCleanBodyUVs(obj, finalBox);
+          obj.material = paintMat;
+        } else if (name.includes("glass") || matName.includes("glass")) {
+          obj.material = glassMat;
+        } else if (name.includes("rim") || matName.includes("rim")) {
+          obj.material = detailMat;
+        }
+      });
+
+      // Add a sleek GT3 carbon rear wing on the rear deck
+      const carbonMat = new THREE.MeshStandardMaterial({ color: "#141821", roughness: 0.35, metalness: 0.4 });
+      const wingGroup = new THREE.Group();
+      const wingBlade = new THREE.Mesh(new THREE.BoxGeometry(1.78, 0.045, 0.28), carbonMat);
+      wingBlade.position.set(0, finalBox.max.y + 0.04, finalBox.min.z + 0.28);
+      wingBlade.rotation.x = 0.1;
+      wingGroup.add(wingBlade);
+      for (const side of [-1, 1]) {
+        const ep = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.24, 0.34), paintMat);
+        ep.position.set(side * 0.89, finalBox.max.y + 0.02, finalBox.min.z + 0.28);
+        wingGroup.add(ep);
+        const strut = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.30, 0.14), carbonMat);
+        strut.position.set(side * 0.32, finalBox.max.y - 0.12, finalBox.min.z + 0.32);
+        wingGroup.add(strut);
+      }
+
+      this.clearCarGroup();
+      const wrapper = new THREE.Group();
+      wrapper.add(root);
+      wrapper.add(wingGroup);
+      this.carGroup = wrapper;
+      this.scene.add(wrapper);
+      this.isCustomModel = false;
+      this.meshLabel = "Showroom 3D GT3 Real (Three.js PBR + reflejos de estudio · arrastra para orbitar)";
+    } catch {
+      this.buildProceduralMotorsportCar(this.currentCategory);
+    }
   }
 
   private startLoop(): void {
@@ -434,10 +500,7 @@ export class WebGLPreviewEngine {
   }
 
   public setCategory(category: CarBodyCategory): void {
-    if (this.isCustomModel) return;
-    if (this.currentCategory === category && this.carGroup) return;
     this.currentCategory = category;
-    this.buildProceduralMotorsportCar(category);
   }
 
   public updateZones(_zones: Record<ZoneKey, UvRect>): void {
