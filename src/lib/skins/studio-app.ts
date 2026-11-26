@@ -241,13 +241,12 @@ export function initSkinsStudio(): void {
   }
 
   async function verifyVaultSession(): Promise<void> {
-    if (authErrorBox) authErrorBox.textContent = "Verificando sesión activa de muntru.me...";
     const currentTk = getVaultToken();
-    const qs = new URLSearchParams(window.location.search);
-    if (!currentTk && window.location.hostname === "skins.muntru.me" && qs.get("sso") !== "1") {
-      window.location.replace("https://muntru.me/login/?next=" + encodeURIComponent("https://skins.muntru.me/?sso=1"));
+    if (!currentTk) {
+      lockStudio("Acceso restringido a pilotos autorizados de muntru.me. Inicia sesión para abrir el estudio.");
       return;
     }
+    if (authErrorBox) authErrorBox.textContent = "Verificando tu sesión activa de muntru.me...";
     try {
       const cars = await fetchWorkerCars();
       workerCarsCatalog = cars;
