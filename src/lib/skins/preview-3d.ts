@@ -468,7 +468,8 @@ export class WebGLPreviewEngine {
       }
       await this.loadGltfBuffer(buffer, url.split("/").pop() || `${category}-base.glb`, false, true);
       return true;
-    } catch {
+    } catch (err) {
+      console.warn("[skins-3d] Base GLB load failed:", url, err);
       this.missingBasePaths.add(url);
       this.buildAutomotiveSpeedform();
       return false;
@@ -723,9 +724,13 @@ export class WebGLPreviewEngine {
     if (!this.scene || !this.paintMaterial) {
       throw new Error("Visor Three.js no inicializado.");
     }
-    await MeshoptDecoder.ready;
     const loader = new GLTFLoader();
-    loader.setMeshoptDecoder(MeshoptDecoder);
+    try {
+      await MeshoptDecoder.ready;
+      loader.setMeshoptDecoder(MeshoptDecoder);
+    } catch (e) {
+      console.warn("[skins-3d] MeshoptDecoder init skipped:", e);
+    }
     const gltf = await new Promise<{ scene: THREE.Group }>((resolve, reject) => {
       loader.parse(buffer.slice(0), "", (res) => resolve(res as unknown as { scene: THREE.Group }), reject);
     });
