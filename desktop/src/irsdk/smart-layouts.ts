@@ -16,7 +16,10 @@ export type OverlayWidgetId =
   | "digiflag"
   | "trackmap"
   | "flatmap"
-  | "traffic";
+  | "traffic"
+  | "weather"
+  | "laptimes"
+  | "twitchchat";
 
 export type SessionColumnKey =
   | "position"
@@ -90,6 +93,12 @@ export const DEFAULT_WIDGET_CONFIGS: Record<OverlayWidgetId, WidgetLayoutConfig>
   flatmap: { visible: true, x: 560, y: 14, scale: 1.0, opacity: 0.92 },
   // Center-upper: Multiclass Traffic Indicator (iOverlay Pro-Free)
   traffic: { visible: true, x: 820, y: 110, scale: 1.0, opacity: 0.96 },
+  // Right-upper: Weather, Wind & SoF (Kapps-inspired)
+  weather: { visible: true, x: 1450, y: 150, scale: 1.0, opacity: 0.94 },
+  // Right-lower: Lap Times & Stint History (Kapps-inspired)
+  laptimes: { visible: true, x: 1450, y: 460, scale: 1.0, opacity: 0.94 },
+  // Bottom-right: Transparent Twitch Chat (Kapps-inspired, 0 API keys)
+  twitchchat: { visible: false, x: 1450, y: 780, scale: 1.0, opacity: 0.92 },
 };
 
 export function createDefaultProfile(category: DisciplineCategory, session: SessionMode): SmartLayoutProfile {

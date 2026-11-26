@@ -77,6 +77,7 @@ export class GpuPedalsEngine {
       thrRing: Float32Array;
       brkRing: Float32Array;
       cltRing: Float32Array;
+      steerRing: Float32Array;
       gThrRing: Float32Array;
       gBrkRing: Float32Array;
       gValidRing: Uint8Array;
@@ -106,6 +107,7 @@ export class GpuPedalsEngine {
       thrRing: new Float32Array(cap),
       brkRing: new Float32Array(cap),
       cltRing: new Float32Array(cap),
+      steerRing: new Float32Array(cap),
       gThrRing: new Float32Array(cap),
       gBrkRing: new Float32Array(cap),
       gValidRing: new Uint8Array(cap),
@@ -126,6 +128,7 @@ export class GpuPedalsEngine {
     thrRing: Float32Array;
     brkRing: Float32Array;
     cltRing: Float32Array;
+    steerRing: Float32Array;
     gThrRing: Float32Array;
     gBrkRing: Float32Array;
     gValidRing: Uint8Array;
@@ -148,6 +151,9 @@ export class GpuPedalsEngine {
     refs.thrRing[refs.ringHead] = thr;
     refs.brkRing[refs.ringHead] = brk;
     refs.cltRing[refs.ringHead] = clt;
+    // Normalized steering trace (-1..+1 mapped to 0..1 centered at 0.5, Kapps Input Graph style)
+    const steerNorm = Math.max(0, Math.min(1, 0.5 - (sample.steering || 0) / 6.28));
+    refs.steerRing[refs.ringHead] = steerNorm;
     refs.gThrRing[refs.ringHead] = gThr;
     refs.gBrkRing[refs.ringHead] = gBrk;
     refs.gValidRing[refs.ringHead] = hasGhost ? 1 : 0;
@@ -214,6 +220,19 @@ export class GpuPedalsEngine {
         if (startedThr) ctx.stroke();
         ctx.restore();
       }
+
+      // Steering angle trace (Kapps-style cyan center-line)
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.72)";
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      for (let i = 0; i < len; i++) {
+        const idx = (oldest + i) % cap;
+        const x = startX + i * step;
+        const y = traceY + traceH - 1 - refs.steerRing[idx] * (traceH - 2);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
 
       // Clutch (#3b82f6, 2px)
       ctx.strokeStyle = "#3b82f6";

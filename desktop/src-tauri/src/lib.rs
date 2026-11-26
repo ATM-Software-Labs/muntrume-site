@@ -170,6 +170,7 @@ pub fn run() {
             find_latest_replay_clip,
             pick_videos_folder,
             send_iracing_pit_fuel,
+            send_iracing_pit_clear_tires,
             quit
         ])
         .run(tauri::generate_context!())
@@ -952,42 +953,105 @@ const OBS_STREAM_CANVAS_HTML: &str = r#"<!doctype html>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1920px;height:1080px;overflow:hidden;background:transparent;font-family:ui-monospace,Consolas,monospace;color:#f8fafc}
+body.single-widget{width:auto;height:auto}
+body.single-widget .pod{display:none!important}
+body.single-widget .pod.is-solo{display:block!important;position:static!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;margin:4px}
+body.single-widget #podFlat.is-solo{display:flex!important}
 .pod{position:absolute;background:rgba(9,11,15,.88);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 12px;backdrop-filter:blur(8px)}
-.hdr{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#10b981;font-weight:800;margin-bottom:6px;display:flex;justify-content:space-between}
+.hdr{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#10b981;font-weight:800;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px}
 .row{display:grid;grid-template-columns:22px 34px 1fr 56px 56px;gap:6px;align-items:center;font-size:11px;padding:2px 4px;border-radius:4px}
 .row.me{background:rgba(16,185,129,.18);color:#6ee7b7;font-weight:800}
 .bar{height:8px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}
 .bar>i{display:block;height:100%}
+.pill{padding:1px 5px;border-radius:4px;font-size:9px;font-weight:900}
 #podStandings{top:20px;left:20px;width:360px}
 #podFlat{top:20px;left:560px;width:800px;height:52px;display:flex;align-items:center}
 #podFuel{top:20px;right:20px;width:270px}
+#podWeather{top:148px;right:20px;width:270px}
+#podLapTimes{top:276px;right:20px;width:270px}
 #podRelative{bottom:20px;left:20px;width:360px}
 #podInputs{bottom:20px;left:760px;width:400px}
-</style></head><body>
-<div id="podStandings" class="pod"><div class="hdr"><span>Standings</span><span id="stTrack">MMT Sync 2.0</span></div><div id="stRows"></div></div>
-<div id="podFlat" class="pod"><canvas id="flatCv" width="776" height="34"></canvas></div>
-<div id="podFuel" class="pod"><div class="hdr"><span>Fuel & Telemetry</span><span id="flSession">LIVE</span></div><div id="flBody" style="font-size:12px;display:grid;gap:4px"></div></div>
-<div id="podRelative" class="pod"><div class="hdr"><span>Relative</span><span id="rlSoF"></span></div><div id="rlRows"></div></div>
-<div id="podInputs" class="pod"><div class="hdr"><span>Inputs 60Hz</span><span id="inGear">N · 0 km/h</span></div>
+#podTwitch{bottom:20px;right:20px;width:300px;display:none}
+</style><style id="mmtCustomCss"></style></head><body>
+<div id="podStandings" data-w="standings" class="pod"><div class="hdr"><span>Standings</span><span id="stTrack">MMT Sync 2.0</span></div><div id="stRows"></div></div>
+<div id="podFlat" data-w="flatmap" class="pod"><canvas id="flatCv" width="776" height="34"></canvas></div>
+<div id="podFuel" data-w="fuel" class="pod"><div class="hdr"><span>Fuel & Auto-Fuel</span><span id="flSession">LIVE</span></div><div id="flBody" style="font-size:12px;display:grid;gap:4px"></div></div>
+<div id="podWeather" data-w="weather" class="pod"><div class="hdr"><span>Clima & Pista</span><span id="wxSof"></span></div><div id="wxBody" style="font-size:11px;display:grid;gap:4px"></div></div>
+<div id="podLapTimes" data-w="laptimes" class="pod"><div class="hdr"><span>Lap Times</span><span id="ltAvg"></span></div><div id="ltBody" style="display:grid;gap:2px"></div></div>
+<div id="podRelative" data-w="relative" class="pod"><div class="hdr"><span>Relative</span><span id="rlSoF"></span></div><div id="rlRows"></div></div>
+<div id="podInputs" data-w="inputs" class="pod"><div class="hdr"><span>Inputs 60Hz</span><span id="inGear">N · 0 km/h</span></div>
   <div style="display:grid;gap:6px">
     <div class="bar"><i id="inThr" style="background:#10b981;width:0%"></i></div>
     <div class="bar"><i id="inBrk" style="background:#ef4444;width:0%"></i></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#94a3b8"><span id="inSteer">Volante: 0°</span><span id="inAbs"></span></div>
   </div>
 </div>
+<div id="podTwitch" data-w="twitch" class="pod"><div class="hdr"><span style="color:#a78bfa">Twitch Chat</span><span id="twChan">—</span></div><div id="twRows" style="font-family:Inter,system-ui,sans-serif;display:grid;gap:3px;font-size:11px"></div></div>
 <script>
+const qs=new URLSearchParams(location.search);
+const soloWidget=(qs.get('widget')||'').toLowerCase();
+if(soloWidget){
+  document.body.classList.add('single-widget');
+  const target=document.querySelector('[data-w="'+soloWidget+'"]');
+  if(target)target.classList.add('is-solo');
+}
+let twWs=null,twChannel='',twMsgs=[];
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function connectTwitch(ch){
+  ch=(ch||'').trim().toLowerCase().replace(/^#/,'').replace(/[^a-z0-9_]/g,'');
+  if(!ch||ch===twChannel)return;
+  twChannel=ch;
+  document.getElementById('twChan').textContent='#'+ch;
+  if(!soloWidget)document.getElementById('podTwitch').style.display='block';
+  try{if(twWs)twWs.close();}catch{}
+  try{
+    twWs=new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+    twWs.onopen=()=>{twWs.send('CAP REQ :twitch.tv/tags');twWs.send('PASS SCHMOOPIIE');twWs.send('NICK justinfan'+Math.floor(10000+Math.random()*89999));twWs.send('JOIN #'+ch);};
+    twWs.onmessage=(ev)=>{
+      for(const ln of String(ev.data||'').split('\r\n')){
+        if(ln.startsWith('PING')){twWs.send('PONG :tmi.twitch.tv');continue;}
+        if(!ln.includes(' PRIVMSG '))continue;
+        const m=ln.match(/display-name=([^;]*)/),c=ln.match(/color=(#[0-9a-fA-F]{6})/),ti=ln.indexOf(' :');
+        const txt=ti>0?ln.slice(ti+2).trim():'';
+        if(!txt)continue;
+        twMsgs.push({u:(m&&m[1])||'Viewer',c:(c&&c[1])||'#34d399',t:txt.slice(0,180)});
+        if(twMsgs.length>8)twMsgs.shift();
+        document.getElementById('twRows').innerHTML=twMsgs.map(x=>`<div><b style="color:${x.c}">${esc(x.u)}:</b> ${esc(x.t)}</div>`).join('');
+      }
+    };
+  }catch{}
+}
+if(qs.get('channel'))connectTwitch(qs.get('channel'));
+let lastCss='';
 async function tick(){
   try{
     const r=await fetch('/api/stream-state',{cache:'no-store'});
     const d=await r.json();
-    if(!d||!d.track)return;
+    if(!d)return;
+    if(typeof d.customCss==='string'&&d.customCss!==lastCss){lastCss=d.customCss;document.getElementById('mmtCustomCss').textContent=d.customCss;}
+    if(d.twitchChannel&&!twChannel)connectTwitch(d.twitchChannel);
+    if(!d.track)return;
     document.getElementById('stTrack').textContent=d.track;
     document.getElementById('flSession').textContent=d.sessionType||'LIVE';
-    document.getElementById('stRows').innerHTML=(d.standings||[]).slice(0,10).map(x=>`<div class="row ${x.me?'me':''}"><span>${x.pos}</span><span>#${x.num}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.name}</span><span style="text-align:right;color:#94a3b8">${x.ir||''}</span><span style="text-align:right">${x.last||''}</span></div>`).join('');
-    document.getElementById('rlRows').innerHTML=(d.relative||[]).slice(0,7).map(x=>`<div class="row ${x.me?'me':''}"><span>${x.pos||''}</span><span>#${x.num}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.name}</span><span style="text-align:right;color:#94a3b8">${x.ir||''}</span><span style="text-align:right;color:${x.ahead?'#f87171':'#34d399'}">${x.gap||''}</span></div>`).join('');
-    document.getElementById('flBody').innerHTML=`<div>Combustible: <b>${(d.fuelL||0).toFixed(2)} L</b></div><div>Vueltas rest.: <b>${(d.fuelLaps||0).toFixed(1)}</b></div><div>Consumo/vta: <b>${(d.fuelPerLap||0).toFixed(2)} L</b></div>`;
+    document.getElementById('stRows').innerHTML=(d.standings||[]).slice(0,10).map(x=>`<div class="row ${x.me?'me':''}"><span>${x.pos}</span><span>#${x.num}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.name)}</span><span style="text-align:right;color:#94a3b8">${esc(x.ir||'')}</span><span style="text-align:right">${esc(x.last||'')}</span></div>`).join('');
+    document.getElementById('rlRows').innerHTML=(d.relative||[]).slice(0,7).map(x=>`<div class="row ${x.me?'me':''}"><span>${x.pos||''}</span><span>#${x.num}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.name)}</span><span style="text-align:right;color:#94a3b8">${esc(x.ir||'')}</span><span style="text-align:right;color:${x.ahead?'#f87171':'#34d399'}">${esc(x.gap||'')}</span></div>`).join('');
+    const af=d.autoFuelTarget>0?`<div>Auto-Fuel: <span class="pill" style="background:#10b981;color:#090b0f">+${d.autoFuelTarget} L → iRacing</span></div>`:'';
+    document.getElementById('flBody').innerHTML=`<div>Combustible: <b>${(d.fuelL||0).toFixed(2)} L</b></div><div>Vueltas rest.: <b>${(d.fuelLaps||0).toFixed(1)}</b></div><div>Consumo/vta: <b>${(d.fuelPerLap||0).toFixed(2)} L</b></div>${af}`;
+    if(d.weather){
+      document.getElementById('wxSof').textContent=d.sof>0?('SOF '+Math.round(d.sof)):'';
+      document.getElementById('wxBody').innerHTML=`<div style="display:flex;justify-content:space-between"><span>Pista: <b style="color:#fbbf24">${Number(d.weather.trackTemp||0).toFixed(1)}°C</b></span><span>Aire: <b>${Number(d.weather.airTemp||0).toFixed(1)}°C</b></span></div><div style="display:flex;justify-content:space-between"><span>Viento: <b style="color:#38bdf8">${Math.round(d.weather.windKmh||0)} km/h</b></span><span>Lluvia: <b>${Math.round(d.weather.rainPct||0)}%</b></span></div>`;
+    }
+    if(Array.isArray(d.lapHistory)){
+      document.getElementById('ltAvg').textContent=d.lapAvgStr?('AVG '+d.lapAvgStr):'';
+      document.getElementById('ltBody').innerHTML=d.lapHistory.slice(0,6).map(l=>`<div style="display:grid;grid-template-columns:34px 1fr 58px;font-size:11px;${l.isBest?'color:#c084fc;font-weight:800':''}"><span>L${l.lap}</span><span>${esc(l.timeStr)}</span><span style="text-align:right;color:${l.isBest?'#c084fc':'#94a3b8'}">${l.isBest?'BEST':'+'+Number(l.deltaBestSec||0).toFixed(3)}</span></div>`).join('');
+    }
     document.getElementById('inGear').textContent=`${d.gear>0?d.gear:d.gear===0?'N':'R'} · ${Math.round(d.speedKmh||0)} km/h`;
     document.getElementById('inThr').style.width=Math.round((d.throttle||0)*100)+'%';
-    document.getElementById('inBrk').style.width=Math.round((d.brake||0)*100)+'%';
+    const brkBar=document.getElementById('inBrk');
+    brkBar.style.width=Math.round((d.brake||0)*100)+'%';
+    brkBar.style.background=d.absActive?'#facc15':'#ef4444';
+    document.getElementById('inSteer').textContent='Volante: '+Math.round((d.steering||0)*57.2958)+'°';
+    document.getElementById('inAbs').innerHTML=d.absActive?'<span class="pill" style="background:#facc15;color:#090b0f">ABS</span>':'';
     const cv=document.getElementById('flatCv'),ctx=cv.getContext('2d');
     ctx.clearRect(0,0,cv.width,cv.height);
     ctx.strokeStyle='rgba(148,163,184,.45)';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(14,17);ctx.lineTo(cv.width-14,17);ctx.stroke();
@@ -1495,6 +1559,38 @@ fn send_iracing_pit_fuel(liters: i32) -> Result<(), String> {
     #[cfg(not(windows))]
     {
         let _ = liters;
+        Ok(())
+    }
+}
+
+/// Envía `irsdk_BroadcastPitCommand(irsdk_PitCommand_ClearTires = 9)` al simulador iRacing (estilo Kapps Pit Helper).
+#[tauri::command]
+fn send_iracing_pit_clear_tires() -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        use std::ffi::OsStr;
+        use std::os::windows::ffi::OsStrExt;
+        use windows_sys::Win32::UI::WindowsAndMessaging::{
+            RegisterWindowMessageW, SendNotifyMessageW, HWND_BROADCAST,
+        };
+        let wide_name: Vec<u16> = OsStr::new("IRSDK_BROADCAST_MSG")
+            .encode_wide()
+            .chain(std::iter::once(0))
+            .collect();
+        let msg_id = unsafe { RegisterWindowMessageW(wide_name.as_ptr()) };
+        if msg_id == 0 {
+            return Err("No se pudo registrar IRSDK_BROADCAST_MSG".into());
+        }
+        // MAKEWPARAM(irsdk_BroadcastPitCommand = 2, irsdk_PitCommand_ClearTires = 9)
+        let wparam: usize = (2usize & 0xFFFF) | ((9usize & 0xFFFF) << 16);
+        let ok = unsafe { SendNotifyMessageW(HWND_BROADCAST, msg_id, wparam, 0) };
+        if ok == 0 {
+            return Err("Error al desmarcar neumáticos en iRacing".into());
+        }
+        Ok(())
+    }
+    #[cfg(not(windows))]
+    {
         Ok(())
     }
 }

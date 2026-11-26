@@ -55,7 +55,8 @@ import {
 import { renderPitStrategyWidget } from "./irsdk/pit-exit-predictor";
 import { renderHelicorsaRadar } from "./irsdk/radar-360";
 import { observeTrackAutoMap } from "./irsdk/track-paths";
-import { estimateLiveIRating, formatIRatingDelta, formatSofShort } from "./irsdk/irating-calc";
+import { computeClassSof, estimateLiveIRating, formatIRatingDelta, formatSofShort } from "./irsdk/irating-calc";
+import { sharedLapHistoryTracker } from "./irsdk/weather-laps-widget";
 import { AeroSuspensionAnalyzer, renderAeroAnalysisPanel } from "./telemetry/aero-analyzer";
 import { LocalTelemetryBus } from "./plugins/telemetry-bus";
 import { PluginLoader } from "./plugins/plugin-loader";
@@ -1976,6 +1977,12 @@ function renderStandbyWidgets(): void {
           return { pct, me: idx === myIdx, color: drv.carClassColor || "#38bdf8" };
         })
         .filter(Boolean);
+      const lapHist = sharedLapHistoryTracker.observe(irsdkState);
+      const avgSec = sharedLapHistoryTracker.getStintAvgSec();
+      const lapAvgStr = avgSec > 0 ? `${Math.floor(avgSec / 60)}:${(avgSec % 60 < 10 ? "0" : "")}${(avgSec % 60).toFixed(3)}` : "";
+      const wAny = window as unknown as { __mmtLastFuelSent?: number };
+      const twitchChan = typeof localStorage !== "undefined" ? (localStorage.getItem("mmt-twitch-channel") || "").trim() : "";
+      const customCss = ThemeEngine.getInstance().getCustomCss?.() || "";
       void fetch("http://127.0.0.1:38421/stream-state", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1986,9 +1993,29 @@ function renderStandbyWidgets(): void {
           gear: irsdkState.frame.gear ?? 0,
           throttle: irsdkState.frame.throttle ?? 0,
           brake: irsdkState.frame.brake ?? 0,
+          steering: irsdkState.frame.steering ?? 0,
+          absActive: Boolean(irsdkState.frame.brakeAbsActive),
           fuelL: irsdkState.frame.fuelLevel ?? 0,
           fuelLaps: irsdkState.fuel?.lapsRemaining ?? 0,
           fuelPerLap: irsdkState.fuel?.avgBurnPerLap ?? 0,
+          autoFuelTarget: wAny.__mmtLastFuelSent ?? 0,
+          sof: Math.round(
+            computeClassSof(
+              Object.values(drivers)
+                .filter((d) => !d.isSpectator && !d.isPaceCar && d.iRating > 0)
+                .map((d) => d.iRating),
+            ),
+          ),
+          weather: {
+            trackTemp: irsdkState.frame.trackTempC ?? 28,
+            airTemp: irsdkState.frame.airTempC ?? 22,
+            windKmh: Math.round(irsdkState.frame.windKmh ?? 0),
+            rainPct: Math.round((irsdkState.frame.precipitationPct ?? 0) * 100),
+          },
+          lapHistory: lapHist.slice(0, 6),
+          lapAvgStr,
+          twitchChannel: twitchChan,
+          customCss,
           standings: irsdkState.leaderboard.slice(0, 10).map((r) => ({
             pos: r.position,
             num: r.carNumber,
@@ -4427,8 +4454,14 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
         if (targetLiters > 0 && (enteredPit || (lapChanged && winAny.__mmtLastFuelSent !== targetLiters))) {
           winAny.__mmtLastFuelLap = curLapForFuel;
           winAny.__mmtLastFuelSent = targetLiters;
+          const clearTires = typeof localStorage !== "undefined" && localStorage.getItem("mmt-auto-fuel-clear-tires") === "1";
           void import("@tauri-apps/api/core")
-            .then(({ invoke }) => invoke("send_iracing_pit_fuel", { liters: targetLiters }))
+            .then(async ({ invoke }) => {
+              await invoke("send_iracing_pit_fuel", { liters: targetLiters });
+              if (enteredPit && clearTires) {
+                await invoke("send_iracing_pit_clear_tires");
+              }
+            })
             .catch(() => {});
         }
       }
