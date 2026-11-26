@@ -1,11 +1,13 @@
 /**
- * Real-time 2D -> 3D Showroom Preview Engine powered by Three.js for skins.muntru.me.
- * - Connects both the main Paint <canvas> and iRacing Spec Map <canvas> as live THREE.CanvasTexture
- *   (`map`, `roughnessMap`, `metalnessMap`) on a MeshPhysicalMaterial with clearcoat + RoomEnvironment IBL.
- * - Parametric 3D bodywork generator by category: GT3/GT4, Prototype/GTP, Formula, and Touring/Stock,
- *   with UVs mapped directly to the selected car's JSON zone coordinates.
- * - Smooth OrbitControls, 4 camera presets, 3 studio lighting modes (Mediodía, Atardecer, Nublado/Boxes),
- *   and 100% local .GLB / .GLTF (and .OBJ) model loader via URL.createObjectURL (never uploaded to server).
+ * High-Fidelity 2D -> 3D Motorsport Showroom Engine powered by Three.js for skins.muntru.me.
+ * - Sculpted parametric 3D bodywork by category (GT3/GT4, Prototype/GTP, Formula, Touring/Stock)
+ *   built with CatmullRomCurve3 splines, indexed smooth-normal lofting (computeVertexNormals),
+ *   ExtrudeGeometry airfoil wings & dorsal shark fins, TubeGeometry swan-neck pylons / A-B-C pillars / Halo,
+ *   and LatheGeometry contoured slick tires with 10-spoke rims, brake rotors & calipers.
+ * - Live dual THREE.CanvasTexture pipeline: Paint (map) + iRacing Spec Map (roughnessMap + metalnessMap + clearcoat)
+ *   + procedural 2x2 twill carbon fiber bumpMap + RoomEnvironment PMREM studio reflections.
+ * - OrbitControls, 4 camera presets, 3 studio lighting presets (Mediodía, Atardecer, Nublado/Boxes),
+ *   and 100% client-side .GLB / .GLTF / .OBJ local model loader via URL.createObjectURL.
  */
 
 import * as THREE from "three";
@@ -67,7 +69,35 @@ function smoothstep(e0: number, e1: number, x: number): number {
 }
 
 /**
- * Helper to create a UV-mapped box aligned to a specific UV ZoneRect.
+ * Procedural 2x2 twill carbon fiber bump texture for realistic 3D carbon sheen.
+ */
+function createCarbonBumpTexture(): THREE.CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = 64;
+  c.height = 64;
+  const ctx = c.getContext("2d");
+  if (ctx) {
+    ctx.fillStyle = "#505050";
+    ctx.fillRect(0, 0, 64, 64);
+    for (let y = 0; y < 64; y += 8) {
+      for (let x = 0; x < 64; x += 8) {
+        const shift = ((x + y) / 8) % 2 === 0;
+        ctx.fillStyle = shift ? "#b8b8b8" : "#2a2a2a";
+        ctx.fillRect(x, y, 4, 8);
+        ctx.fillStyle = shift ? "#2a2a2a" : "#b8b8b8";
+        ctx.fillRect(x + 4, y, 4, 8);
+      }
+    }
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(28, 28);
+  return tex;
+}
+
+/**
+ * UV-mapped BoxGeometry mapped cleanly to a car UV zone.
  */
 function createZoneBox(sx: number, sy: number, sz: number, zRect: UvRect): THREE.BoxGeometry {
   const geo = new THREE.BoxGeometry(sx, sy, sz);
@@ -82,218 +112,353 @@ function createZoneBox(sx: number, sy: number, sz: number, zRect: UvRect): THREE
 }
 
 /**
- * Build a smooth lofted parametric bodywork BufferGeometry split into paintable body & tinted glass groups.
+ * Sculpted cambered airfoil rear wing using ExtrudeGeometry mapped to zones.rearWing.
  */
-function buildLoftedBodyGeometries(
+function createAirfoilWingGeometry(span: number, chord: number, thickness: number, zRect: UvRect): THREE.BufferGeometry {
+  const shape = new THREE.Shape();
+  shape.moveTo(0, 0);
+  shape.quadraticCurveTo(chord * 0.35, thickness * 1.15, chord, thickness * 0.35);
+  shape.lineTo(chord, thickness * 0.15);
+  shape.quadraticCurveTo(chord * 0.45, -thickness * 0.15, 0, -thickness * 0.25);
+  shape.closePath();
+
+  const geo = new THREE.ExtrudeGeometry(shape, {
+    depth: span,
+    bevelEnabled: true,
+    bevelThickness: 0.008,
+    bevelSize: 0.006,
+    bevelSegments: 2,
+    curveSegments: 14,
+  });
+  // Rotate so span runs along X (-span/2 .. +span/2) and leading edge faces +Z
+  geo.translate(-chord * 0.5, 0, -span * 0.5);
+  geo.rotateY(Math.PI / 2);
+  geo.computeVertexNormals();
+
+  const pos = geo.attributes.position;
+  const uv = geo.attributes.uv;
+  for (let i = 0; i < pos.count; i++) {
+    const uFrac = Math.max(0, Math.min(1, (pos.getX(i) + span * 0.5) / span));
+    const vFrac = Math.max(0, Math.min(1, (pos.getZ(i) + chord * 0.5) / chord));
+    uv.setXY(i, zRect.x + uFrac * zRect.w, zRect.y + vFrac * zRect.h);
+  }
+  uv.needsUpdate = true;
+  return geo;
+}
+
+/**
+ * Sculpted curved GTP dorsal shark fin using ExtrudeGeometry mapped to zones.roof.
+ */
+function createSharkFinGeometry(zRect: UvRect): THREE.BufferGeometry {
+  const shape = new THREE.Shape();
+  shape.moveTo(0, 0);
+  shape.lineTo(1.38, 0);
+  shape.lineTo(1.34, 0.26);
+  shape.quadraticCurveTo(0.65, 0.34, 0.02, 0.18);
+  shape.closePath();
+
+  const geo = new THREE.ExtrudeGeometry(shape, {
+    depth: 0.028,
+    bevelEnabled: true,
+    bevelThickness: 0.005,
+    bevelSize: 0.004,
+    bevelSegments: 2,
+  });
+  geo.translate(-0.69, 0, -0.014);
+  geo.rotateY(Math.PI / 2);
+  geo.computeVertexNormals();
+
+  const pos = geo.attributes.position;
+  const uv = geo.attributes.uv;
+  for (let i = 0; i < pos.count; i++) {
+    const uFrac = Math.max(0, Math.min(1, (pos.getZ(i) + 0.69) / 1.38));
+    const vFrac = Math.max(0, Math.min(1, pos.getY(i) / 0.34));
+    uv.setXY(i, zRect.x + uFrac * zRect.w, zRect.y + vFrac * zRect.h);
+  }
+  uv.needsUpdate = true;
+  return geo;
+}
+
+/**
+ * Smooth CatmullRomCurve3-driven indexed lofted bodywork (64 x 40) with welded computeVertexNormals().
+ */
+function buildSculptedBodyGeometries(
   category: CarBodyCategory,
   zones: Record<ZoneKey, UvRect>,
 ): { paintGeo: THREE.BufferGeometry; glassGeo: THREE.BufferGeometry } {
-  const segS = 48;
-  const segT = 32;
+  const segS = 64;
+  const segT = 40;
 
-  const evalPoint = (s: number, t: number): [number, number, number] => {
+  // Define longitudinal CatmullRomCurve3 centerline spine (Y height along car length)
+  const isGtp = category === "gtp";
+  const isFormula = category === "formula";
+  const isTouring = category === "touring";
+
+  const spinePts = isFormula
+    ? [
+        new THREE.Vector3(0, -0.10, 2.08),
+        new THREE.Vector3(0, 0.06, 1.15),
+        new THREE.Vector3(0, 0.16, 0.45),
+        new THREE.Vector3(0, 0.14, 0.05),
+        new THREE.Vector3(0, 0.42, -0.35),
+        new THREE.Vector3(0, 0.34, -1.15),
+        new THREE.Vector3(0, 0.12, -1.96),
+      ]
+    : isGtp
+      ? [
+          new THREE.Vector3(0, -0.06, 1.98),
+          new THREE.Vector3(0, 0.10, 1.35),
+          new THREE.Vector3(0, 0.22, 0.68),
+          new THREE.Vector3(0, 0.49, 0.02),
+          new THREE.Vector3(0, 0.46, -0.62),
+          new THREE.Vector3(0, 0.24, -1.35),
+          new THREE.Vector3(0, 0.16, -1.94),
+        ]
+      : isTouring
+        ? [
+            new THREE.Vector3(0, 0.00, 1.84),
+            new THREE.Vector3(0, 0.19, 1.35),
+            new THREE.Vector3(0, 0.26, 0.72),
+            new THREE.Vector3(0, 0.62, 0.18),
+            new THREE.Vector3(0, 0.61, -0.78),
+            new THREE.Vector3(0, 0.31, -1.42),
+            new THREE.Vector3(0, 0.25, -1.84),
+          ]
+        : [
+            // Sculpted GT3 / GT4 coupe silhouette
+            new THREE.Vector3(0, -0.04, 1.94),
+            new THREE.Vector3(0, 0.12, 1.42),
+            new THREE.Vector3(0, 0.21, 0.74),
+            new THREE.Vector3(0, 0.54, 0.08),
+            new THREE.Vector3(0, 0.51, -0.66),
+            new THREE.Vector3(0, 0.28, -1.44),
+            new THREE.Vector3(0, 0.21, -1.88),
+          ];
+
+  const spineCurve = new THREE.CatmullRomCurve3(spinePts, false, "catmullrom", 0.45);
+  const spineSamples = spineCurve.getPoints(segS);
+
+  const evalVertex = (is: number, it: number): [number, number, number] => {
+    const s = is / segS;
+    const t = -1 + (2 * it) / segT;
     const at = Math.abs(t);
     const sign = t < 0 ? -1 : 1;
+    const sp = spineSamples[is];
+    const z = sp.z;
 
-    if (category === "formula") {
-      // Sleek open-wheel monoposto fuselage + sculpted sidepods
-      const z = 2.05 - s * 4.10;
-      const noseW = 0.14 + smoothstep(0.0, 0.35, s) * 0.20;
-      const sidepodMask = smoothstep(0.38, 0.50, s) * (1 - smoothstep(0.76, 0.94, s));
-      const halfW = noseW + sidepodMask * 0.38 * (1 - smoothstep(0.0, 0.32, at) * 0.2);
+    if (isFormula) {
+      const noseW = 0.13 + smoothstep(0.0, 0.34, s) * 0.21;
+      const sidepodMask = smoothstep(0.36, 0.48, s) * (1 - smoothstep(0.75, 0.94, s));
+      const halfW = noseW + sidepodMask * 0.42;
       const yFloor = -0.22;
-      const spineH =
-        -0.08 +
-        smoothstep(0.0, 0.34, s) * 0.24 +
-        smoothstep(0.52, 0.62, s) * (1 - smoothstep(0.76, 0.95, s)) * 0.26;
-      const podH = -0.02 + sidepodMask * 0.18;
-      const u = at;
+      const podY = -0.02 + sidepodMask * 0.20;
       let y: number;
-      if (u < 0.75) {
-        const k = u / 0.75;
-        y = spineH * (1 - smoothstep(0.15, 0.7, k)) + podH * smoothstep(0.15, 0.7, k);
+      if (at < 0.76) {
+        const u = at / 0.76;
+        y = sp.y * (1 - smoothstep(0.18, 0.72, u)) + podY * smoothstep(0.18, 0.72, u);
       } else {
-        const k = (u - 0.75) / 0.25;
-        y = podH * (1 - k) + yFloor * k;
+        const u = (at - 0.76) / 0.24;
+        y = podY * (1 - smoothstep(0, 1, u)) + yFloor * smoothstep(0, 1, u);
       }
-      return [sign * halfW * Math.min(1, u / 0.82), y, z];
+      return [sign * halfW * Math.min(1, at / 0.80), y, z];
     }
 
-    const isGtp = category === "gtp";
-    const isTouring = category === "touring";
-
-    const length = isGtp ? 3.96 : isTouring ? 3.68 : 3.80;
-    const z = length * 0.5 - s * length;
-
-    const noseTaper = smoothstep(0.0, isGtp ? 0.14 : 0.17, s);
+    const noseTaper = smoothstep(0.0, isGtp ? 0.15 : 0.18, s);
     const tailTaper = 1.0 - smoothstep(0.86, 1.0, s) * (isGtp ? 0.08 : 0.14);
-    const frontFlare = Math.exp(-Math.pow((s - 0.21) / 0.11, 2)) * (isGtp ? 0.12 : 0.085);
-    const rearFlare = Math.exp(-Math.pow((s - 0.78) / 0.13, 2)) * (isGtp ? 0.13 : 0.105);
-    const baseW = isGtp ? 0.66 : isTouring ? 0.68 : 0.64;
-    const halfW = (baseW + 0.24 * noseTaper + frontFlare + rearFlare) * tailTaper;
+    const frontFlare = Math.exp(-Math.pow((s - 0.21) / 0.105, 2)) * (isGtp ? 0.14 : 0.095);
+    const rearFlare = Math.exp(-Math.pow((s - 0.78) / 0.125, 2)) * (isGtp ? 0.15 : 0.115);
+    const baseW = isGtp ? 0.66 : isTouring ? 0.69 : 0.65;
+    const halfW = (baseW + 0.23 * noseTaper + frontFlare + rearFlare) * tailTaper;
 
     const yFloor = -0.24;
     const beltY =
-      (isGtp ? -0.05 : isTouring ? 0.02 : -0.02) +
-      smoothstep(0.0, 0.18, s) * (isGtp ? 0.16 : 0.18) +
-      smoothstep(0.25, 0.78, s) * (isGtp ? 0.08 : 0.12) -
-      smoothstep(0.92, 1.0, s) * 0.06;
+      (isGtp ? -0.04 : isTouring ? 0.04 : -0.01) +
+      smoothstep(0.0, 0.18, s) * 0.18 +
+      smoothstep(0.24, 0.78, s) * (isGtp ? 0.09 : 0.13) -
+      smoothstep(0.92, 1.0, s) * 0.05;
 
-    const cabStart = isGtp ? 0.28 : isTouring ? 0.26 : 0.32;
-    const cabPeak = isGtp ? 0.44 : isTouring ? 0.40 : 0.49;
-    const cabEndStart = isGtp ? 0.60 : isTouring ? 0.74 : 0.66;
-    const cabEnd = isGtp ? 0.82 : isTouring ? 0.88 : 0.90;
-    const cabMaxH = isGtp ? 0.30 : isTouring ? 0.42 : 0.34;
-
-    const cabHeight = smoothstep(cabStart, cabPeak, s) * (1.0 - smoothstep(cabEndStart, cabEnd, s)) * cabMaxH;
+    const cabExtra = Math.max(0, sp.y - beltY);
 
     let xNorm: number;
     let y: number;
 
-    if (at < 0.72) {
-      const u = at / 0.72;
-      const greenhouseMask = cabHeight / cabMaxH;
-      const cabTuck = smoothstep(isGtp ? 0.20 : 0.28, 0.68, u) * greenhouseMask * (isGtp ? 0.38 : 0.22);
-      xNorm = u * (1.0 - cabTuck * 0.48);
+    if (at < 0.70) {
+      const u = at / 0.70;
+      const cabMask = smoothstep(0.04, 0.24, cabExtra);
+      const tumblehome = smoothstep(isGtp ? 0.18 : 0.26, 0.68, u) * cabMask * (isGtp ? 0.42 : 0.25);
+      xNorm = u * (1.0 - tumblehome * 0.48);
 
-      const hoodCrown = Math.cos(u * Math.PI * 0.5) * 0.045;
-      const fenderBump = Math.exp(-Math.pow((u - 0.78) / 0.20, 2)) * (frontFlare + rearFlare) * (isGtp ? 0.9 : 0.55);
-      const cabProfile = Math.cos(Math.min(1, u / (isGtp ? 0.58 : 0.78)) * Math.PI * 0.5);
-      const cabY = cabHeight * Math.pow(Math.max(0, cabProfile), 0.72);
-      y = beltY + hoodCrown + fenderBump + cabY;
+      const crown = Math.cos(u * Math.PI * 0.5) * 0.045;
+      const archCrown = Math.exp(-Math.pow((u - 0.80) / 0.18, 2)) * (frontFlare + rearFlare) * (isGtp ? 1.0 : 0.65);
+      const cabRoofProfile = Math.cos(Math.min(1, u / (isGtp ? 0.56 : 0.76)) * Math.PI * 0.5);
+      // Slight GT3 beltline character crease at u ~ 0.88
+      const beltCrease = Math.exp(-Math.pow((u - 0.90) / 0.08, 2)) * 0.018;
+      y = beltY + crown + archCrown + cabExtra * Math.pow(Math.max(0, cabRoofProfile), 0.70) + beltCrease;
     } else {
-      const u = (at - 0.72) / 0.28;
-      xNorm = 1.0 - Math.pow(u, 2.2) * 0.07;
-      const shoulderY = beltY + (frontFlare + rearFlare) * 0.22;
+      const u = (at - 0.70) / 0.30;
+      // Sculpted lower side door tuck + side-skirt flare
+      const doorConcave = -Math.sin(u * Math.PI) * 0.035;
+      const rockerFlare = smoothstep(0.75, 1.0, u) * 0.03;
+      xNorm = 1.0 + doorConcave + rockerFlare - Math.pow(u, 2.2) * 0.06;
+      const shoulderY = beltY + (frontFlare + rearFlare) * 0.28;
       y = shoulderY * (1.0 - smoothstep(0, 1, u)) + yFloor * smoothstep(0, 1, u);
     }
 
-    const noseCurve = s < 0.06 ? (1.0 - s / 0.06) * Math.pow(at, 2) * 0.14 : 0;
-    const tailCurve = s > 0.94 ? ((s - 0.94) / 0.06) * Math.pow(at, 2) * 0.08 : 0;
+    const noseRound = s < 0.07 ? (1.0 - s / 0.07) * Math.pow(at, 2) * 0.16 : 0;
+    const tailRound = s > 0.93 ? ((s - 0.93) / 0.07) * Math.pow(at, 2) * 0.08 : 0;
 
-    return [sign * halfW * xNorm, y, z - noseCurve + tailCurve];
+    return [sign * halfW * xNorm, y, z - noseRound + tailRound];
   };
 
-  const evalNormal = (s: number, t: number): [number, number, number] => {
-    const es = 0.004;
-    const et = 0.008;
-    const p0 = evalPoint(s, t);
-    const ps = evalPoint(Math.min(1, s + es), t);
-    const pt = evalPoint(s, Math.min(1, t + et));
-    const ds = [ps[0] - p0[0], ps[1] - p0[1], ps[2] - p0[2]];
-    const dt = [pt[0] - p0[0], pt[1] - p0[1], pt[2] - p0[2]];
-    let nx = ds[1] * dt[2] - ds[2] * dt[1];
-    let ny = ds[2] * dt[0] - ds[0] * dt[2];
-    let nz = ds[0] * dt[1] - ds[1] * dt[0];
-    const len = Math.hypot(nx, ny, nz) || 1;
-    return [nx / len, ny / len, nz / len];
-  };
-
-  const evalUvAndGlass = (s: number, t: number): { u: number; v: number; isGlass: boolean } => {
+  const evalUv = (s: number, t: number): [number, number] => {
     const at = Math.abs(t);
-    let isGlass = false;
-    if (category === "formula") {
-      isGlass = s >= 0.42 && s <= 0.56 && at < 0.26;
-    } else if (category === "gtp") {
-      isGlass = s >= 0.29 && s <= 0.55 && at < 0.42;
-    } else {
-      const isWindshield = s >= 0.32 && s <= 0.47 && at < 0.56;
-      const isRearGlass = s >= 0.67 && s <= 0.84 && at < 0.50;
-      const isSideGlass = s >= 0.43 && s <= 0.72 && at >= 0.48 && at <= 0.69;
-      isGlass = isWindshield || isRearGlass || isSideGlass;
-    }
-
     if (at >= 0.68) {
       const zRect = t < 0 ? zones.leftSide : zones.rightSide;
       const uFrac = t < 0 ? s : 1 - s;
       const vFrac = (at - 0.68) / 0.32;
-      return { u: zRect.x + uFrac * zRect.w, v: zRect.y + vFrac * zRect.h, isGlass };
+      return [zRect.x + uFrac * zRect.w, zRect.y + vFrac * zRect.h];
     }
     if (s < 0.36) {
       const zRect = s < 0.08 ? zones.frontBumper : zones.hood;
       const uFrac = (t / 0.68) * 0.5 + 0.5;
       const vFrac = s < 0.08 ? s / 0.08 : (s - 0.08) / 0.28;
-      return { u: zRect.x + uFrac * zRect.w, v: zRect.y + vFrac * zRect.h, isGlass };
+      return [zRect.x + uFrac * zRect.w, zRect.y + vFrac * zRect.h];
     }
     if (s < 0.70) {
       const uFrac = (t / 0.68) * 0.5 + 0.5;
       const vFrac = (s - 0.36) / 0.34;
-      return { u: zones.roof.x + uFrac * zones.roof.w, v: zones.roof.y + vFrac * zones.roof.h, isGlass };
+      return [zones.roof.x + uFrac * zones.roof.w, zones.roof.y + vFrac * zones.roof.h];
     }
     const uFrac = (t / 0.68) * 0.5 + 0.5;
     const vFrac = (s - 0.70) / 0.30;
-    return { u: zones.rearBumper.x + uFrac * zones.rearBumper.w, v: zones.rearBumper.y + vFrac * zones.rearBumper.h, isGlass };
+    return [zones.rearBumper.x + uFrac * zones.rearBumper.w, zones.rearBumper.y + vFrac * zones.rearBumper.h];
   };
 
-  const pPos: number[] = [], pNorm: number[] = [], pUv: number[] = [];
-  const gPos: number[] = [], gNorm: number[] = [], gUv: number[] = [];
+  const isGlassCell = (s: number, t: number): boolean => {
+    const at = Math.abs(t);
+    if (isFormula) return s >= 0.42 && s <= 0.55 && at < 0.25;
+    if (isGtp) return s >= 0.28 && s <= 0.54 && at < 0.42;
+    const windshield = s >= 0.31 && s <= 0.46 && at < 0.55;
+    const rearGlass = s >= 0.67 && s <= 0.83 && at < 0.49;
+    const sideGlass = s >= 0.43 && s <= 0.71 && at >= 0.47 && at <= 0.67;
+    return windshield || rearGlass || sideGlass;
+  };
 
+  // Build shared vertex grid so computeVertexNormals() produces silky smooth normals
+  const cols = segT + 1;
+  const totalVerts = (segS + 1) * cols;
+  const positions = new Float32Array(totalVerts * 3);
+  const uvs = new Float32Array(totalVerts * 2);
+
+  for (let is = 0; is <= segS; is++) {
+    const s = is / segS;
+    for (let it = 0; it <= segT; it++) {
+      const t = -1 + (2 * it) / segT;
+      const idx = is * cols + it;
+      const [px, py, pz] = evalVertex(is, it);
+      positions[idx * 3] = px;
+      positions[idx * 3 + 1] = py;
+      positions[idx * 3 + 2] = pz;
+      const [u, v] = evalUv(s, t);
+      uvs[idx * 2] = u;
+      uvs[idx * 2 + 1] = v;
+    }
+  }
+
+  const paintIndices: number[] = [];
+  const glassIndices: number[] = [];
   for (let is = 0; is < segS; is++) {
-    const s0 = is / segS;
-    const s1 = (is + 1) / segS;
+    const sm = (is + 0.5) / segS;
     for (let it = 0; it < segT; it++) {
-      const t0 = -1 + (2 * it) / segT;
-      const t1 = -1 + (2 * (it + 1)) / segT;
-      const isGlass = evalUvAndGlass((s0 + s1) * 0.5, (t0 + t1) * 0.5).isGlass;
-      const posArr = isGlass ? gPos : pPos;
-      const normArr = isGlass ? gNorm : pNorm;
-      const uvArr = isGlass ? gUv : pUv;
-
-      const corners: Array<[number, number]> = [
-        [s0, t0], [s1, t0], [s1, t1],
-        [s0, t0], [s1, t1], [s0, t1],
-      ];
-      for (const [cs, ct] of corners) {
-        const p = evalPoint(cs, ct);
-        const n = evalNormal(cs, ct);
-        const { u, v } = evalUvAndGlass(cs, ct);
-        posArr.push(...p);
-        normArr.push(...n);
-        uvArr.push(u, v);
-      }
+      const tm = -1 + (2 * (it + 0.5)) / segT;
+      const a = is * cols + it;
+      const b = (is + 1) * cols + it;
+      const c = (is + 1) * cols + (it + 1);
+      const d = is * cols + (it + 1);
+      const target = isGlassCell(sm, tm) ? glassIndices : paintIndices;
+      target.push(a, b, c, a, c, d);
     }
   }
 
   const paintGeo = new THREE.BufferGeometry();
-  paintGeo.setAttribute("position", new THREE.Float32BufferAttribute(pPos, 3));
-  paintGeo.setAttribute("normal", new THREE.Float32BufferAttribute(pNorm, 3));
-  paintGeo.setAttribute("uv", new THREE.Float32BufferAttribute(pUv, 2));
+  paintGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  paintGeo.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
+  paintGeo.setIndex(paintIndices);
+  paintGeo.computeVertexNormals();
 
   const glassGeo = new THREE.BufferGeometry();
-  glassGeo.setAttribute("position", new THREE.Float32BufferAttribute(gPos, 3));
-  glassGeo.setAttribute("normal", new THREE.Float32BufferAttribute(gNorm, 3));
-  glassGeo.setAttribute("uv", new THREE.Float32BufferAttribute(gUv, 2));
+  glassGeo.setAttribute("position", new THREE.BufferAttribute(positions.slice(), 3));
+  glassGeo.setAttribute("uv", new THREE.BufferAttribute(uvs.slice(), 2));
+  glassGeo.setIndex(glassIndices);
+  glassGeo.computeVertexNormals();
 
   return { paintGeo, glassGeo };
 }
 
-function buildWheelMesh(
+/**
+ * High-detail 3D motorsport wheel built with LatheGeometry contoured slick tire,
+ * deep-dish 10-spoke gunmetal alloy rim, ventilated brake rotor & brake caliper.
+ */
+function buildDetailedWheelMesh(
   tireMat: THREE.Material,
   rimMat: THREE.Material,
+  rotorMat: THREE.Material,
   caliperMat: THREE.Material,
   radius: number,
   width: number,
   isLeft: boolean,
 ): THREE.Group {
   const wheel = new THREE.Group();
-  const tireGeo = new THREE.CylinderGeometry(radius, radius, width, 32);
+  const hw = width * 0.5;
+  const rInner = radius * 0.66;
+
+  // Contoured slick tire profile via LatheGeometry
+  const tirePts = [
+    new THREE.Vector2(rInner, -hw * 0.94),
+    new THREE.Vector2(radius * 0.94, -hw),
+    new THREE.Vector2(radius, -hw * 0.80),
+    new THREE.Vector2(radius, hw * 0.80),
+    new THREE.Vector2(radius * 0.94, hw),
+    new THREE.Vector2(rInner, hw * 0.94),
+  ];
+  const tireGeo = new THREE.LatheGeometry(tirePts, 36);
   tireGeo.rotateZ(Math.PI / 2);
   wheel.add(new THREE.Mesh(tireGeo, tireMat));
 
-  const rimGeo = new THREE.CylinderGeometry(radius * 0.68, radius * 0.68, width * 1.02, 24);
-  rimGeo.rotateZ(Math.PI / 2);
-  wheel.add(new THREE.Mesh(rimGeo, rimMat));
+  // Alloy rim barrel
+  const barrelGeo = new THREE.CylinderGeometry(rInner, rInner, width * 0.92, 28, 1, true);
+  barrelGeo.rotateZ(Math.PI / 2);
+  wheel.add(new THREE.Mesh(barrelGeo, rimMat));
 
-  // Center-lock hub + spokes
-  const hubGeo = new THREE.CylinderGeometry(radius * 0.22, radius * 0.22, width * 1.08, 16);
+  // Ventilated brake rotor inside
+  const rotorGeo = new THREE.CylinderGeometry(rInner * 0.82, rInner * 0.82, 0.035, 24);
+  rotorGeo.rotateZ(Math.PI / 2);
+  const rotor = new THREE.Mesh(rotorGeo, rotorMat);
+  rotor.position.x = (isLeft ? 1 : -1) * (hw * 0.12);
+  wheel.add(rotor);
+
+  // Brake caliper
+  const caliper = new THREE.Mesh(new THREE.BoxGeometry(0.06, rInner * 0.52, rInner * 0.34), caliperMat);
+  caliper.position.set((isLeft ? -1 : 1) * (hw * 0.06), 0.02, -rInner * 0.52);
+  wheel.add(caliper);
+
+  // Center-lock hub + 10 sculpted spokes
+  const outDir = isLeft ? -1 : 1;
+  const hubGeo = new THREE.CylinderGeometry(radius * 0.19, radius * 0.19, width * 0.45, 18);
   hubGeo.rotateZ(Math.PI / 2);
-  wheel.add(new THREE.Mesh(hubGeo, caliperMat));
+  const hub = new THREE.Mesh(hubGeo, caliperMat);
+  hub.position.x = outDir * (hw * 0.32);
+  wheel.add(hub);
 
-  const outX = (isLeft ? -1 : 1) * (width * 0.51);
-  for (let i = 0; i < 6; i++) {
-    const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.02, radius * 1.24, 0.032), rimMat);
-    spoke.position.x = outX;
-    spoke.rotation.x = (i / 6) * Math.PI;
+  for (let i = 0; i < 10; i++) {
+    const angle = (i / 10) * Math.PI * 2;
+    const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.022, rInner * 0.94, 0.022), rimMat);
+    spoke.position.set(
+      outDir * (hw * 0.44),
+      Math.cos(angle) * (rInner * 0.46),
+      Math.sin(angle) * (rInner * 0.46),
+    );
+    spoke.rotation.x = angle;
     wheel.add(spoke);
   }
   return wheel;
@@ -310,24 +475,27 @@ export class WebGLPreviewEngine {
   private glassMaterial: THREE.MeshPhysicalMaterial | null = null;
   private carbonMaterial: THREE.MeshStandardMaterial | null = null;
   private rimMaterial: THREE.MeshStandardMaterial | null = null;
+  private rotorMaterial: THREE.MeshStandardMaterial | null = null;
   private caliperMaterial: THREE.MeshStandardMaterial | null = null;
   private headLightMat: THREE.MeshBasicMaterial | null = null;
   private tailLightMat: THREE.MeshBasicMaterial | null = null;
 
   private diffuseTexture: THREE.CanvasTexture | null = null;
+  private carbonBumpTexture: THREE.CanvasTexture | null = null;
   private specPackedCanvas: HTMLCanvasElement;
   private specPackedTexture: THREE.CanvasTexture | null = null;
 
   private carGroup: THREE.Group | null = null;
   private keyLight: THREE.DirectionalLight | null = null;
   private fillLight: THREE.DirectionalLight | null = null;
+  private rimLight: THREE.DirectionalLight | null = null;
   private hemiLight: THREE.HemisphereLight | null = null;
 
   private currentCategory: CarBodyCategory = "gt3";
   private currentZones: Record<ZoneKey, UvRect> = DEFAULT_CAR_ZONES;
   private currentLighting: LightingPreset = "noon";
   private isCustomModel = false;
-  private meshLabel = "Coche 3D GT3 en tiempo real (Three.js PBR)";
+  private meshLabel = "Coche 3D GT3 esculpido (Three.js PBR)";
   private rafId = 0;
 
   constructor(canvas: HTMLCanvasElement) {
@@ -348,22 +516,22 @@ export class WebGLPreviewEngine {
       });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.15;
+      renderer.toneMappingExposure = 1.22;
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       this.renderer = renderer;
 
       const scene = new THREE.Scene();
       scene.background = new THREE.Color("#070b11");
-      scene.fog = new THREE.Fog("#070b11", 8, 22);
+      scene.fog = new THREE.Fog("#070b11", 9, 24);
       this.scene = scene;
 
-      // Studio IBL reflections via RoomEnvironment
+      // High-contrast Studio IBL reflections via PMREMGenerator + RoomEnvironment
       const pmrem = new THREE.PMREMGenerator(renderer);
-      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.035).texture;
       pmrem.dispose();
 
-      const camera = new THREE.PerspectiveCamera(40, 16 / 10, 0.1, 60);
-      camera.position.set(2.9, 1.45, 3.1);
+      const camera = new THREE.PerspectiveCamera(38, 16 / 10, 0.1, 60);
+      camera.position.set(2.95, 1.32, 3.15);
       this.camera = camera;
 
       const controls = new OrbitControls(camera, this.canvas);
@@ -376,74 +544,112 @@ export class WebGLPreviewEngine {
       controls.update();
       this.controls = controls;
 
-      // Studio lights
-      this.hemiLight = new THREE.HemisphereLight("#d8e8ff", "#111827", 0.9);
+      // Multi-point studio lights
+      this.hemiLight = new THREE.HemisphereLight("#e0f2fe", "#0f172a", 1.0);
       scene.add(this.hemiLight);
 
-      this.keyLight = new THREE.DirectionalLight("#fff7e8", 2.4);
-      this.keyLight.position.set(4.5, 7.0, 4.2);
+      this.keyLight = new THREE.DirectionalLight("#fff8ec", 2.7);
+      this.keyLight.position.set(4.5, 7.2, 4.4);
       scene.add(this.keyLight);
 
-      this.fillLight = new THREE.DirectionalLight("#60a5fa", 1.1);
-      this.fillLight.position.set(-4.5, 3.2, -4.0);
+      this.fillLight = new THREE.DirectionalLight("#38bdf8", 1.25);
+      this.fillLight.position.set(-4.8, 3.4, -3.6);
       scene.add(this.fillLight);
 
-      // Studio showroom floor + subtle grid
-      const floorGeo = new THREE.CircleGeometry(9, 64);
+      this.rimLight = new THREE.DirectionalLight("#ffffff", 1.15);
+      this.rimLight.position.set(0, 4.2, -5.8);
+      scene.add(this.rimLight);
+
+      // Showroom turntable floor + contact shadow disc + subtle emerald grid
+      const floorGeo = new THREE.CircleGeometry(9.5, 64);
       floorGeo.rotateX(-Math.PI / 2);
-      const floorMat = new THREE.MeshStandardMaterial({
-        color: "#0b111a",
-        roughness: 0.42,
-        metalness: 0.15,
-      });
-      const floor = new THREE.Mesh(floorGeo, floorMat);
+      const floor = new THREE.Mesh(
+        floorGeo,
+        new THREE.MeshStandardMaterial({ color: "#0b111a", roughness: 0.34, metalness: 0.22 }),
+      );
       floor.position.y = -0.325;
       scene.add(floor);
 
+      // Soft contact shadow directly beneath chassis
+      const shadowCanvas = document.createElement("canvas");
+      shadowCanvas.width = 128;
+      shadowCanvas.height = 128;
+      const sctx = shadowCanvas.getContext("2d");
+      if (sctx) {
+        const g = sctx.createRadialGradient(64, 64, 14, 64, 64, 62);
+        g.addColorStop(0, "rgba(0,0,0,0.88)");
+        g.addColorStop(0.6, "rgba(0,0,0,0.45)");
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        sctx.fillStyle = g;
+        sctx.fillRect(0, 0, 128, 128);
+      }
+      const shadowTex = new THREE.CanvasTexture(shadowCanvas);
+      const shadowPlane = new THREE.Mesh(
+        new THREE.PlaneGeometry(2.6, 4.7),
+        new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }),
+      );
+      shadowPlane.rotation.x = -Math.PI / 2;
+      shadowPlane.position.y = -0.321;
+      scene.add(shadowPlane);
+
       const grid = new THREE.GridHelper(12, 24, "#00e699", "#172230");
-      grid.position.y = -0.322;
+      grid.position.y = -0.323;
       const gridMats = Array.isArray(grid.material) ? grid.material : [grid.material];
       gridMats.forEach((m) => {
         m.transparent = true;
-        m.opacity = 0.22;
+        m.opacity = 0.20;
       });
       scene.add(grid);
 
-      // Shared PBR materials
+      this.carbonBumpTexture = createCarbonBumpTexture();
+
+      // Shared high-gloss PBR materials
       this.paintMaterial = new THREE.MeshPhysicalMaterial({
         color: "#ffffff",
-        roughness: 0.36,
-        metalness: 0.26,
-        clearcoat: 0.85,
-        clearcoatRoughness: 0.14,
+        roughness: 0.32,
+        metalness: 0.28,
+        clearcoat: 0.9,
+        clearcoatRoughness: 0.12,
+        envMapIntensity: 1.55,
+        bumpScale: 0.008,
         side: THREE.DoubleSide,
       });
 
       this.glassMaterial = new THREE.MeshPhysicalMaterial({
-        color: "#09111c",
-        roughness: 0.06,
-        metalness: 0.1,
+        color: "#060c14",
+        roughness: 0.04,
+        metalness: 0.12,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.04,
+        clearcoatRoughness: 0.03,
+        envMapIntensity: 2.1,
         side: THREE.DoubleSide,
       });
 
       this.carbonMaterial = new THREE.MeshStandardMaterial({
         color: "#11161f",
-        roughness: 0.68,
-        metalness: 0.15,
+        roughness: 0.58,
+        metalness: 0.2,
+        bumpMap: this.carbonBumpTexture,
+        bumpScale: 0.006,
       });
 
       this.rimMaterial = new THREE.MeshStandardMaterial({
-        color: "#9aa5b4",
-        roughness: 0.24,
-        metalness: 0.88,
+        color: "#b4becb",
+        roughness: 0.20,
+        metalness: 0.92,
+        envMapIntensity: 1.6,
+      });
+
+      this.rotorMaterial = new THREE.MeshStandardMaterial({
+        color: "#6b7280",
+        roughness: 0.38,
+        metalness: 0.85,
       });
 
       this.caliperMaterial = new THREE.MeshStandardMaterial({
         color: "#00e699",
-        roughness: 0.35,
-        metalness: 0.5,
+        roughness: 0.32,
+        metalness: 0.55,
       });
 
       this.headLightMat = new THREE.MeshBasicMaterial({ color: "#f8fafc" });
@@ -478,14 +684,26 @@ export class WebGLPreviewEngine {
   }
 
   private rebuildParametricCar(): void {
-    if (!this.scene || !this.paintMaterial || !this.glassMaterial || !this.carbonMaterial || !this.rimMaterial || !this.caliperMaterial || !this.headLightMat || !this.tailLightMat) return;
+    if (
+      !this.scene ||
+      !this.paintMaterial ||
+      !this.glassMaterial ||
+      !this.carbonMaterial ||
+      !this.rimMaterial ||
+      !this.rotorMaterial ||
+      !this.caliperMaterial ||
+      !this.headLightMat ||
+      !this.tailLightMat
+    ) {
+      return;
+    }
     this.clearCarGroup();
 
     const group = new THREE.Group();
     const z = this.currentZones;
     const cat = this.currentCategory;
 
-    const { paintGeo, glassGeo } = buildLoftedBodyGeometries(cat, z);
+    const { paintGeo, glassGeo } = buildSculptedBodyGeometries(cat, z);
     group.add(new THREE.Mesh(paintGeo, this.paintMaterial));
     group.add(new THREE.Mesh(glassGeo, this.glassMaterial));
 
@@ -496,67 +714,116 @@ export class WebGLPreviewEngine {
     };
 
     if (cat === "formula") {
-      // Front multi-element wing + endplates
-      addPart(createZoneBox(1.62, 0.035, 0.34, z.frontBumper), this.paintMaterial, 0, -0.18, 1.98);
-      addPart(new THREE.BoxGeometry(0.03, 0.20, 0.42), this.carbonMaterial, -0.82, -0.13, 1.96);
-      addPart(new THREE.BoxGeometry(0.03, 0.20, 0.42), this.carbonMaterial, 0.82, -0.13, 1.96);
-      // Halo over cockpit
-      const haloGeo = new THREE.TorusGeometry(0.24, 0.025, 10, 24, Math.PI);
-      haloGeo.rotateX(Math.PI / 2);
-      addPart(haloGeo, this.carbonMaterial, 0, 0.30, 0.14);
-      // Tall open-wheel rear wing
-      addPart(createZoneBox(1.06, 0.04, 0.32, z.rearWing), this.paintMaterial, 0, 0.56, -1.86);
-      addPart(new THREE.BoxGeometry(0.03, 0.38, 0.38), this.carbonMaterial, -0.54, 0.44, -1.86);
-      addPart(new THREE.BoxGeometry(0.03, 0.38, 0.38), this.carbonMaterial, 0.54, 0.44, -1.86);
-      // Exposed open wheels + suspension wishbones
+      // Sculpted multi-element airfoil front wing + endplates
+      addPart(createAirfoilWingGeometry(1.66, 0.36, 0.04, z.frontBumper), this.paintMaterial, 0, -0.18, 1.98);
+      addPart(new THREE.BoxGeometry(0.03, 0.22, 0.44), this.carbonMaterial, -0.84, -0.12, 1.96);
+      addPart(new THREE.BoxGeometry(0.03, 0.22, 0.44), this.carbonMaterial, 0.84, -0.12, 1.96);
+
+      // Curved Halo built with CatmullRomCurve3 + TubeGeometry
+      const haloCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-0.22, 0.22, -0.16),
+        new THREE.Vector3(-0.24, 0.30, 0.14),
+        new THREE.Vector3(0, 0.32, 0.38),
+        new THREE.Vector3(0.24, 0.30, 0.14),
+        new THREE.Vector3(0.22, 0.22, -0.16),
+      ]);
+      group.add(new THREE.Mesh(new THREE.TubeGeometry(haloCurve, 24, 0.022, 10, false), this.carbonMaterial));
+      addPart(new THREE.CylinderGeometry(0.018, 0.02, 0.16, 10), this.carbonMaterial, 0, 0.24, 0.38);
+
+      // Cambered airfoil rear wing + endplates
+      addPart(createAirfoilWingGeometry(1.08, 0.32, 0.045, z.rearWing), this.paintMaterial, 0, 0.56, -1.86);
+      addPart(new THREE.BoxGeometry(0.03, 0.40, 0.40), this.carbonMaterial, -0.55, 0.43, -1.86);
+      addPart(new THREE.BoxGeometry(0.03, 0.40, 0.40), this.carbonMaterial, 0.55, 0.43, -1.86);
+
+      // 4 Exposed open wheels + double wishbone suspension
       const wheels: Array<[number, number, boolean]> = [
         [-0.86, 1.18, true], [0.86, 1.18, false],
         [-0.88, -1.16, true], [0.88, -1.16, false],
       ];
       for (const [wx, wz, isLeft] of wheels) {
-        const w = buildWheelMesh(this.carbonMaterial, this.rimMaterial, this.caliperMaterial, 0.30, 0.30, isLeft);
+        const w = buildDetailedWheelMesh(this.carbonMaterial, this.rimMaterial, this.rotorMaterial, this.caliperMaterial, 0.30, 0.30, isLeft);
         w.position.set(wx, -0.02, wz);
         group.add(w);
-        addPart(new THREE.BoxGeometry(0.75, 0.025, 0.04), this.carbonMaterial, wx * 0.5, -0.02, wz);
+        addPart(new THREE.BoxGeometry(0.76, 0.02, 0.035), this.carbonMaterial, wx * 0.5, 0.03, wz);
+        addPart(new THREE.BoxGeometry(0.76, 0.02, 0.035), this.carbonMaterial, wx * 0.5, -0.07, wz);
       }
     } else {
       const isGtp = cat === "gtp";
       const isTouring = cat === "touring";
 
-      // Carbon front splitter, rear diffuser & floor
-      addPart(new THREE.BoxGeometry(1.74, 0.035, 0.34), this.carbonMaterial, 0, -0.25, isGtp ? 1.94 : 1.84);
-      addPart(new THREE.BoxGeometry(1.64, 0.12, 0.24), this.carbonMaterial, 0, -0.22, isGtp ? -1.88 : -1.78);
-      addPart(new THREE.BoxGeometry(1.68, 0.04, 3.50), this.carbonMaterial, 0, -0.25, 0);
+      // Carbon front splitter + intake grille + floor
+      addPart(new THREE.BoxGeometry(1.76, 0.035, 0.36), this.carbonMaterial, 0, -0.25, isGtp ? 1.94 : 1.85);
+      addPart(new THREE.BoxGeometry(1.16, 0.12, 0.08), this.carbonMaterial, 0, -0.12, isGtp ? 1.94 : 1.88);
+      addPart(new THREE.BoxGeometry(1.70, 0.04, 3.55), this.carbonMaterial, 0, -0.25, 0);
 
-      // Headlights & Taillights
-      addPart(new THREE.BoxGeometry(0.28, 0.045, 0.12), this.headLightMat, -0.56, 0.08, isGtp ? 1.90 : 1.82);
-      addPart(new THREE.BoxGeometry(0.28, 0.045, 0.12), this.headLightMat, 0.56, 0.08, isGtp ? 1.90 : 1.82);
-      addPart(new THREE.BoxGeometry(0.38, 0.045, 0.06), this.tailLightMat, -0.56, 0.16, isGtp ? -1.94 : -1.84);
-      addPart(new THREE.BoxGeometry(0.38, 0.045, 0.06), this.tailLightMat, 0.56, 0.16, isGtp ? -1.94 : -1.84);
+      // Multi-fin carbon rear diffuser (4 vertical aero strakes)
+      const diffZ = isGtp ? -1.88 : -1.80;
+      addPart(new THREE.BoxGeometry(1.62, 0.11, 0.26), this.carbonMaterial, 0, -0.22, diffZ);
+      for (const fx of [-0.52, -0.18, 0.18, 0.52]) {
+        addPart(new THREE.BoxGeometry(0.025, 0.15, 0.28), this.carbonMaterial, fx, -0.21, diffZ - 0.03);
+      }
 
-      // Side mirrors
+      // Hood aero extraction vent (GT3 / GTP)
+      if (!isTouring) {
+        addPart(new THREE.BoxGeometry(0.56, 0.022, 0.32), this.carbonMaterial, 0, 0.165, 1.06);
+      }
+
+      // A-Pillars & C-Pillars defining the cabin greenhouse on GT3 / Touring
+      if (!isGtp) {
+        const roofY = isTouring ? 0.61 : 0.52;
+        for (const sgn of [-1, 1]) {
+          const aPillar = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(sgn * 0.68, 0.24, 0.68),
+            new THREE.Vector3(sgn * 0.52, roofY - 0.02, 0.14),
+          ]);
+          group.add(new THREE.Mesh(new THREE.TubeGeometry(aPillar, 10, 0.022, 8, false), this.carbonMaterial));
+
+          const cPillar = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(sgn * 0.50, roofY - 0.04, -0.66),
+            new THREE.Vector3(sgn * 0.68, 0.28, -1.28),
+          ]);
+          group.add(new THREE.Mesh(new THREE.TubeGeometry(cPillar, 10, 0.026, 8, false), this.carbonMaterial));
+        }
+      }
+
+      // Sleek LED headlights & full-width taillight accents
+      addPart(new THREE.BoxGeometry(0.32, 0.042, 0.12), this.headLightMat, -0.56, 0.07, isGtp ? 1.91 : 1.84);
+      addPart(new THREE.BoxGeometry(0.32, 0.042, 0.12), this.headLightMat, 0.56, 0.07, isGtp ? 1.91 : 1.84);
+      addPart(new THREE.BoxGeometry(0.42, 0.042, 0.06), this.tailLightMat, -0.54, 0.16, isGtp ? -1.94 : -1.86);
+      addPart(new THREE.BoxGeometry(0.42, 0.042, 0.06), this.tailLightMat, 0.54, 0.16, isGtp ? -1.94 : -1.86);
+
+      // Sculpted aerodynamic side mirrors
       addPart(createZoneBox(0.16, 0.065, 0.11, z.mirrors), this.paintMaterial, -0.92, 0.26, 0.44);
       addPart(createZoneBox(0.16, 0.065, 0.11, z.mirrors), this.paintMaterial, 0.92, 0.26, 0.44);
 
-      // GTP Dorsal Shark Fin
+      // GTP Sculpted Dorsal Shark Fin (ExtrudeGeometry)
       if (isGtp) {
-        addPart(createZoneBox(0.035, 0.26, 1.35, z.roof), this.paintMaterial, 0, 0.40, -1.10);
+        addPart(createSharkFinGeometry(z.roof), this.paintMaterial, 0, 0.26, -1.16);
       }
 
-      // Rear Wing (low lip for touring, wide swan-neck wing for GT3/GTP)
+      // Rear Wing: Cambered Airfoil (ExtrudeGeometry) + Curved Swan-Neck Pylons (CatmullRomCurve3)
       if (isTouring) {
-        addPart(createZoneBox(1.58, 0.045, 0.20, z.rearWing), this.paintMaterial, 0, 0.34, -1.74);
+        addPart(createAirfoilWingGeometry(1.58, 0.22, 0.032, z.rearWing), this.paintMaterial, 0, 0.34, -1.75);
       } else {
         const wingY = isGtp ? 0.48 : 0.56;
-        const wingZ = isGtp ? -1.84 : -1.74;
-        addPart(createZoneBox(1.74, 0.04, 0.30, z.rearWing), this.paintMaterial, 0, wingY, wingZ);
-        addPart(new THREE.BoxGeometry(0.03, 0.24, 0.36), this.carbonMaterial, -0.88, wingY - 0.02, wingZ);
-        addPart(new THREE.BoxGeometry(0.03, 0.24, 0.36), this.carbonMaterial, 0.88, wingY - 0.02, wingZ);
-        addPart(new THREE.BoxGeometry(0.035, 0.32, 0.12), this.carbonMaterial, -0.34, wingY - 0.18, wingZ + 0.05);
-        addPart(new THREE.BoxGeometry(0.035, 0.32, 0.12), this.carbonMaterial, 0.34, wingY - 0.18, wingZ + 0.05);
+        const wingZ = isGtp ? -1.86 : -1.76;
+        addPart(createAirfoilWingGeometry(1.76, 0.32, 0.045, z.rearWing), this.paintMaterial, 0, wingY, wingZ);
+        addPart(new THREE.BoxGeometry(0.028, 0.25, 0.38), this.carbonMaterial, -0.89, wingY - 0.02, wingZ);
+        addPart(new THREE.BoxGeometry(0.028, 0.25, 0.38), this.carbonMaterial, 0.89, wingY - 0.02, wingZ);
+
+        // Curved swan-neck wing pylons arching over the top of the airfoil
+        for (const px of [-0.34, 0.34]) {
+          const swanCurve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(px, 0.22, wingZ + 0.16),
+            new THREE.Vector3(px, wingY + 0.04, wingZ + 0.14),
+            new THREE.Vector3(px, wingY + 0.045, wingZ + 0.02),
+            new THREE.Vector3(px, wingY + 0.01, wingZ - 0.02),
+          ]);
+          group.add(new THREE.Mesh(new THREE.TubeGeometry(swanCurve, 16, 0.018, 8, false), this.carbonMaterial));
+        }
       }
 
-      // 4 High-detail wheels
+      // 4 High-detail LatheGeometry racing wheels
       const wheelZFront = isGtp ? 1.18 : 1.12;
       const wheelZRear = isGtp ? -1.16 : -1.06;
       const wheelSpecs: Array<[number, number, boolean]> = [
@@ -564,7 +831,7 @@ export class WebGLPreviewEngine {
         [-0.85, wheelZRear, true], [0.85, wheelZRear, false],
       ];
       for (const [wx, wz, isLeft] of wheelSpecs) {
-        const w = buildWheelMesh(this.carbonMaterial, this.rimMaterial, this.caliperMaterial, 0.285, 0.26, isLeft);
+        const w = buildDetailedWheelMesh(this.carbonMaterial, this.rimMaterial, this.rotorMaterial, this.caliperMaterial, 0.285, 0.27, isLeft);
         w.position.set(wx, -0.04, wz);
         group.add(w);
       }
@@ -575,7 +842,7 @@ export class WebGLPreviewEngine {
     this.isCustomModel = false;
     const catName =
       cat === "gtp" ? "Prototype / GTP" : cat === "formula" ? "Fórmula" : cat === "touring" ? "Touring / Stock" : "GT3 / GT4";
-    this.meshLabel = `Coche 3D ${catName} (Three.js PBR · mapeado a zonas UV)`;
+    this.meshLabel = `Coche 3D ${catName} esculpido (Three.js PBR · reflejos reales)`;
   }
 
   public setCategory(category: CarBodyCategory): void {
@@ -595,48 +862,54 @@ export class WebGLPreviewEngine {
 
   public setLightingPreset(preset: LightingPreset): void {
     this.currentLighting = preset;
-    if (!this.scene || !this.renderer || !this.keyLight || !this.fillLight || !this.hemiLight) return;
+    if (!this.scene || !this.renderer || !this.keyLight || !this.fillLight || !this.hemiLight || !this.rimLight) return;
 
     if (preset === "sunset") {
-      this.scene.background = new THREE.Color("#130d18");
-      this.scene.fog = new THREE.Fog("#130d18", 8, 22);
-      this.keyLight.color.set("#ff9b54");
-      this.keyLight.intensity = 2.9;
-      this.keyLight.position.set(6.5, 2.4, 3.2);
+      this.scene.background = new THREE.Color("#140d1a");
+      this.scene.fog = new THREE.Fog("#140d1a", 9, 24);
+      this.keyLight.color.set("#ff984f");
+      this.keyLight.intensity = 3.2;
+      this.keyLight.position.set(6.5, 2.2, 3.4);
       this.fillLight.color.set("#6366f1");
-      this.fillLight.intensity = 1.4;
+      this.fillLight.intensity = 1.5;
       this.fillLight.position.set(-5.0, 2.8, -3.5);
+      this.rimLight.color.set("#fbbf24");
+      this.rimLight.intensity = 1.4;
       this.hemiLight.color.set("#fdba74");
       this.hemiLight.groundColor.set("#1e1b4b");
-      this.hemiLight.intensity = 0.85;
-      this.renderer.toneMappingExposure = 1.2;
+      this.hemiLight.intensity = 0.9;
+      this.renderer.toneMappingExposure = 1.25;
     } else if (preset === "overcast") {
-      this.scene.background = new THREE.Color("#0d131c");
-      this.scene.fog = new THREE.Fog("#0d131c", 9, 24);
+      this.scene.background = new THREE.Color("#0d141e");
+      this.scene.fog = new THREE.Fog("#0d141e", 10, 26);
       this.keyLight.color.set("#e2e8f0");
-      this.keyLight.intensity = 1.5;
+      this.keyLight.intensity = 1.65;
       this.keyLight.position.set(2.0, 8.5, 2.0);
       this.fillLight.color.set("#cbd5e1");
-      this.fillLight.intensity = 1.3;
+      this.fillLight.intensity = 1.45;
       this.fillLight.position.set(-3.5, 5.0, -3.0);
+      this.rimLight.color.set("#e2e8f0");
+      this.rimLight.intensity = 1.0;
       this.hemiLight.color.set("#f1f5f9");
       this.hemiLight.groundColor.set("#1e293b");
-      this.hemiLight.intensity = 1.35;
-      this.renderer.toneMappingExposure = 1.1;
+      this.hemiLight.intensity = 1.45;
+      this.renderer.toneMappingExposure = 1.15;
     } else {
       // Noon (Mediodía)
       this.scene.background = new THREE.Color("#070b11");
-      this.scene.fog = new THREE.Fog("#070b11", 8, 22);
+      this.scene.fog = new THREE.Fog("#070b11", 9, 24);
       this.keyLight.color.set("#fff9ee");
-      this.keyLight.intensity = 2.5;
-      this.keyLight.position.set(4.5, 7.2, 4.2);
+      this.keyLight.intensity = 2.75;
+      this.keyLight.position.set(4.5, 7.2, 4.4);
       this.fillLight.color.set("#38bdf8");
-      this.fillLight.intensity = 1.05;
-      this.fillLight.position.set(-4.5, 3.0, -4.0);
-      this.hemiLight.color.set("#dbeafe");
+      this.fillLight.intensity = 1.25;
+      this.fillLight.position.set(-4.8, 3.4, -3.6);
+      this.rimLight.color.set("#ffffff");
+      this.rimLight.intensity = 1.2;
+      this.hemiLight.color.set("#e0f2fe");
       this.hemiLight.groundColor.set("#0f172a");
-      this.hemiLight.intensity = 0.95;
-      this.renderer.toneMappingExposure = 1.15;
+      this.hemiLight.intensity = 1.0;
+      this.renderer.toneMappingExposure = 1.22;
     }
   }
 
@@ -647,22 +920,21 @@ export class WebGLPreviewEngine {
   public setCameraPreset(preset: "front34" | "side" | "rear34" | "top"): void {
     if (!this.camera || !this.controls) return;
     if (preset === "front34") {
-      this.camera.position.set(2.9, 1.35, 3.1);
+      this.camera.position.set(2.95, 1.32, 3.15);
     } else if (preset === "side") {
-      this.camera.position.set(4.4, 0.95, 0.05);
+      this.camera.position.set(4.5, 0.92, 0.05);
     } else if (preset === "rear34") {
-      this.camera.position.set(-2.9, 1.4, -3.1);
+      this.camera.position.set(-2.95, 1.38, -3.15);
     } else if (preset === "top") {
-      this.camera.position.set(0.05, 4.9, 0.2);
+      this.camera.position.set(0.05, 5.0, 0.2);
     }
     this.controls.target.set(0, 0.1, 0);
     this.controls.update();
   }
 
   /**
-   * Connects both the main Paint <canvas> and the iRacing Spec Map <canvas> as live THREE.CanvasTexture.
-   * iRacing Spec Map channels: R = Metallic, G = Roughness, B = Clearcoat.
-   * Three.js PBR channels: roughnessMap reads G, metalnessMap reads B.
+   * Connects both the main Paint <canvas> and the iRacing Spec Map <canvas> as live THREE.CanvasTexture,
+   * plus toggles 3D twill carbon fiber bumpMap when Carbon finish/weave is active.
    */
   public updateTexture(
     diffuseCanvas: HTMLCanvasElement,
@@ -670,6 +942,7 @@ export class WebGLPreviewEngine {
     roughnessPct: number,
     specCanvas?: HTMLCanvasElement | null,
     clearcoatPct = 80,
+    carbonWeave = false,
   ): void {
     if (!this.paintMaterial) return;
 
@@ -721,13 +994,16 @@ export class WebGLPreviewEngine {
       this.paintMaterial.metalness = Math.max(0, Math.min(1, metallicPct / 100));
     }
 
+    const wantBump = carbonWeave ? this.carbonBumpTexture : null;
+    if (this.paintMaterial.bumpMap !== wantBump) {
+      this.paintMaterial.bumpMap = wantBump;
+      this.paintMaterial.needsUpdate = true;
+    }
+
     this.paintMaterial.clearcoat = Math.max(0, Math.min(1, clearcoatPct / 100));
-    this.paintMaterial.clearcoatRoughness = Math.max(0.04, Math.min(0.85, (roughnessPct / 100) * 0.45));
+    this.paintMaterial.clearcoatRoughness = Math.max(0.04, Math.min(0.85, (roughnessPct / 100) * 0.42));
   }
 
-  /**
-   * Loads a local .GLB or .GLTF 3D car model completely client-side via URL.createObjectURL (never uploaded).
-   */
   public async loadGltfFile(file: File): Promise<void> {
     if (!this.scene || !this.paintMaterial) throw new Error("Visor Three.js no inicializado.");
     const blobUrl = URL.createObjectURL(file);
@@ -736,18 +1012,16 @@ export class WebGLPreviewEngine {
       const gltf = await loader.loadAsync(blobUrl);
       const root = gltf.scene;
 
-      // Normalize bounding box to studio scale (~3.8 units max span, resting on floor y=-0.32)
       const box = new THREE.Box3().setFromObject(root);
       const size = new THREE.Vector3();
       const center = new THREE.Vector3();
       box.getSize(size);
       box.getCenter(center);
       const maxSpan = Math.max(size.x, size.y, size.z) || 1;
-      const scale = 3.8 / maxSpan;
+      const scale = 3.85 / maxSpan;
       root.scale.setScalar(scale);
       root.position.set(-center.x * scale, -box.min.y * scale - 0.32, -center.z * scale);
 
-      // Apply live paint & spec map material to meshes that look like car body (or all meshes without glass/tire name)
       const paintMat = this.paintMaterial;
       root.traverse((obj) => {
         if (obj instanceof THREE.Mesh) {
@@ -770,9 +1044,6 @@ export class WebGLPreviewEngine {
     }
   }
 
-  /**
-   * Legacy .OBJ text loader kept for compatibility.
-   */
   public loadObjMesh(objText: string, filename: string): void {
     if (!this.scene || !this.paintMaterial) return;
     const verts: Array<[number, number, number]> = [];
@@ -816,7 +1087,7 @@ export class WebGLPreviewEngine {
     if (bb) {
       const sz = new THREE.Vector3();
       bb.getSize(sz);
-      const s = 3.8 / (Math.max(sz.x, sz.y, sz.z) || 1);
+      const s = 3.85 / (Math.max(sz.x, sz.y, sz.z) || 1);
       geo.scale(s, s, s);
       geo.translate(0, -bb.min.y * s - 0.32, 0);
     }
@@ -856,6 +1127,7 @@ export class WebGLPreviewEngine {
     if (this.rafId) cancelAnimationFrame(this.rafId);
     this.controls?.dispose();
     this.diffuseTexture?.dispose();
+    this.carbonBumpTexture?.dispose();
     this.specPackedTexture?.dispose();
     this.renderer?.dispose();
   }

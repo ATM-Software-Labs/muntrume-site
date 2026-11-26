@@ -391,6 +391,7 @@ export function initSkinsStudio(): void {
             state.spec.roughness,
             offscreenSpec,
             state.spec.clearcoat,
+            state.spec.carbonAccent || state.spec.finish === "carbon",
           );
           const notice = byId<HTMLElement>("skGlNotice");
           if (notice) notice.textContent = glEngine.getMeshLabel();

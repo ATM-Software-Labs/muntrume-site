@@ -115,11 +115,23 @@
 .sk-inspector {
   background: var(--sk-surface);
   overflow-y: auto;
-  max-height: calc(100vh - 122px);
-  padding: 14px;
+  overscroll-behavior: contain;
+  max-height: calc(100vh - 118px);
+  padding: 14px 14px 104px 14px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 230, 153, 0.35) transparent;
+}
+
+.sk-inspector > .sk-tabs {
+  position: sticky;
+  top: -14px;
+  z-index: 6;
+  background: var(--sk-surface);
+  padding: 8px 0 6px;
+  margin-top: -8px;
 }
 
 .sk-sidebar {
