@@ -21,7 +21,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "ag-psd": "^34.2.3",
-    "astro": "7.4.4",
+    "astro": "7.4.7",
     "dompurify": "^3.4.17",
     "jszip": "^3.10.2",
     "marked": "^18.2.0",
