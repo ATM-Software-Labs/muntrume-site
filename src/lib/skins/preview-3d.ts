@@ -15,6 +15,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { ZoneKey, ZoneRect } from "./types";
 
@@ -40,7 +41,7 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: "/models/gt3-base.glb",
   touring: "/models/gt3-base.glb",
-  gtp: "/models/gtp-base.glb",
+  gtp: "/models/gt3-base.glb",
   formula: "/models/formula-base.glb",
 };
 
@@ -77,13 +78,7 @@ function createCarbonBumpTexture(): THREE.CanvasTexture {
   return tex;
 }
 
-/**
- * Smart material/mesh classifier for real .GLB / .GLTF models.
- * Returns true ONLY for exterior painted bodywork panels (body, paint, chassis, hood, wing, bumper, etc.)
- * and false for glass, windows, tires, wheels, rims, brakes, lights, interior, and carbon grilles,
- * keeping all non-body original GLB materials completely intact.
- */
-function isPaintableBodyMesh(mesh: THREE.Mesh): boolean {
+function getMeshMaterialNames(mesh: THREE.Mesh): string {
   const matNames: string[] = [];
   if (Array.isArray(mesh.material)) {
     for (const m of mesh.material) {
@@ -92,23 +87,47 @@ function isPaintableBodyMesh(mesh: THREE.Mesh): boolean {
   } else if (mesh.material && "name" in mesh.material && mesh.material.name) {
     matNames.push(String(mesh.material.name).toLowerCase());
   }
-  const id = `${(mesh.name || "").toLowerCase()} ${matNames.join(" ")}`;
+  return matNames.join(" ");
+}
 
-  // 1. Strictly preserve non-body materials (glass, tires, rims, lights, interior, carbon, grilles)
+/**
+ * Hides stock third-party sponsor/number decal overlay meshes on base models
+ * (e.g. redbull_decals / redbull_number on formula-base.glb) so only the user's livery shows.
+ */
+function shouldHideStockDecalMesh(mesh: THREE.Mesh, isBaseModel: boolean): boolean {
+  if (!isBaseModel) return false;
+  const matId = getMeshMaterialNames(mesh);
+  return /(redbull_decals|redbull_number|sw_decals)/.test(matId);
+}
+
+/**
+ * Smart material/mesh classifier for real .GLB / .GLTF models.
+ * Returns true ONLY for exterior painted bodywork panels (body, paint, chassis, hood, wing, bumper, etc.)
+ * and false for glass, windows, tires, wheels, rims, brakes, lights, interior, and carbon grilles,
+ * keeping all non-body original GLB materials completely intact.
+ */
+function isPaintableBodyMesh(mesh: THREE.Mesh): boolean {
+  const matId = getMeshMaterialNames(mesh);
+  const meshId = (mesh.name || "").toLowerCase();
+
+  // 1. Explicit positive match on material name first (handles Khronos "Paint 1 Carmine", F1 "redbull_paint", "redbull_color")
+  if (/(paint|carpaint|livery|redbull_color|body_color|bodypaint)/.test(matId)) {
+    return true;
+  }
+
+  const id = `${meshId} ${matId}`;
+
+  // 2. Strictly preserve non-body materials (glass, tires, rims, lights, interior, carbon, grilles, mechanical)
   const excludedPattern =
-    /\b(glass|window|windshield|windscreen|visor|transparent|tire|tyre|rubber|slick|tread|wheel|rim|alloy|spoke|hub|centerlock|nut|brake|caliper|disc|rotor|light|headlight|taillight|lamp|led|lens|indicator|emissive|interior|cockpit|seat|dash|dashboard|steering|cage|rollcage|net|belt|harness|carbon|splitter|diffuser|grille|grill|mesh|vent|intake|exhaust|pipe|underbody|floor|strut|pylon|mirror_glass|chrome|badge|emblem|logo|decal|plastic|trim|black|dark|shadow|ground|plane)\b/;
+    /(glass|window|windshield|windscreen|visor|transparent|tire|tyre|tireside|tiretread|sidewall|rubber|slick|tread|wheel|rim|alloy|spoke|hub|centerlock|nut|brake|brakelight|caliper|disc|rotor|light|headlight|taillight|signallight|lamp|led|clearled|lens|indicator|emissive|interior|cockpit|seat|dash|dashboard|steering|cage|rollcage|net|belt|cinture|harness|floormat|hardware|mechanical|engine|pedal|wiper|gasket|license|lcd|carbon|splitter|diffuser|grille|grill|mesh|vent|intake|exhaust|pipe|underbody|underside|floor|strut|pylon|mirror|chrome|badge|emblem|logo|decal|plastic|trim|black_s|detail|generics|panel sides|shadow|ground|plane)/;
   if (excludedPattern.test(id)) return false;
 
-  // 2. Explicit positive match for bodywork panels
+  // 3. Explicit positive match on mesh name for bodywork panels
   const bodyPattern =
-    /\b(body|paint|carpaint|livery|chassis|hood|bonnet|roof|door|fender|quarter|wing|spoiler|bumper|nose|sidepod|shell|panel|ext|exterior|aero|trunk|boot|tail)\b/;
-  if (bodyPattern.test(id)) return true;
+    /(body|paint|carpaint|livery|chassis|hood|bonnet|roof|door|fender|quarter|wing|spoiler|bumper|nose|sidepod|shell|ext|exterior|aero|trunk|boot|tail)/;
+  if (bodyPattern.test(meshId)) return true;
 
-  // 3. Fallback: if the mesh has no transparent/emissive material, treat unnamed primary exterior geometry as paintable
-  const singleMat = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
-  if (singleMat && "transparent" in singleMat && singleMat.transparent) return false;
-  if (singleMat && "opacity" in singleMat && typeof singleMat.opacity === "number" && singleMat.opacity < 0.95) return false;
-  return true;
+  return false;
 }
 
 /**
@@ -705,6 +724,7 @@ export class WebGLPreviewEngine {
       throw new Error("Visor Three.js no inicializado.");
     }
     const loader = new GLTFLoader();
+    loader.setMeshoptDecoder(MeshoptDecoder);
     const gltf = await new Promise<{ scene: THREE.Group }>((resolve, reject) => {
       loader.parse(buffer.slice(0), "", (res) => resolve(res as unknown as { scene: THREE.Group }), reject);
     });
@@ -730,6 +750,10 @@ export class WebGLPreviewEngine {
     let preservedCount = 0;
     root.traverse((obj) => {
       if (!(obj instanceof THREE.Mesh)) return;
+      if (shouldHideStockDecalMesh(obj, isBaseModel)) {
+        obj.visible = false;
+        return;
+      }
       obj.castShadow = true;
       obj.receiveShadow = true;
       if (isPaintableBodyMesh(obj)) {
