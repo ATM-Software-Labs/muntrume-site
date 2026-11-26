@@ -347,18 +347,42 @@ export function initSkinsStudio(): void {
       setStatus(`Plantilla UV lista (${meta.name})`, "ok");
     }
 
-    // 2. Optionally enrich with Worker wireframe SVG & official plates if available in D1 (never fail UI on 404)
+    // 2. Optionally enrich with Worker wireframe SVG & official plates if available in D1 (never overwrite calibrated horizontal localUv zones!)
     if (!vaultAuthenticated) return;
     try {
       const uv = await fetchWorkerUvMap(carSlug);
       if (state.carId !== carSlug) return;
-      applyUvResponseToState(carSlug, uv);
+      if (localUv) {
+        // Keep our pixel-calibrated horizontal localUv zones; only take wireframe SVG & official plates from Worker
+        const rawPlates = Array.isArray(uv.restricted_number_plates) ? uv.restricted_number_plates : [];
+        if (rawPlates.length > 0) {
+          workerRestrictedPlates = rawPlates.map((p, i) => ({
+            x: p.x > 1 ? p.x / 2048 : p.x,
+            y: p.y > 1 ? p.y / 2048 : p.y,
+            w: p.width > 1 ? p.width / 2048 : p.width,
+            h: p.height > 1 ? p.height / 2048 : p.height,
+            label: p.label || `DORSAL #${i + 1} (iRacing)`,
+          }));
+        }
+      } else {
+        // Only take Worker plates/wireframe; preserve horizontal archetype zones so boxes never revert to vertical
+        const rawPlates = Array.isArray(uv.restricted_number_plates) ? uv.restricted_number_plates : [];
+        if (rawPlates.length > 0) {
+          workerRestrictedPlates = rawPlates.map((p, i) => ({
+            x: p.x > 1 ? p.x / 2048 : p.x,
+            y: p.y > 1 ? p.y / 2048 : p.y,
+            w: p.width > 1 ? p.width / 2048 : p.width,
+            h: p.height > 1 ? p.height / 2048 : p.height,
+            label: p.label || `DORSAL #${i + 1} (iRacing)`,
+          }));
+        }
+      }
       workerWireframeCanvas = await renderSvgStringToCanvas(uv.wireframe_svg || "");
       if (infoEl) {
         infoEl.textContent = `Plantilla UV limpia cargada automáticamente (${uv.car_name} · ${uv.native_resolution}). Cambia colores, patrón y sponsors encima.`;
       }
       if (notesEl) {
-        notesEl.textContent = `Carpeta iRacing: paint/${uv.iracing_folder}/ · Estado UV: ${uv.uv_status === "extracted" ? "Plantilla vectorial calibrada ✓" : "Base calibrada ✓"}`;
+        notesEl.textContent = `Carpeta iRacing: paint/${uv.iracing_folder}/ · Zonas horizontales iRacing calibradas ✓`;
       }
       renderZoneList();
       glEngine.setCategory(mapCategoryStringToBody(meta.category));
@@ -1329,29 +1353,67 @@ export function initSkinsStudio(): void {
     });
   });
 
-  // 1-Click GT-style sponsor placement onto exact car zones
+  // 1-Click GT-style sponsor placement onto exact horizontal iRacing car zones (correct rotation for hood/roof/both doors)
   document.querySelectorAll<HTMLButtonElement>("[data-quick-zone]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const zk = btn.dataset.quickZone as ZoneKey;
       const rect = state.zones[zk];
       if (!rect) return;
       const isSide = zk === "leftSide" || zk === "rightSide";
-      const layer: DecalLayer = {
-        id: `decal-q-${Date.now()}`,
-        name: `MUNTRUME (${rect.label})`,
-        kind: "builtin",
-        assetId: zk === "hood" ? "mmt-crest" : zk === "rearWing" ? "muntru-url" : "mmt-wordmark",
-        color: zk === "rearWing" ? "#090b0f" : "#ffffff",
-        x: Number((rect.x + rect.w * 0.5).toFixed(3)),
-        y: Number((rect.y + rect.h * 0.55).toFixed(3)),
-        scale: zk === "hood" ? 0.14 : zk === "rearWing" ? 0.28 : 0.20,
-        rotation: 0,
-        opacity: 1,
-        mirrorX: isSide,
-        zoneHint: zk,
-      };
-      state.decals.push(layer);
-      selectedDecalId = layer.id;
+      const now = Date.now();
+      if (isSide) {
+        // Real iRacing horizontal layout: Left Side (bottom door, 0°) + Right Side (top door, 180° inverted)
+        const leftRect = state.zones.leftSide;
+        const rightRect = state.zones.rightSide;
+        const leftLayer: DecalLayer = {
+          id: `decal-q-l-${now}`,
+          name: `MUNTRUME (${leftRect.label})`,
+          kind: "builtin",
+          assetId: "mmt-wordmark",
+          color: "#ffffff",
+          x: Number((leftRect.x + leftRect.w * 0.56).toFixed(3)),
+          y: Number((leftRect.y + leftRect.h * 0.52).toFixed(3)),
+          scale: Number(Math.min(0.24, Math.max(0.11, leftRect.w * 0.42)).toFixed(3)),
+          rotation: 0,
+          opacity: 1,
+          mirrorX: false,
+          zoneHint: "leftSide",
+        };
+        const rightLayer: DecalLayer = {
+          id: `decal-q-r-${now + 1}`,
+          name: `MUNTRUME (${rightRect.label})`,
+          kind: "builtin",
+          assetId: "mmt-wordmark",
+          color: "#ffffff",
+          x: Number((rightRect.x + rightRect.w * 0.56).toFixed(3)),
+          y: Number((rightRect.y + rightRect.h * 0.48).toFixed(3)),
+          scale: leftLayer.scale,
+          rotation: 180,
+          opacity: 1,
+          mirrorX: false,
+          zoneHint: "rightSide",
+        };
+        state.decals.push(leftLayer, rightLayer);
+        selectedDecalId = leftLayer.id;
+      } else {
+        const isTopPanel = zk === "hood" || zk === "roof";
+        const layer: DecalLayer = {
+          id: `decal-q-${now}`,
+          name: `MUNTRUME (${rect.label})`,
+          kind: "builtin",
+          assetId: zk === "hood" ? "mmt-crest" : zk === "rearWing" ? "muntru-url" : "mmt-wordmark",
+          color: zk === "rearWing" ? "#090b0f" : "#ffffff",
+          x: Number((rect.x + rect.w * 0.5).toFixed(3)),
+          y: Number((rect.y + rect.h * 0.5).toFixed(3)),
+          scale: Number(Math.min(0.26, Math.max(0.10, Math.min(rect.w, rect.h) * 0.62)).toFixed(3)),
+          rotation: isTopPanel ? 90 : 0,
+          opacity: 1,
+          mirrorX: false,
+          zoneHint: zk,
+        };
+        state.decals.push(layer);
+        selectedDecalId = layer.id;
+      }
       rightTab = "decals";
       if (zk === "hood" || zk === "roof") showroomAngle = "top";
       else if (zk === "rearWing") showroomAngle = "rear";
@@ -1364,7 +1426,7 @@ export function initSkinsStudio(): void {
       renderDecalList();
       renderDecalEditor();
       scheduleRender();
-      setStatus(`Sponsor colocado en ${rect.label}${isSide ? " (con simetría L↔R)" : ""}.`, "ok");
+      setStatus(`Sponsor colocado en ${rect.label}${isSide ? " (ambas puertas: 0° izq. y 180° der. iRacing)" : ""}.`, "ok");
     });
   });
 

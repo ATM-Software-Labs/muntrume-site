@@ -7,87 +7,62 @@
   "uv_status": "extracted",
   "zones": {
     "hood": {
-      "x": 614,
-      "y": 102,
-      "width": 819,
-      "height": 512,
-      "rotation": 0,
-      "mirror_x": false,
-      "symmetry_axis": "center"
+      "x": 123,
+      "y": 860,
+      "width": 492,
+      "height": 737,
+      "rotation": 90
     },
     "roof": {
-      "x": 696,
-      "y": 676,
-      "width": 655,
-      "height": 451,
-      "rotation": 0,
-      "mirror_x": false,
-      "symmetry_axis": "center"
+      "x": 799,
+      "y": 922,
+      "width": 860,
+      "height": 532,
+      "rotation": 90
     },
     "left_side": {
-      "x": 61,
-      "y": 655,
-      "width": 553,
-      "height": 901,
-      "rotation": 0,
-      "mirror_x": false,
-      "flip_horizontal_logo": false,
-      "symmetry_axis": "left"
+      "x": 553,
+      "y": 1475,
+      "width": 1126,
+      "height": 492,
+      "rotation": 0
     },
     "right_side": {
-      "x": 1434,
-      "y": 655,
-      "width": 553,
-      "height": 901,
-      "rotation": 0,
-      "mirror_x": true,
-      "flip_horizontal_logo": true,
-      "symmetry_axis": "right"
+      "x": 553,
+      "y": 410,
+      "width": 1126,
+      "height": 451,
+      "rotation": 180
     },
     "rear_wing": {
       "top_plane": {
-        "x": 553,
-        "y": 1638,
-        "width": 942,
-        "height": 225,
-        "rotation": 0
-      },
-      "endplate_left": {
-        "x": 287,
-        "y": 1638,
-        "width": 225,
-        "height": 225,
-        "rotation": 0
-      },
-      "endplate_right": {
-        "x": 1536,
-        "y": 1638,
-        "width": 225,
-        "height": 225,
+        "x": 20,
+        "y": 164,
+        "width": 635,
+        "height": 164,
         "rotation": 0
       }
     },
     "front_bumper": {
-      "x": 512,
-      "y": 1188,
-      "width": 1024,
+      "x": 1024,
+      "y": 205,
+      "width": 1004,
       "height": 225,
       "rotation": 0
     },
     "rear_bumper": {
-      "x": 512,
-      "y": 1434,
-      "width": 1024,
-      "height": 184,
-      "rotation": 0
+      "x": 1679,
+      "y": 922,
+      "width": 246,
+      "height": 573,
+      "rotation": 90
     },
     "mirrors": {
-      "x": 102,
-      "y": 164,
-      "width": 369,
-      "height": 205,
-      "rotation": 0,
-      "mirror_x": true
+      "x": 287,
+      "y": 307,
+      "width": 328,
+      "height": 82,
+      "rotation": 0
     },
     "sunstrip": {
       "x": 635,

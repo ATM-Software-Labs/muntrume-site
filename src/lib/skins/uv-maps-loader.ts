@@ -18,6 +18,10 @@ for (const [filePath, mod] of Object.entries(rawModules)) {
   if (!data || !data.car_slug) continue;
   const slug = data.car_slug.toLowerCase();
   UV_MAPS_BY_SLUG.set(slug, data);
+  const folder = (data.iracing_folder || "").toLowerCase();
+  if (folder && !UV_MAPS_BY_SLUG.has(folder)) {
+    UV_MAPS_BY_SLUG.set(folder, data);
+  }
   const baseName = filePath.split("/").pop()?.replace(/\.json$/i, "").toLowerCase();
   if (baseName && !UV_MAPS_BY_SLUG.has(baseName)) {
     UV_MAPS_BY_SLUG.set(baseName, data);

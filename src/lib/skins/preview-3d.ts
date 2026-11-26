@@ -198,26 +198,26 @@ function applyIracingAutoFitUVs(
       lu = across;
       lv = 1 - up;
     } else if (absLat >= absUp * 0.85 && (across < 0.46 || across > 0.54)) {
-      // -X -> leftSide (camera at -X looking +X: rear -Z is left, front +Z is right => lu = along)
-      // +X -> rightSide (camera at +X looking -X: front +Z is left, rear -Z is right => lu = 1 - along)
+      // Real iRacing horizontal UV: leftSide (bottom door, 0° upright) & rightSide (top door, 180° inverted)
       if (latN < 0) {
         zone = zones.leftSide;
-        lu = along;
+        lu = 1 - along;
+        lv = 1 - up;
       } else {
         zone = zones.rightSide;
         lu = 1 - along;
+        lv = up;
       }
-      lv = 1 - up;
     } else if (along > 0.54) {
-      // +Y Hood (viewed from front 3/4: +X is left, -X is right; windshield top, nose bottom)
+      // +Y Hood in real iRacing horizontal UV: nose (+Z, along=1) is on the LEFT (lu=0), windshield on RIGHT (lu=1)
       zone = zones.hood;
-      lu = 1 - across;
-      lv = Math.max(0, Math.min(1, (along - 0.54) / 0.46));
+      lu = 1 - Math.max(0, Math.min(1, (along - 0.54) / 0.46));
+      lv = 1 - across;
     } else {
-      // +Y Roof & rear deck
+      // +Y Roof & rear deck in real iRacing horizontal UV: front on LEFT (lu=0), rear on RIGHT (lu=1)
       zone = zones.roof;
-      lu = 1 - across;
-      lv = Math.max(0, Math.min(1, (along - 0.12) / 0.44));
+      lu = 1 - Math.max(0, Math.min(1, (along - 0.12) / 0.44));
+      lv = 1 - across;
     }
 
     const u = Math.max(0.001, Math.min(0.999, zone.x + Math.max(0, Math.min(1, lu)) * zone.w));
