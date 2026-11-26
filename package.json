@@ -21,21 +21,21 @@
   "license": "UNLICENSED",
   "dependencies": {
     "ag-psd": "^34.2.3",
-    "astro": "7.4.4",
-    "dompurify": "^3.4.17",
+    "astro": "7.4.13",
+    "dompurify": "^3.5.0",
     "jszip": "^3.10.2",
-    "marked": "^18.2.0",
-    "postal-mime": "4.2.0",
+    "marked": "^18.2.1",
+    "postal-mime": "4.2.1",
     "three": "^0.187.0"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.12",
-    "@tailwindcss/cli": "4.3.3",
+    "@tailwindcss/cli": "4.3.5",
     "@types/three": "^0.187.0",
     "esbuild": "^0.28.2",
     "html-minifier-terser": "7.2.0",
-    "tailwindcss": "4.3.3",
-    "terser": "5.51.2",
+    "tailwindcss": "4.3.5",
+    "terser": "5.51.4",
     "typescript": "5.9.3"
   }
 }
