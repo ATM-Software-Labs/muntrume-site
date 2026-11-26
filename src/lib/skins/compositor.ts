@@ -1,5 +1,5 @@
 import { BUILTIN_DECALS, getCarById } from "./catalog";
-import type { DecalLayer, SkinDesignState, ZoneKey, ZoneRect } from "./types";
+import type { DecalLayer, PaletteConfig, PatternStyle, SkinDesignState, SurfaceTexture, ZoneKey, ZoneRect } from "./types";
 
 export interface ReservedGuideBox {
   x: number;
@@ -13,6 +13,8 @@ export interface CompositeOptions {
   size: number;
   templateCanvas?: HTMLCanvasElement | null;
   partsOverlayCanvas?: HTMLCanvasElement | null;
+  /** Optional official iRacing Car Pattern RGB layer from a locally loaded PSD */
+  psdPatternCanvas?: HTMLCanvasElement | null;
   restrictedPlates?: ReservedGuideBox[];
   seriesSlots?: ReservedGuideBox[];
   showTemplateOverlay?: boolean;
@@ -56,6 +58,82 @@ function getDecalSource(decal: DecalLayer): { key: string; src: string } | null 
   return null;
 }
 
+function hexToRgb(hex: string): [number, number, number] {
+  const clean = (hex || "#000000").replace("#", "").trim();
+  const full = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean.padEnd(6, "0");
+  const num = parseInt(full.slice(0, 6), 16);
+  if (Number.isNaN(num)) return [16, 24, 36];
+  return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+}
+
+let psdPatternCacheKey = "";
+let psdPatternCacheCanvas: HTMLCanvasElement | null = null;
+
+/**
+ * Recolors an official iRacing 3-channel RGB Car Pattern layer (Red = Primary, Green = Secondary, Blue = Accent)
+ * purely client-side so local .PSD templates can use all 25 native car patterns with custom MMT palettes.
+ */
+function drawRecoloredPsdPattern(
+  ctx: CanvasRenderingContext2D,
+  patternCanvas: HTMLCanvasElement,
+  palette: PaletteConfig,
+  size: number,
+  patternTag: string,
+): void {
+  const workSize = Math.min(size, 1024);
+  const key = `${patternTag}:${workSize}:${palette.primary}:${palette.secondary}:${palette.accent}`;
+  if (psdPatternCacheKey !== key || !psdPatternCacheCanvas) {
+    const tmp = document.createElement("canvas");
+    tmp.width = workSize;
+    tmp.height = workSize;
+    const tctx = tmp.getContext("2d", { willReadFrequently: true });
+    if (!tctx) return;
+    tctx.drawImage(patternCanvas, 0, 0, workSize, workSize);
+    const img = tctx.getImageData(0, 0, workSize, workSize);
+    const data = img.data;
+    const [r1, g1, b1] = hexToRgb(palette.primary);
+    const [r2, g2, b2] = hexToRgb(palette.secondary);
+    const [r3, g3, b3] = hexToRgb(palette.accent);
+
+    for (let i = 0; i < data.length; i += 4) {
+      const a = data[i + 3];
+      if (a < 8) {
+        data[i] = r1;
+        data[i + 1] = g1;
+        data[i + 2] = b1;
+        data[i + 3] = 255;
+        continue;
+      }
+      const wR = data[i] / 255;
+      const wG = data[i + 1] / 255;
+      const wB = data[i + 2] / 255;
+      const sum = wR + wG + wB;
+      if (sum < 0.04) {
+        data[i] = r1;
+        data[i + 1] = g1;
+        data[i + 2] = b1;
+      } else {
+        const inv = sum > 1 ? 1 / sum : 1;
+        const nR = wR * inv;
+        const nG = wG * inv;
+        const nB = wB * inv;
+        const rem = Math.max(0, 1 - (nR + nG + nB));
+        data[i] = Math.min(255, Math.round(r1 * (nR + rem) + r2 * nG + r3 * nB));
+        data[i + 1] = Math.min(255, Math.round(g1 * (nR + rem) + g2 * nG + g3 * nB));
+        data[i + 2] = Math.min(255, Math.round(b1 * (nR + rem) + b2 * nG + b3 * nB));
+      }
+      data[i + 3] = 255;
+    }
+    tctx.putImageData(img, 0, 0);
+    psdPatternCacheCanvas = tmp;
+    psdPatternCacheKey = key;
+  }
+
+  ctx.save();
+  ctx.drawImage(psdPatternCacheCanvas, 0, 0, size, size);
+  ctx.restore();
+}
+
 function drawCarbonPattern(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, scalePx: number): void {
   const tile = document.createElement("canvas");
   const s = Math.max(8, Math.round(scalePx));
@@ -63,10 +141,10 @@ function drawCarbonPattern(ctx: CanvasRenderingContext2D, x: number, y: number, 
   tile.height = s;
   const tctx = tile.getContext("2d");
   if (!tctx) return;
-  tctx.fillStyle = "rgba(255,255,255,0.035)";
+  tctx.fillStyle = "rgba(255,255,255,0.045)";
   tctx.fillRect(0, 0, s / 2, s / 2);
   tctx.fillRect(s / 2, s / 2, s / 2, s / 2);
-  tctx.fillStyle = "rgba(0,0,0,0.22)";
+  tctx.fillStyle = "rgba(0,0,0,0.24)";
   tctx.fillRect(s / 2, 0, s / 2, s / 2);
   tctx.fillRect(0, s / 2, s / 2, s / 2);
 
@@ -78,25 +156,148 @@ function drawCarbonPattern(ctx: CanvasRenderingContext2D, x: number, y: number, 
   ctx.restore();
 }
 
+function drawHexMeshTexture(ctx: CanvasRenderingContext2D, size: number, strokeColor: string, alpha = 0.16): void {
+  const tile = document.createElement("canvas");
+  const r = Math.max(7, Math.round(size / 88));
+  const dx = r * 1.5;
+  const dy = r * Math.sqrt(3);
+  tile.width = Math.round(dx * 2);
+  tile.height = Math.round(dy);
+  const tctx = tile.getContext("2d");
+  if (!tctx) return;
+
+  tctx.strokeStyle = strokeColor;
+  tctx.globalAlpha = alpha;
+  tctx.lineWidth = Math.max(1, r * 0.14);
+
+  const drawHex = (cx: number, cy: number) => {
+    tctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const ang = (Math.PI / 3) * i;
+      const px = cx + r * Math.cos(ang);
+      const py = cy + r * Math.sin(ang);
+      if (i === 0) tctx.moveTo(px, py);
+      else tctx.lineTo(px, py);
+    }
+    tctx.closePath();
+    tctx.stroke();
+  };
+
+  drawHex(0, 0);
+  drawHex(dx * 2, 0);
+  drawHex(dx, dy / 2);
+  drawHex(0, dy);
+  drawHex(dx * 2, dy);
+
+  const pat = ctx.createPattern(tile, "repeat");
+  if (!pat) return;
+  ctx.save();
+  ctx.fillStyle = pat;
+  ctx.fillRect(0, 0, size, size);
+  ctx.restore();
+}
+
+function drawSpeedLinesTexture(ctx: CanvasRenderingContext2D, size: number, color: string): void {
+  const tile = document.createElement("canvas");
+  const s = Math.max(24, Math.round(size / 36));
+  tile.width = s;
+  tile.height = s;
+  const tctx = tile.getContext("2d");
+  if (!tctx) return;
+  tctx.strokeStyle = color;
+  tctx.globalAlpha = 0.11;
+  tctx.lineWidth = Math.max(1.2, s * 0.07);
+  tctx.beginPath();
+  tctx.moveTo(-s * 0.25, s * 0.75);
+  tctx.lineTo(s * 0.75, -s * 0.25);
+  tctx.moveTo(s * 0.25, s * 1.25);
+  tctx.lineTo(s * 1.25, s * 0.25);
+  tctx.stroke();
+
+  const pat = ctx.createPattern(tile, "repeat");
+  if (!pat) return;
+  ctx.save();
+  ctx.fillStyle = pat;
+  ctx.fillRect(0, 0, size, size);
+  ctx.restore();
+}
+
+function drawMetallicFlakeTexture(ctx: CanvasRenderingContext2D, size: number): void {
+  const tile = document.createElement("canvas");
+  const s = 64;
+  tile.width = s;
+  tile.height = s;
+  const tctx = tile.getContext("2d");
+  if (!tctx) return;
+  // Deterministic fine metallic flake sparkle
+  let seed = 1337;
+  const rand = () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed - 1) / 2147483646;
+  };
+  for (let i = 0; i < 140; i++) {
+    const px = Math.floor(rand() * s);
+    const py = Math.floor(rand() * s);
+    const bright = rand() > 0.45;
+    tctx.fillStyle = bright ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.09)";
+    tctx.fillRect(px, py, 1.5, 1.5);
+  }
+  const pat = ctx.createPattern(tile, "repeat");
+  if (!pat) return;
+  ctx.save();
+  ctx.fillStyle = pat;
+  ctx.fillRect(0, 0, size, size);
+  ctx.restore();
+}
+
+function drawSurfaceTexture(ctx: CanvasRenderingContext2D, texture: SurfaceTexture | undefined, palette: PaletteConfig, size: number): void {
+  if (!texture || texture === "none") return;
+  if (texture === "carbon") {
+    drawCarbonPattern(ctx, 0, 0, size, size, size / 112);
+  } else if (texture === "hex-mesh") {
+    drawHexMeshTexture(ctx, size, palette.detail || "#ffffff", 0.14);
+  } else if (texture === "speed-lines") {
+    drawSpeedLinesTexture(ctx, size, palette.detail || "#ffffff");
+  } else if (texture === "metallic-flake") {
+    drawMetallicFlakeTexture(ctx, size);
+  }
+}
+
 function zonePx(z: ZoneRect, size: number): { x: number; y: number; w: number; h: number } {
   return { x: z.x * size, y: z.y * size, w: z.w * size, h: z.h * size };
 }
 
-function drawPatternGeometry(ctx: CanvasRenderingContext2D, state: SkinDesignState, size: number): void {
-  const { palette, pattern, spec } = state;
-
+function drawPatternCore(
+  ctx: CanvasRenderingContext2D,
+  pattern: PatternStyle,
+  palette: PaletteConfig,
+  size: number,
+  carbonBase: boolean,
+  surfaceTexture?: SurfaceTexture,
+  psdPatternCanvas?: HTMLCanvasElement | null,
+  psdPatternName?: string | null,
+): void {
   // Base 100 % opaca y sólida sobre todo el lienzo
   ctx.save();
   ctx.globalAlpha = 1;
   ctx.fillStyle = palette.primary;
   ctx.fillRect(0, 0, size, size);
 
-  if (spec.finish === "carbon" || spec.carbonAccent) {
+  if (psdPatternCanvas) {
+    drawRecoloredPsdPattern(ctx, psdPatternCanvas, palette, size, psdPatternName || "psd-pattern");
+    if (carbonBase) drawCarbonPattern(ctx, 0, 0, size, size, size / 112);
+    drawSurfaceTexture(ctx, surfaceTexture, palette, size);
+    ctx.restore();
+    return;
+  }
+
+  if (carbonBase) {
     drawCarbonPattern(ctx, 0, 0, size, size, size / 112);
   }
 
   // Modo Diseño Libre: pintura base sólida limpia sin gráficos impuestos
   if (pattern === "freeform") {
+    drawSurfaceTexture(ctx, surfaceTexture, palette, size);
     ctx.restore();
     return;
   }
@@ -260,7 +461,7 @@ function drawPatternGeometry(ctx: CanvasRenderingContext2D, state: SkinDesignSta
       ctx.closePath();
       ctx.fill();
     });
-  } else {
+  } else if (pattern === "clean-minimal") {
     // Clean Minimal Factory: carrocería bitono sólida de escudería oficial con doble banda de cintura
     ctx.fillStyle = palette.secondary;
     ctx.fillRect(0, size * 0.56, size, size * 0.44);
@@ -268,9 +469,257 @@ function drawPatternGeometry(ctx: CanvasRenderingContext2D, state: SkinDesignSta
     ctx.fillRect(0, size * 0.54, size, size * 0.028);
     ctx.fillStyle = palette.detail;
     ctx.fillRect(0, size * 0.525, size, size * 0.01);
+  } else if (pattern === "geo-camo") {
+    // DTM / Audi Sport Geo-Camo: camuflaje geométrico splinter de polígonos angulares en 4 tonos
+    const drawPoly = (pts: Array<[number, number]>, color: string) => {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      pts.forEach(([px, py], i) => (i === 0 ? ctx.moveTo(px * size, py * size) : ctx.lineTo(px * size, py * size)));
+      ctx.closePath();
+      ctx.fill();
+    };
+    const secPolys: Array<Array<[number, number]>> = [
+      [[0, 0], [0.36, 0], [0.22, 0.28], [0, 0.20]],
+      [[0.48, 0], [0.84, 0], [0.66, 0.24], [0.38, 0.18]],
+      [[0.14, 0.30], [0.52, 0.22], [0.44, 0.52], [0.06, 0.48]],
+      [[0.62, 0.26], [1, 0.14], [1, 0.46], [0.56, 0.44]],
+      [[0, 0.56], [0.32, 0.50], [0.46, 0.80], [0.12, 0.84], [0, 0.72]],
+      [[0.50, 0.54], [0.92, 0.48], [1, 0.78], [0.60, 0.76]],
+      [[0.18, 0.84], [0.68, 0.78], [0.82, 1], [0.08, 1]],
+    ];
+    secPolys.forEach((p) => drawPoly(p, palette.secondary));
+
+    const accPolys: Array<Array<[number, number]>> = [
+      [[0.22, 0.28], [0.46, 0.16], [0.50, 0.26], [0.26, 0.34]],
+      [[0.70, 0.16], [1, 0.04], [1, 0.15], [0.66, 0.25]],
+      [[0, 0.46], [0.38, 0.40], [0.34, 0.49], [0, 0.54]],
+      [[0.46, 0.58], [0.86, 0.46], [0.92, 0.54], [0.50, 0.66]],
+      [[0.56, 0.78], [1, 0.68], [1, 0.77], [0.62, 0.86]],
+      [[0.06, 0.86], [0.42, 0.78], [0.46, 0.85], [0.10, 0.94]],
+    ];
+    accPolys.forEach((p) => drawPoly(p, palette.accent));
+
+    const detPolys: Array<Array<[number, number]>> = [
+      [[0.36, 0], [0.48, 0], [0.38, 0.18], [0.28, 0.15]],
+      [[0.44, 0.44], [0.60, 0.38], [0.56, 0.47], [0.42, 0.51]],
+      [[0.28, 0.72], [0.52, 0.66], [0.48, 0.72], [0.26, 0.77]],
+      [[0.76, 0.84], [0.98, 0.78], [1, 0.86], [0.80, 0.92]],
+    ];
+    detPolys.forEach((p) => drawPoly(p, palette.detail));
+  } else if (pattern === "hex-tech") {
+    // Hex Carbon Tech: gradiente técnico + malla hexagonal densa + cortes cyber diagonales
+    const grad = ctx.createLinearGradient(0, 0, size, size);
+    grad.addColorStop(0, palette.primary);
+    grad.addColorStop(0.55, palette.secondary);
+    grad.addColorStop(1, palette.primary);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+
+    drawHexMeshTexture(ctx, size, palette.accent, 0.28);
+    drawHexMeshTexture(ctx, size, palette.detail, 0.10);
+
+    // Cortes diagonales cyber de alto contraste
+    ctx.fillStyle = palette.accent;
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.64);
+    ctx.lineTo(size * 0.72, size * 0.24);
+    ctx.lineTo(size, size * 0.16);
+    ctx.lineTo(size, size * 0.22);
+    ctx.lineTo(size * 0.72, size * 0.31);
+    ctx.lineTo(0, size * 0.71);
+    ctx.closePath();
+    ctx.fill();
+
+    // Filo paralelo luminoso
+    ctx.fillStyle = palette.detail;
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.735);
+    ctx.lineTo(size * 0.73, size * 0.335);
+    ctx.lineTo(size, size * 0.245);
+    ctx.lineTo(size, size * 0.265);
+    ctx.lineTo(size * 0.73, size * 0.355);
+    ctx.lineTo(0, size * 0.755);
+    ctx.closePath();
+    ctx.fill();
+
+    // Esquina superior con bloque técnico
+    ctx.fillStyle = palette.secondary;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(size * 0.45, 0);
+    ctx.lineTo(size * 0.25, size * 0.22);
+    ctx.lineTo(0, size * 0.22);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(0, size * 0.215, size * 0.26, size * 0.012);
+  } else if (pattern === "apex-fade") {
+    // Apex Gradient Fade: degradado fluido GT World Challenge + 3 trazos aerodinámicos paralelos
+    const g = ctx.createLinearGradient(0, 0, size * 0.9, size);
+    g.addColorStop(0, palette.primary);
+    g.addColorStop(0.45, palette.secondary);
+    g.addColorStop(0.82, palette.accent);
+    g.addColorStop(1, palette.primary);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, size, size);
+
+    // Bloque oscuro en zona baja para contrastar sponsors
+    ctx.fillStyle = palette.primary;
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.74);
+    ctx.lineTo(size * 0.55, size * 0.54);
+    ctx.lineTo(size, size * 0.66);
+    ctx.lineTo(size, size);
+    ctx.lineTo(0, size);
+    ctx.closePath();
+    ctx.fill();
+
+    // Trazos veloces afilados
+    const slashes: Array<{ y0: number; y1: number; w: number; col: string }> = [
+      { y0: 0.71, y1: 0.51, w: 0.026, col: palette.accent },
+      { y0: 0.675, y1: 0.475, w: 0.014, col: palette.detail },
+      { y0: 0.28, y1: 0.06, w: 0.032, col: palette.detail },
+      { y0: 0.325, y1: 0.105, w: 0.018, col: palette.accent },
+    ];
+    for (const s of slashes) {
+      ctx.fillStyle = s.col;
+      ctx.beginPath();
+      ctx.moveTo(0, size * s.y0);
+      ctx.lineTo(size, size * s.y1);
+      ctx.lineTo(size, size * (s.y1 + s.w));
+      ctx.lineTo(0, size * (s.y0 + s.w));
+      ctx.closePath();
+      ctx.fill();
+    }
+  } else if (pattern === "heritage-gulf") {
+    // Heritage Classic: banda ancha de resistencia morro-cola + doble filete oscuro + faldones
+    ctx.fillStyle = palette.secondary;
+    ctx.fillRect(0, size * 0.76, size, size * 0.24);
+
+    // Banda central icónica
+    const bw = size * 0.24;
+    const bx = (size - bw) / 2;
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(bx, 0, bw, size);
+
+    // Filetes nítidos exteriores
+    const pin = Math.max(4, size * 0.01);
+    ctx.fillStyle = palette.detail;
+    ctx.fillRect(bx - pin * 1.6, 0, pin, size);
+    ctx.fillRect(bx + bw + pin * 0.6, 0, pin, size);
+
+    // Banda horizontal de cintura en acento + filete
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(0, size * 0.73, size, size * 0.035);
+    ctx.fillStyle = palette.detail;
+    ctx.fillRect(0, size * 0.72, size, size * 0.009);
+  } else if (pattern === "factory-chevron") {
+    // Factory V-Chevron: chevrones simétricos en V estilo equipo oficial Porsche / BMW Motorsport
+    ctx.fillStyle = palette.secondary;
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.42);
+    ctx.lineTo(size * 0.5, size * 0.18);
+    ctx.lineTo(size, size * 0.42);
+    ctx.lineTo(size, size);
+    ctx.lineTo(0, size);
+    ctx.closePath();
+    ctx.fill();
+
+    // Chevrons en V apilados (Acento + Detalle)
+    const drawChevron = (apexY: number, thick: number, col: string) => {
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.moveTo(0, size * (apexY + 0.24));
+      ctx.lineTo(size * 0.5, size * apexY);
+      ctx.lineTo(size, size * (apexY + 0.24));
+      ctx.lineTo(size, size * (apexY + 0.24 + thick));
+      ctx.lineTo(size * 0.5, size * (apexY + thick));
+      ctx.lineTo(0, size * (apexY + 0.24 + thick));
+      ctx.closePath();
+      ctx.fill();
+    };
+    drawChevron(0.14, 0.055, palette.accent);
+    drawChevron(0.21, 0.022, palette.detail);
+    drawChevron(0.54, 0.065, palette.accent);
+    drawChevron(0.62, 0.022, palette.detail);
+  } else if (pattern === "lightning-drift") {
+    // Apex Lightning: rayos angulares asimétricos de alto contraste
+    ctx.fillStyle = palette.secondary;
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.30);
+    ctx.lineTo(size * 0.42, size * 0.18);
+    ctx.lineTo(size * 0.32, size * 0.46);
+    ctx.lineTo(size, size * 0.26);
+    ctx.lineTo(size, size);
+    ctx.lineTo(0, size);
+    ctx.closePath();
+    ctx.fill();
+
+    // Rayo principal en acento
+    ctx.fillStyle = palette.accent;
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.58);
+    ctx.lineTo(size * 0.46, size * 0.32);
+    ctx.lineTo(size * 0.37, size * 0.52);
+    ctx.lineTo(size, size * 0.18);
+    ctx.lineTo(size, size * 0.28);
+    ctx.lineTo(size * 0.46, size * 0.60);
+    ctx.lineTo(size * 0.55, size * 0.40);
+    ctx.lineTo(0, size * 0.69);
+    ctx.closePath();
+    ctx.fill();
+
+    // Contorno eléctrico en detalle
+    ctx.fillStyle = palette.detail;
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.72);
+    ctx.lineTo(size * 0.56, size * 0.43);
+    ctx.lineTo(size * 0.49, size * 0.61);
+    ctx.lineTo(size, size * 0.31);
+    ctx.lineTo(size, size * 0.34);
+    ctx.lineTo(size * 0.44, size * 0.66);
+    ctx.lineTo(size * 0.52, size * 0.47);
+    ctx.lineTo(0, size * 0.75);
+    ctx.closePath();
+    ctx.fill();
   }
 
+  drawSurfaceTexture(ctx, surfaceTexture, palette, size);
   ctx.restore();
+}
+
+function drawPatternGeometry(
+  ctx: CanvasRenderingContext2D,
+  state: SkinDesignState,
+  size: number,
+  psdPatternCanvas?: HTMLCanvasElement | null,
+): void {
+  drawPatternCore(
+    ctx,
+    state.pattern,
+    state.palette,
+    size,
+    state.spec.finish === "carbon" || state.spec.carbonAccent,
+    state.surfaceTexture,
+    psdPatternCanvas,
+    state.psdPatternName,
+  );
+}
+
+/**
+ * Renders a crisp mini-preview thumbnail for the visual pattern gallery in the Design tab.
+ */
+export function renderPatternThumbnail(
+  canvas: HTMLCanvasElement,
+  pattern: PatternStyle,
+  palette: PaletteConfig,
+  surfaceTexture?: SurfaceTexture,
+): void {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const s = canvas.width || 96;
+  ctx.clearRect(0, 0, s, s);
+  drawPatternCore(ctx, pattern, palette, s, pattern === "carbon-stealth", surfaceTexture, null, null);
 }
 
 function getFontFamily(style: SkinDesignState["fontStyle"]): string {
@@ -519,7 +968,7 @@ export async function renderSkinToCanvas(
   if (!ctx) throw new Error("No se pudo obtener contexto Canvas 2D.");
 
   ctx.clearRect(0, 0, size, size);
-  drawPatternGeometry(ctx, state, size);
+  drawPatternGeometry(ctx, state, size, opts.psdPatternCanvas);
   drawBrushStrokes(ctx, state, size);
   drawDriverNumbers(ctx, state, size);
   await drawDecals(ctx, state, size, opts.selectedDecalId, opts.forExport);

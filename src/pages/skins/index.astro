@@ -278,23 +278,58 @@ const canonical = "https://skins.muntru.me/";
         <div id="skTab-design" class="sk-card">
           <h2 class="sk-card-title">Patrón y Paleta</h2>
           <label class="sk-label">
-            Distribución base
+            Distribución base (12 estilos pro)
             <select id="skPatternSelect" class="sk-select">
-              <option value="freeform">Diseño Libre (Lienzo limpio sin cajas)</option>
-              <option value="endurance">MMT Endurance (V-Spear + Laterales)</option>
-              <option value="sprint">MMT Sprint (Franja Central + Faldones)</option>
-              <option value="carbon-stealth">Carbono / Oscuro (Pinstripes Neón)</option>
+              <option value="endurance">MMT Endurance (Cuñas IMSA / WEC)</option>
+              <option value="geo-camo">DTM Geo-Camo (Camuflaje Splinter)</option>
+              <option value="hex-tech">Hex Carbon Tech (Malla Hexagonal)</option>
+              <option value="apex-fade">Apex Gradient Fade (Degradado GTWC)</option>
+              <option value="factory-chevron">Factory V-Chevron (Equipo Oficial)</option>
+              <option value="lightning-drift">Apex Lightning (Rayos Eléctricos)</option>
+              <option value="heritage-gulf">Heritage Classic (Banda Ancha Gulf)</option>
+              <option value="sprint">MMT Sprint (Doble Franja + Faldones)</option>
+              <option value="carbon-stealth">Carbono Stealth (Facetas Neón)</option>
               <option value="tricolor">Tricolor Motorsport (Diagonales)</option>
-              <option value="clean-minimal">Limpio Minimal (Escudería Oficial)</option>
+              <option value="clean-minimal">Limpio Minimal (Escudería Bitono)</option>
+              <option value="freeform">Diseño Libre (Base limpia sin gráfico)</option>
             </select>
           </label>
 
-          <div class="sk-row" style="flex-wrap:wrap;gap:6px;">
-            <button type="button" class="sk-btn sk-btn-sm" data-quick-pal="#16202e,#243447,#00e699,#f8fafc,endurance">MMT Esmeralda</button>
-            <button type="button" class="sk-btn sk-btn-sm" data-quick-pal="#38bdf8,#0284c7,#f97316,#ffffff,sprint">Gulf Racing</button>
-            <button type="button" class="sk-btn sk-btn-sm" data-quick-pal="#f8fafc,#1e3a8a,#dc2626,#38bdf8,tricolor">Martini Classic</button>
-            <button type="button" class="sk-btn sk-btn-sm" data-quick-pal="#0b0f14,#18222d,#84cc16,#ffffff,carbon-stealth">Squadra Lime</button>
-            <button type="button" class="sk-btn sk-btn-sm" data-quick-pal="#b91c1c,#7f1d1d,#facc15,#ffffff,clean-minimal">Rosso Corsa</button>
+          <div id="skPatternGallery" class="sk-pattern-gallery" aria-label="Galería visual de patrones de pintura"></div>
+
+          <div id="skPsdPatternsBox" class="sk-psd-patterns sk-hidden">
+            <div class="sk-row" style="justify-content:space-between;align-items:center;">
+              <span style="font-size:11px;font-weight:700;color:var(--sk-accent);">PATRONES OFICIALES DEL .PSD (RGB)</span>
+              <button type="button" id="skPsdPatternClear" class="sk-btn sk-btn-sm">Usar patrón MMT</button>
+            </div>
+            <label class="sk-label" style="margin-top:4px;">
+              Pintura nativa iRacing (se recolorea con Primario / Secundario / Acento)
+              <select id="skPsdPatternSelect" class="sk-select"></select>
+            </label>
+          </div>
+
+          <label class="sk-label">
+            Textura sobre pintura (2K / 4K)
+            <select id="skSurfaceTexture" class="sk-select">
+              <option value="none">Lisa (Sin textura adicional)</option>
+              <option value="carbon">Fibra de Carbono 2×2</option>
+              <option value="hex-mesh">Malla Hexagonal Tech</option>
+              <option value="speed-lines">Líneas Aerodinámicas</option>
+              <option value="metallic-flake">Flake Metálico Fino</option>
+            </select>
+          </label>
+
+          <div class="sk-pal-grid" aria-label="Paletas rápidas motorsport">
+            <button type="button" class="sk-pal-chip" data-quick-pal="#16202e,#243447,#00e699,#f8fafc,endurance"><span class="sk-pal-dots"><i style="background:#16202e"></i><i style="background:#00e699"></i></span>MMT Esmeralda</button>
+            <button type="button" class="sk-pal-chip" data-quick-pal="#0f141c,#273447,#ef4444,#f8fafc,geo-camo"><span class="sk-pal-dots"><i style="background:#0f141c"></i><i style="background:#ef4444"></i></span>DTM Geo-Red</button>
+            <button type="button" class="sk-pal-chip" data-quick-pal="#090d14,#132238,#06b6d4,#00ff9d,hex-tech"><span class="sk-pal-dots"><i style="background:#132238"></i><i style="background:#06b6d4"></i></span>Hex Cyber</button>
+            <button type="button" class="sk-pal-chip" data-quick-pal="#0a1128,#1d4ed8,#f97316,#ffffff,apex-fade"><span class="sk-pal-dots"><i style="background:#1d4ed8"></i><i style="background:#f97316"></i></span>Apex Fade</button>
+            <button type="button" class="sk-pal-chip" data-quick-pal="#38bdf8,#0369a1,#f97316,#0f172a,heritage-gulf"><span class="sk-pal-dots"><i style="background:#38bdf8"></i><i style="background:#f97316"></i></span>Gulf Classic</button>
+            <button type="button" class="sk-pal-chip" data-quick-pal="#f8fafc,#0f172a,#dc2626,#facc15,factory-chevron"><span class="sk-pal-dots"><i style="background:#f8fafc"></i><i style="background:#dc2626"></i></span>Factory Red</button>
+            <button type="button" class="sk-pal-chip" data-quick-pal="#0b0f14,#18222d,#84cc16,#ffffff,carbon-stealth"><span class="sk-pal-dots"><i style="background:#0b0f14"></i><i style="background:#84cc16"></i></span>Squadra Lime</button>
+            <button type="button" class="sk-pal-chip" data-quick-pal="#f8fafc,#1e3a8a,#dc2626,#38bdf8,tricolor"><span class="sk-pal-dots"><i style="background:#1e3a8a"></i><i style="background:#dc2626"></i></span>Martini Pro</button>
+            <button type="button" class="sk-pal-chip" data-quick-pal="#0b0f17,#1e1b4b,#eab308,#38bdf8,lightning-drift"><span class="sk-pal-dots"><i style="background:#0b0f17"></i><i style="background:#eab308"></i></span>Stealth Gold</button>
+            <button type="button" class="sk-pal-chip" data-quick-pal="#f97316,#0f172a,#38bdf8,#ffffff,sprint"><span class="sk-pal-dots"><i style="background:#f97316"></i><i style="background:#0f172a"></i></span>Papaya GT</button>
           </div>
 
           <div class="sk-grid-2">

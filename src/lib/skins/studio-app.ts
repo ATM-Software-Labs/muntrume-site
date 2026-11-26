@@ -8,7 +8,7 @@ import {
   getCarById,
   getDriverById,
 } from "./catalog";
-import { renderSkinToCanvas, renderSpecMapToCanvas, type ReservedGuideBox } from "./compositor";
+import { renderPatternThumbnail, renderSkinToCanvas, renderSpecMapToCanvas, type ReservedGuideBox } from "./compositor";
 import { renderShowroomCarView, type ShowroomAngle } from "./car-showroom-view";
 import { BRAND_DECALS, SERIES_DECALS, TEAM_DECALS, type LibraryDecalItem } from "./decals-library";
 import {
@@ -34,9 +34,11 @@ import {
 import type {
   DecalLayer,
   FinishType,
+  PatternStyle,
   PhotoGuideShot,
   ResolutionMode,
   SkinDesignState,
+  SurfaceTexture,
   ZoneKey,
 } from "./types";
 
@@ -350,6 +352,11 @@ export function initSkinsStudio(): void {
     renderSavedLibrary();
   }
 
+  function getActivePsdPatternCanvas(): HTMLCanvasElement | null {
+    if (!state.psdPatternName || !loadedTemplate?.carPatterns?.length) return null;
+    return loadedTemplate.carPatterns.find((p) => p.name === state.psdPatternName)?.canvas ?? null;
+  }
+
   let renderPending = false;
   function scheduleRender(): void {
     persistState();
@@ -358,6 +365,7 @@ export function initSkinsStudio(): void {
     requestAnimationFrame(async () => {
       renderPending = false;
       try {
+        const psdPatCanvas = getActivePsdPatternCanvas();
         if (viewMode === "showroom") {
           await renderShowroomCarView(showroomCanvas, state, showroomAngle);
         } else if (viewMode === "uv") {
@@ -365,6 +373,7 @@ export function initSkinsStudio(): void {
             size: 1024,
             templateCanvas: loadedTemplate?.wireframeCanvas ?? loadedTemplate?.canvas ?? workerWireframeCanvas,
             partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
+            psdPatternCanvas: psdPatCanvas,
             restrictedPlates: workerRestrictedPlates,
             seriesSlots: workerSeriesSlots,
             showTemplateOverlay,
@@ -382,6 +391,7 @@ export function initSkinsStudio(): void {
           await renderSkinToCanvas(offscreenTexture, state, {
             size: 1024,
             partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
+            psdPatternCanvas: psdPatCanvas,
             forExport: true,
           });
           const offscreenSpec = document.createElement("canvas");
@@ -472,6 +482,7 @@ export function initSkinsStudio(): void {
     setVal("skColorNum", state.palette.numberColor);
     setVal("skColorNumBg", state.palette.numberBg);
     setVal("skPatternSelect", state.pattern);
+    setVal("skSurfaceTexture", state.surfaceTexture || "none");
     setVal("skFontSelect", state.fontStyle);
     setVal("skFinishSelect", state.spec.finish);
     setVal("skSpecMetallic", String(state.spec.metallic));
@@ -487,11 +498,78 @@ export function initSkinsStudio(): void {
       btn.classList.toggle("is-active", Number(btn.dataset.resMode) === state.resolution);
     });
 
+    renderPatternGallery();
+    renderPsdPatternSelector();
     renderZoneList();
     renderDecalList();
     renderDecalEditor();
     renderPhotoGuide();
     updateExportValidation();
+  }
+
+  const GALLERY_PATTERNS: Array<{ id: PatternStyle; label: string }> = [
+    { id: "endurance", label: "Endurance" },
+    { id: "geo-camo", label: "Geo-Camo" },
+    { id: "hex-tech", label: "Hex Tech" },
+    { id: "apex-fade", label: "Apex Fade" },
+    { id: "factory-chevron", label: "V-Chevron" },
+    { id: "lightning-drift", label: "Lightning" },
+    { id: "heritage-gulf", label: "Heritage" },
+    { id: "sprint", label: "Sprint" },
+    { id: "carbon-stealth", label: "Stealth" },
+    { id: "tricolor", label: "Tricolor" },
+    { id: "clean-minimal", label: "Minimal" },
+    { id: "freeform", label: "Libre" },
+  ];
+
+  function renderPatternGallery(): void {
+    const host = byId<HTMLElement>("skPatternGallery");
+    if (!host) return;
+    if (host.childElementCount === 0) {
+      host.innerHTML = GALLERY_PATTERNS.map(
+        (p) =>
+          `<button type="button" class="sk-pattern-card" data-gallery-pattern="${p.id}" title="${escapeHtml(p.label)}"><canvas width="80" height="48"></canvas><span>${escapeHtml(p.label)}</span></button>`,
+      ).join("");
+      host.querySelectorAll<HTMLButtonElement>("[data-gallery-pattern]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const pat = btn.dataset.galleryPattern as PatternStyle;
+          if (!pat) return;
+          state.pattern = pat;
+          state.psdPatternName = null;
+          const sel = byId<HTMLSelectElement>("skPatternSelect");
+          if (sel) sel.value = pat;
+          renderPatternGallery();
+          renderPsdPatternSelector();
+          scheduleRender();
+          setStatus(`Patrón aplicado: ${btn.title}`, "ok");
+        });
+      });
+    }
+    const usingPsdPattern = Boolean(getActivePsdPatternCanvas());
+    host.querySelectorAll<HTMLButtonElement>("[data-gallery-pattern]").forEach((btn) => {
+      const pat = btn.dataset.galleryPattern as PatternStyle;
+      btn.classList.toggle("is-active", !usingPsdPattern && state.pattern === pat);
+      const c = btn.querySelector("canvas");
+      if (c) renderPatternThumbnail(c, pat, state.palette, state.surfaceTexture);
+    });
+  }
+
+  function renderPsdPatternSelector(): void {
+    const box = byId<HTMLElement>("skPsdPatternsBox");
+    const sel = byId<HTMLSelectElement>("skPsdPatternSelect");
+    if (!box || !sel) return;
+    const patterns = loadedTemplate?.carPatterns;
+    if (!patterns || patterns.length === 0) {
+      box.classList.add("sk-hidden");
+      return;
+    }
+    box.classList.remove("sk-hidden");
+    const opts = [
+      `<option value="">— Usar patrones MMT (${state.pattern}) —</option>`,
+      ...patterns.map((p) => `<option value="${escapeHtml(p.name)}">${escapeHtml(p.label)}</option>`),
+    ];
+    sel.innerHTML = opts.join("");
+    sel.value = state.psdPatternName || "";
   }
 
   function renderZoneList(): void {
@@ -701,6 +779,7 @@ export function initSkinsStudio(): void {
       void renderSkinToCanvas(diffPrev, state, {
         size: 128,
         partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
+        psdPatternCanvas: getActivePsdPatternCanvas(),
         forExport: true,
       });
     }
@@ -1105,11 +1184,16 @@ export function initSkinsStudio(): void {
       if (zChk) zChk.checked = false;
       const infoEl = byId<HTMLElement>("skTemplateSummary");
       if (infoEl) {
+        const patInfo = loadedTemplate.carPatterns?.length
+          ? ` + ${loadedTemplate.carPatterns.length} Car Patterns RGB listos en Diseño`
+          : "";
         const extra = loadedTemplate.format === "PSD"
-          ? ` · PSD nativo (${loadedTemplate.layerCount ?? 0} capas; ${loadedTemplate.partsOverlayCanvas ? "piezas/stickers oficiales preservados" : "guía wireframe lista"})`
+          ? ` · PSD nativo (${loadedTemplate.layerCount ?? 0} capas; ${loadedTemplate.partsOverlayCanvas ? "piezas/stickers oficiales preservados" : "guía wireframe lista"}${patInfo})`
           : "";
         infoEl.textContent = analysis.summary + extra;
       }
+      state.psdPatternName = null;
+      renderPsdPatternSelector();
       viewMode = "uv";
       updateViewModeUI();
       renderZoneList();
@@ -1161,6 +1245,8 @@ export function initSkinsStudio(): void {
 
   byId<HTMLButtonElement>("skCleanCanvasBtn")?.addEventListener("click", () => {
     state.pattern = "freeform";
+    state.surfaceTexture = "none";
+    state.psdPatternName = null;
     state.decals = [];
     state.strokes = [];
     selectedDecalId = null;
@@ -1201,6 +1287,7 @@ export function initSkinsStudio(): void {
   const bindColor = (id: string, key: keyof SkinDesignState["palette"]) => {
     byId<HTMLInputElement>(id)?.addEventListener("input", (e) => {
       state.palette[key] = (e.target as HTMLInputElement).value;
+      renderPatternGallery();
       updateExportValidation();
       scheduleRender();
     });
@@ -1214,7 +1301,44 @@ export function initSkinsStudio(): void {
 
   byId<HTMLSelectElement>("skPatternSelect")?.addEventListener("change", (e) => {
     state.pattern = (e.target as HTMLSelectElement).value as SkinDesignState["pattern"];
+    state.psdPatternName = null;
+    renderPatternGallery();
+    renderPsdPatternSelector();
     scheduleRender();
+  });
+  byId<HTMLSelectElement>("skSurfaceTexture")?.addEventListener("change", (e) => {
+    state.surfaceTexture = (e.target as HTMLSelectElement).value as SurfaceTexture;
+    renderPatternGallery();
+    scheduleRender();
+  });
+  byId<HTMLSelectElement>("skPsdPatternSelect")?.addEventListener("change", (e) => {
+    const val = (e.target as HTMLSelectElement).value;
+    state.psdPatternName = val || null;
+    renderPatternGallery();
+    scheduleRender();
+    if (val) setStatus(`Patrón oficial del .PSD activado (${val}) — recoloreado con tu paleta`, "ok");
+  });
+  byId<HTMLButtonElement>("skPsdPatternClear")?.addEventListener("click", () => {
+    state.psdPatternName = null;
+    renderPsdPatternSelector();
+    renderPatternGallery();
+    scheduleRender();
+    setStatus("Volviendo a los patrones MMT del estudio.", "neutral");
+  });
+  document.querySelectorAll<HTMLButtonElement>("[data-quick-pal]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const parts = (btn.dataset.quickPal || "").split(",");
+      if (parts.length < 5) return;
+      state.palette.primary = parts[0];
+      state.palette.secondary = parts[1];
+      state.palette.accent = parts[2];
+      state.palette.detail = parts[3];
+      state.pattern = parts[4] as PatternStyle;
+      state.psdPatternName = null;
+      syncControlsFromState();
+      scheduleRender();
+      setStatus(`Paleta aplicada: ${btn.textContent?.trim() || "Pro"}`, "ok");
+    });
   });
   byId<HTMLSelectElement>("skFontSelect")?.addEventListener("change", (e) => {
     state.fontStyle = (e.target as HTMLSelectElement).value as SkinDesignState["fontStyle"];
@@ -1504,8 +1628,22 @@ export function initSkinsStudio(): void {
 
       // AUTO-APLICAR TODO LIMPIO (aplica el patrón real de pintura + paleta + acabado + logos en Sponsor Blocks)
       state.name = `${plan.title} · #${state.customNumber}`;
-      const allowedPatterns = new Set(["freeform", "endurance", "sprint", "carbon-stealth", "tricolor", "clean-minimal"]);
+      const allowedPatterns = new Set([
+        "freeform",
+        "endurance",
+        "sprint",
+        "carbon-stealth",
+        "tricolor",
+        "clean-minimal",
+        "geo-camo",
+        "hex-tech",
+        "apex-fade",
+        "heritage-gulf",
+        "factory-chevron",
+        "lightning-drift",
+      ]);
       state.pattern = (allowedPatterns.has(plan.pattern) ? plan.pattern : "endurance") as SkinDesignState["pattern"];
+      state.psdPatternName = null;
       state.strokes = [];
       state.palette = {
         ...state.palette,
@@ -1640,7 +1778,7 @@ export function initSkinsStudio(): void {
     const btn = byId<HTMLButtonElement>("skExportTgaBtn")!;
     btn.disabled = true;
     try {
-      const fn = await exportSingleDiffuseTga(state, (m) => setStatus(m), loadedTemplate?.partsOverlayCanvas);
+      const fn = await exportSingleDiffuseTga(state, (m) => setStatus(m), loadedTemplate?.partsOverlayCanvas, getActivePsdPatternCanvas());
       setStatus(`Exportado ${fn} (${state.resolution}px)`, "ok");
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Error exportando TGA", "err");
@@ -1668,7 +1806,7 @@ export function initSkinsStudio(): void {
     try {
       const car = getCarById(state.carId);
       const shots = customPhotoShots ?? buildDefaultPhotoGuide(car, state);
-      const fn = await exportIracingZipBundle(car, state, shots, (m) => setStatus(m), loadedTemplate?.partsOverlayCanvas);
+      const fn = await exportIracingZipBundle(car, state, shots, (m) => setStatus(m), loadedTemplate?.partsOverlayCanvas, getActivePsdPatternCanvas());
       setStatus(`Paquete listo: ${fn}`, "ok");
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Error generando ZIP", "err");

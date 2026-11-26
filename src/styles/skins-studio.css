@@ -792,3 +792,109 @@
   line-height: 1.55;
   color: var(--sk-muted);
 }
+
+/* Visual Livery Pattern Gallery & Pro Palettes */
+.sk-pattern-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.sk-pattern-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 7px;
+  border: 1px solid var(--sk-border);
+  background: #080c12;
+  color: var(--sk-muted);
+  cursor: pointer;
+  transition: border-color 0.14s ease, transform 0.12s ease, background 0.14s ease;
+  text-align: center;
+}
+
+.sk-pattern-card:hover {
+  border-color: var(--sk-border-strong);
+  color: var(--sk-text);
+  transform: translateY(-1px);
+}
+
+.sk-pattern-card.is-active {
+  border-color: var(--sk-accent);
+  background: rgba(0, 230, 153, 0.1);
+  color: #ffffff;
+  box-shadow: 0 0 0 1px rgba(0, 230, 153, 0.28);
+}
+
+.sk-pattern-card canvas {
+  width: 100%;
+  height: 34px;
+  border-radius: 4px;
+  display: block;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sk-pattern-card span {
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sk-psd-patterns {
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(0, 230, 153, 0.07);
+  border: 1px solid rgba(0, 230, 153, 0.32);
+}
+
+.sk-pal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.sk-pal-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 7px;
+  border-radius: 6px;
+  border: 1px solid var(--sk-border);
+  background: #080c12;
+  color: var(--sk-text);
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: border-color 0.14s ease, background 0.14s ease;
+}
+
+.sk-pal-chip:hover {
+  border-color: var(--sk-accent);
+  background: rgba(0, 230, 153, 0.08);
+}
+
+.sk-pal-dots {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.sk-pal-dots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: inline-block;
+}
+
+.sk-pal-dots i + i {
+  margin-left: -3px;
+}

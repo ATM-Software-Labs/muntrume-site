@@ -2,6 +2,12 @@ import { readPsd, type Layer } from "ag-psd";
 import { decodeTgaToImageData } from "./tga-codec";
 import type { TemplateAnalysisResult, ZoneKey, ZoneRect } from "./types";
 
+export interface PsdCarPattern {
+  name: string;
+  label: string;
+  canvas: HTMLCanvasElement;
+}
+
 export interface LoadedTemplate {
   canvas: HTMLCanvasElement;
   /** Official iRacing Wireframe / Number Blocks guide layer (never exported) */
@@ -10,6 +16,8 @@ export interface LoadedTemplate {
   partsOverlayCanvas?: HTMLCanvasElement | null;
   /** Official iRacing Mask layer used for clean panel bounding-box detection */
   maskCanvas?: HTMLCanvasElement | null;
+  /** Official iRacing 3-channel RGB Car Patterns extracted locally from the PSD */
+  carPatterns?: PsdCarPattern[];
   width: number;
   height: number;
   filename: string;
@@ -70,6 +78,36 @@ function drawMatchingPsdLayers(
     drawn++;
   }
   return drawn;
+}
+
+function extractCarPatternsFromPsd(layers: Layer[] | undefined, w: number, h: number): PsdCarPattern[] {
+  const out: PsdCarPattern[] = [];
+  const walk = (list: Layer[] | undefined, inPatternsGroup: boolean) => {
+    if (!Array.isArray(list)) return;
+    for (const layer of list) {
+      const name = String(layer.name || "").trim();
+      const isPatternsGroup = inPatternsGroup || /car\s*patterns/i.test(name);
+      if (Array.isArray(layer.children) && layer.children.length > 0) {
+        walk(layer.children, isPatternsGroup);
+        continue;
+      }
+      if (!isPatternsGroup || !layer.canvas) continue;
+      // Draw onto a full-size canvas respecting layer.left / layer.top offset
+      const c = document.createElement("canvas");
+      c.width = w;
+      c.height = h;
+      const ctx = c.getContext("2d");
+      if (!ctx) continue;
+      ctx.drawImage(layer.canvas, layer.left ?? 0, layer.top ?? 0);
+      const match = name.match(/(\d+)/);
+      const numLabel = match ? `Patrón iRacing #${match[1]}` : name.replace(/\.tga$/i, "");
+      out.push({ name, label: numLabel, canvas: c });
+    }
+  };
+  walk(layers, false);
+  // Sort ascending by pattern number so #001..#024 appear in natural order
+  out.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+  return out;
 }
 
 function countPsdLayers(layers: Layer[] | undefined): number {
@@ -154,7 +192,10 @@ export async function loadTemplateFile(file: File): Promise<LoadedTemplate> {
         )
       : 0;
 
-    // 4. Analysis canvas (prefer crisp Mask, otherwise Wireframe)
+    // 4. Official Car Patterns (3-channel RGB paint-shop patterns, client-side only)
+    const carPatterns = extractCarPatternsFromPsd(psd.children, w, h);
+
+    // 5. Analysis canvas (prefer crisp Mask, otherwise Wireframe)
     const analysisCanvas = maskCount > 0 ? maskCanvas : wfCanvas;
 
     return {
@@ -162,6 +203,7 @@ export async function loadTemplateFile(file: File): Promise<LoadedTemplate> {
       wireframeCanvas: wfCount > 0 ? wfCanvas : null,
       partsOverlayCanvas: partsCount > 0 ? partsCanvas : null,
       maskCanvas: maskCount > 0 ? maskCanvas : null,
+      carPatterns: carPatterns.length > 0 ? carPatterns : undefined,
       width: w,
       height: h,
       filename: file.name,

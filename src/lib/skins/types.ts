@@ -49,7 +49,21 @@ export interface DriverProfile {
   accentHex?: string;
 }
 
-export type PatternStyle = "freeform" | "endurance" | "sprint" | "carbon-stealth" | "tricolor" | "clean-minimal";
+export type PatternStyle =
+  | "freeform"
+  | "endurance"
+  | "sprint"
+  | "carbon-stealth"
+  | "tricolor"
+  | "clean-minimal"
+  | "geo-camo"
+  | "hex-tech"
+  | "apex-fade"
+  | "heritage-gulf"
+  | "factory-chevron"
+  | "lightning-drift";
+
+export type SurfaceTexture = "none" | "carbon" | "hex-mesh" | "speed-lines" | "metallic-flake";
 
 export interface BrushStroke {
   color: string;
@@ -109,6 +123,8 @@ export interface SkinDesignState {
   customerId: string;
   resolution: ResolutionMode;
   pattern: PatternStyle;
+  surfaceTexture?: SurfaceTexture;
+  psdPatternName?: string | null;
   palette: PaletteConfig;
   spec: SpecConfig;
   fontStyle: "racing-bold" | "condensed-gt" | "mono-tech";

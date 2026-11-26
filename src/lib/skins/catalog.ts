@@ -441,6 +441,96 @@ export const SKIN_PRESETS: PresetDefinition[] = [
     spec: { finish: "matte", metallic: 10, roughness: 78, clearcoat: 20, carbonAccent: false },
     fontStyle: "condensed-gt",
   },
+  {
+    id: "geo-camo",
+    name: "DTM Geo-Camo",
+    tagline: "Camuflaje geométrico splinter en 4 tonos estilo Audi Sport / DTM",
+    palette: {
+      primary: "#0f141c",
+      secondary: "#273447",
+      accent: "#ef4444",
+      detail: "#f8fafc",
+      numberColor: "#090b0f",
+      numberBg: "#f8fafc",
+    },
+    spec: { finish: "matte", metallic: 16, roughness: 76, clearcoat: 22, carbonAccent: false },
+    fontStyle: "condensed-gt",
+  },
+  {
+    id: "hex-tech",
+    name: "Hex Carbon Tech",
+    tagline: "Malla hexagonal degradada de resistencia con cortes cyber neón",
+    palette: {
+      primary: "#090d14",
+      secondary: "#132238",
+      accent: "#06b6d4",
+      detail: "#00ff9d",
+      numberColor: "#090b0f",
+      numberBg: "#f8fafc",
+    },
+    spec: { finish: "satin", metallic: 38, roughness: 34, clearcoat: 74, carbonAccent: true },
+    fontStyle: "mono-tech",
+  },
+  {
+    id: "apex-fade",
+    name: "Apex Gradient Fade",
+    tagline: "Degradado fluido de fábrica GT World Challenge con cortes de velocidad",
+    palette: {
+      primary: "#0a1128",
+      secondary: "#1d4ed8",
+      accent: "#f97316",
+      detail: "#ffffff",
+      numberColor: "#090b0f",
+      numberBg: "#ffffff",
+    },
+    spec: { finish: "metallic", metallic: 76, roughness: 20, clearcoat: 92, carbonAccent: false },
+    fontStyle: "racing-bold",
+  },
+  {
+    id: "heritage-gulf",
+    name: "Heritage Classic",
+    tagline: "Banda central ancha clásica de resistencia con doble filete de contraste",
+    palette: {
+      primary: "#38bdf8",
+      secondary: "#0369a1",
+      accent: "#f97316",
+      detail: "#0f172a",
+      numberColor: "#0f172a",
+      numberBg: "#ffffff",
+    },
+    spec: { finish: "gloss", metallic: 14, roughness: 12, clearcoat: 95, carbonAccent: false },
+    fontStyle: "racing-bold",
+  },
+  {
+    id: "factory-chevron",
+    name: "Factory V-Chevron",
+    tagline: "Chevrones simétricos en V estilo equipo oficial Porsche / BMW GT3",
+    palette: {
+      primary: "#f8fafc",
+      secondary: "#0f172a",
+      accent: "#dc2626",
+      detail: "#facc15",
+      numberColor: "#ffffff",
+      numberBg: "#0f172a",
+    },
+    spec: { finish: "gloss", metallic: 18, roughness: 16, clearcoat: 92, carbonAccent: false },
+    fontStyle: "condensed-gt",
+  },
+  {
+    id: "lightning-drift",
+    name: "Apex Lightning",
+    tagline: "Cortes eléctricos de alto contraste y energía para GT3 / Fórmula",
+    palette: {
+      primary: "#0b0f17",
+      secondary: "#1e1b4b",
+      accent: "#eab308",
+      detail: "#38bdf8",
+      numberColor: "#090b0f",
+      numberBg: "#facc15",
+    },
+    spec: { finish: "metallic", metallic: 66, roughness: 24, clearcoat: 88, carbonAccent: false },
+    fontStyle: "condensed-gt",
+  },
 ];
 
 export interface BuiltinDecalAsset {
@@ -537,7 +627,7 @@ export function createDefaultDecals(): DecalLayer[] {
   ];
 }
 
-export function createInitialDesign(carId = "porsche992rgt3", driverId = "albertot", presetId: PresetDefinition["id"] = "freeform"): SkinDesignState {
+export function createInitialDesign(carId = "porsche992rgt3", driverId = "albertot", presetId: PresetDefinition["id"] = "endurance"): SkinDesignState {
   const car = CAR_PROFILES.find((c) => c.id === carId) ?? CAR_PROFILES[0];
   const driver = DRIVER_PROFILES.find((d) => d.id === driverId) ?? DRIVER_PROFILES[0];
   const preset = SKIN_PRESETS.find((p) => p.id === presetId) ?? SKIN_PRESETS[0];
@@ -551,9 +641,11 @@ export function createInitialDesign(carId = "porsche992rgt3", driverId = "albert
     customNumber: driver.number,
     customerId: driver.customerId,
     resolution: 2048,
-    pattern: "freeform",
+    pattern: preset.id,
+    surfaceTexture: "none",
+    psdPatternName: null,
     palette: { ...preset.palette },
-    spec: { ...preset.spec, carbonAccent: false },
+    spec: { ...preset.spec },
     fontStyle: preset.fontStyle,
     showNumberOnCar: false,
     zones: cloneZones(car.defaultZones),
