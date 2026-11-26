@@ -1,176 +1,26 @@
 {
-  "schema_version": 1,
-  "generated_at": "2026-11-26T20:48:37.521Z",
-  "total_cars": 128,
-  "psd_calibrated_count": 0,
-  "categories": {
-    "GTP / Hypercar": [
-      "acuraarx06gtp",
-      "amvalkyriegtp",
-      "bmwlmdh",
-      "c7vettedp",
-      "cadillacvseriesrgtp",
-      "ferrari499p",
-      "nissangtpzxt",
-      "porsche963gtp",
-      "rileydp"
-    ],
-    "GT3": [
-      "acuransxevo22gt3",
-      "amvantageevogt3",
-      "audir8gt3",
-      "audir8lmsevo2gt3",
-      "bmwm4gt3",
-      "bmwm8gte",
-      "bmwz4gt3",
-      "c8rvettegte",
-      "chevyvettez06rgt3",
-      "ferrari296challenge",
-      "ferrari296gt3",
-      "ferrari488gt3",
-      "ferrari488gte",
-      "ferrarievogt3",
-      "fordgt",
-      "fordgt2017",
-      "fordmustanggt3",
-      "lamborghinievogt3",
-      "mclaren720sgt3",
-      "mercedesamgevogt3",
-      "mercedesamggt3",
-      "porsche911rgt3",
-      "porsche991rsr",
-      "porsche992rgt3"
-    ],
-    "GT4 & Cup": [
-      "amvantagegt4",
-      "bmwm2csr",
-      "bmwm2g87",
-      "bmwm4evogt4",
-      "bmwm4gt4",
-      "fordmustanggt4",
-      "mclaren570sgt4",
-      "mercedesamggt4",
-      "porsche718gt4",
-      "porsche911cup",
-      "porsche992cup",
-      "porsche9922cup",
-      "porschemissionr",
-      "renaultcliocup"
-    ],
-    "TCR & Producción": [
-      "astonmartin",
-      "audi90gto",
-      "audirs3lms",
-      "audirs3lmsgen2",
-      "c6r",
-      "cadillacctsvr",
-      "caterham",
-      "crosscartn11",
-      "dallara",
-      "fordfiestarswrc",
-      "fordv8sc",
-      "fr500s",
-      "hondacivictyper",
-      "hyundaielantracn7",
-      "hyundaivelostern",
-      "jettatdi",
-      "kiaoptima",
-      "mclarenmp4",
-      "ministock",
-      "mx5",
-      "porsche919",
-      "raygr22",
-      "rt2000",
-      "rufrt12r",
-      "safety",
-      "silvercrown",
-      "solstice",
-      "specracer",
-      "sprint",
-      "srx",
-      "subaruwrxsti",
-      "supercars",
-      "toyotagr86",
-      "v8supercars",
-      "vwbeetlegrc",
-      "williamsfw31"
-    ],
-    "Fórmula": [
-      "audir18",
-      "dallaradw12",
-      "dallaraf3",
-      "dallarail15",
-      "dallarair01",
-      "dallarair18",
-      "formulair04",
-      "formulamazda",
-      "formularenault20",
-      "formularenault35",
-      "formulavee",
-      "indypropm18",
-      "lotus49",
-      "lotus79",
-      "mclarenmp430",
-      "mercedesw12",
-      "mercedesw13",
-      "superformulalights324",
-      "superformulasf23",
-      "usf2000usf17"
-    ],
-    "LMP2 / LMP3": [
-      "dallarap217",
-      "hpdarx01c",
-      "ligierjsp320",
-      "radical",
-      "radicalsr10"
-    ],
-    "Dirt / Rallycross": [
-      "dirtlatemodel",
-      "dirtmicrosprint",
-      "dirtmidget",
-      "dirtministock",
-      "dirtmodified",
-      "dirtsprint",
-      "dirtstreetstock",
-      "dirtumpmod"
-    ],
-    "NASCAR / Oval": [
-      "euronascar",
-      "latemodel",
-      "latemodel2023",
-      "legends",
-      "protrucks",
-      "skmodified",
-      "stockcarbrasil",
-      "stockcars",
-      "stockcars2",
-      "streetstock",
-      "superlatemodel",
-      "trucks"
-    ]
-  },
   "cars": [
     {
       "car_slug": "acuraarx06gtp",
-      "name": "Acuraarx 06 GTP",
+      "name": "Acura ARX06 GTP",
       "brand": "Acura",
       "category": "GTP / Hypercar",
       "archetype": "prototype_gtp",
       "iracing_paint_dir": "paint/acuraarx06gtp/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
     {
       "car_slug": "acuransxevo22gt3",
-      "name": "Acuransxevo 22 Gt 3",
+      "name": "Acura NSX EVO22 GT3",
       "brand": "Acura",
       "category": "GT3",
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/acuransxevo22gt3/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
@@ -211,6 +61,55 @@
       "wireframe_url": null
     },
     {
+      "car_slug": "arca_chevy_ss",
+      "name": "ARCA Chevy SS",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "extracted"
+    },
+    {
+      "car_slug": "arca_ford_mustang",
+      "name": "ARCA Ford Mustang",
+      "brand": "Ford",
+      "category": "NASCAR / Oval",
+      "uv_status": "extracted"
+    },
+    {
+      "car_slug": "arca_toyota_camry",
+      "name": "ARCA Toyota Camry",
+      "brand": "Toyota",
+      "category": "NASCAR / Oval",
+      "uv_status": "extracted"
+    },
+    {
+      "car_slug": "aston_martin_dbr9_gt1",
+      "name": "Aston Martin DBR9 GT1",
+      "brand": "Aston Martin",
+      "category": "GT4 & Cup",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "aston_martin_valkyrie_gtp",
+      "name": "Aston Martin Valkyrie GTP",
+      "brand": "Aston Martin",
+      "category": "GTP / Hypercar",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "aston_martin_vantage_evo_gt3",
+      "name": "Aston Martin Vantage EVO GT3",
+      "brand": "Aston Martin",
+      "category": "GT3",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "aston_martin_vantage_gt4",
+      "name": "Aston Martin Vantage GT4",
+      "brand": "Aston Martin",
+      "category": "GT4 & Cup",
+      "uv_status": "archetype"
+    },
+    {
       "car_slug": "astonmartin",
       "name": "Astonmartin",
       "brand": "Aston Martin",
@@ -224,7 +123,7 @@
     },
     {
       "car_slug": "audi90gto",
-      "name": "Audi 90 Gto",
+      "name": "Audi 90 GTO",
       "brand": "Audi",
       "category": "TCR & Producción",
       "archetype": "tcr_touring",
@@ -236,11 +135,49 @@
     },
     {
       "car_slug": "audir18",
-      "name": "Audir 18",
+      "name": "Audi R18",
       "brand": "Audi",
-      "category": "Fórmula",
+      "category": "GTP / Hypercar",
       "archetype": "open_wheel",
       "iracing_paint_dir": "paint/audir18/",
+      "resolution": "2048x2048",
+      "uv_status": "archetype",
+      "uv_url": null,
+      "wireframe_url": null
+    },
+    {
+      "car_slug": "audi_r8_lms_evo_ii_gt3",
+      "name": "Audi R8 LMS EVO II GT3",
+      "brand": "Audi",
+      "category": "GT3",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "audi_r8_lms_gt3",
+      "name": "Audi R8 LMS GT3",
+      "brand": "Audi",
+      "category": "GT3",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "audirs3lms",
+      "name": "Audi RS3 LMS",
+      "brand": "Audi",
+      "category": "TCR & Producción",
+      "archetype": "tcr_touring",
+      "iracing_paint_dir": "paint/audirs3lms/",
+      "resolution": "2048x2048",
+      "uv_status": "archetype",
+      "uv_url": null,
+      "wireframe_url": null
+    },
+    {
+      "car_slug": "audirs3lmsgen2",
+      "name": "Audi RS3 LMS Gen 2",
+      "brand": "Audi",
+      "category": "TCR & Producción",
+      "archetype": "tcr_touring",
+      "iracing_paint_dir": "paint/audirs3lmsgen2/",
       "resolution": "2048x2048",
       "uv_status": "archetype",
       "uv_url": null,
@@ -271,24 +208,81 @@
       "wireframe_url": null
     },
     {
-      "car_slug": "audirs3lms",
-      "name": "Audirs 3 Lms",
-      "brand": "Audi",
+      "car_slug": "bmw_m_hybrid_v8",
+      "name": "BMW M Hybrid V8",
+      "brand": "BMW",
       "category": "TCR & Producción",
-      "archetype": "tcr_touring",
-      "iracing_paint_dir": "paint/audirs3lms/",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "bmw_m2_cs_racing",
+      "name": "BMW M2 CS Racing",
+      "brand": "BMW",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "bmw_m2_racing_g87",
+      "name": "BMW M2 Racing G87",
+      "brand": "BMW",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "bmwm4evogt4",
+      "name": "BMW M4 EVO GT4",
+      "brand": "BMW",
+      "category": "GT4 & Cup",
+      "archetype": "gt3_gt4",
+      "iracing_paint_dir": "paint/bmwm4evogt4/",
       "resolution": "2048x2048",
       "uv_status": "archetype",
       "uv_url": null,
       "wireframe_url": null
     },
     {
-      "car_slug": "audirs3lmsgen2",
-      "name": "Audirs 3 Lmsgen 2",
-      "brand": "Audi",
-      "category": "TCR & Producción",
-      "archetype": "tcr_touring",
-      "iracing_paint_dir": "paint/audirs3lmsgen2/",
+      "car_slug": "bmwm4gt3",
+      "name": "BMW M4 GT3",
+      "brand": "BMW",
+      "category": "GT3",
+      "archetype": "gt3_gt4",
+      "iracing_paint_dir": "paint/bmwm4gt3/",
+      "resolution": "2048x2048",
+      "uv_status": "extracted",
+      "uv_url": null,
+      "wireframe_url": null
+    },
+    {
+      "car_slug": "bmwm4gt4",
+      "name": "BMW M4 GT4",
+      "brand": "BMW",
+      "category": "GT4 & Cup",
+      "archetype": "gt3_gt4",
+      "iracing_paint_dir": "paint/bmwm4gt4/",
+      "resolution": "2048x2048",
+      "uv_status": "extracted",
+      "uv_url": null,
+      "wireframe_url": null
+    },
+    {
+      "car_slug": "bmwm8gte",
+      "name": "BMW M8 GTE",
+      "brand": "BMW",
+      "category": "GT4 & Cup",
+      "archetype": "gt3_gt4",
+      "iracing_paint_dir": "paint/bmwm8gte/",
+      "resolution": "2048x2048",
+      "uv_status": "archetype",
+      "uv_url": null,
+      "wireframe_url": null
+    },
+    {
+      "car_slug": "bmwz4gt3",
+      "name": "BMW Z4 GT3",
+      "brand": "BMW",
+      "category": "GT3",
+      "archetype": "gt3_gt4",
+      "iracing_paint_dir": "paint/bmwz4gt3/",
       "resolution": "2048x2048",
       "uv_status": "archetype",
       "uv_url": null,
@@ -331,64 +325,11 @@
       "wireframe_url": null
     },
     {
-      "car_slug": "bmwm4evogt4",
-      "name": "Bmwm 4 Evogt 4",
-      "brand": "BMW",
-      "category": "GT4 & Cup",
-      "archetype": "gt3_gt4",
-      "iracing_paint_dir": "paint/bmwm4evogt4/",
-      "resolution": "2048x2048",
-      "uv_status": "archetype",
-      "uv_url": null,
-      "wireframe_url": null
-    },
-    {
-      "car_slug": "bmwm4gt3",
-      "name": "Bmwm 4 Gt 3",
-      "brand": "BMW",
-      "category": "GT3",
-      "archetype": "gt3_gt4",
-      "iracing_paint_dir": "paint/bmwm4gt3/",
-      "resolution": "2048x2048",
-      "uv_status": "archetype",
-      "uv_url": null,
-      "wireframe_url": null
-    },
-    {
-      "car_slug": "bmwm4gt4",
-      "name": "Bmwm 4 Gt 4",
-      "brand": "BMW",
-      "category": "GT4 & Cup",
-      "archetype": "gt3_gt4",
-      "iracing_paint_dir": "paint/bmwm4gt4/",
-      "resolution": "2048x2048",
-      "uv_status": "archetype",
-      "uv_url": null,
-      "wireframe_url": null
-    },
-    {
-      "car_slug": "bmwm8gte",
-      "name": "Bmwm 8 Gte",
-      "brand": "BMW",
-      "category": "GT3",
-      "archetype": "gt3_gt4",
-      "iracing_paint_dir": "paint/bmwm8gte/",
-      "resolution": "2048x2048",
-      "uv_status": "archetype",
-      "uv_url": null,
-      "wireframe_url": null
-    },
-    {
-      "car_slug": "bmwz4gt3",
-      "name": "Bmwz 4 Gt 3",
-      "brand": "BMW",
-      "category": "GT3",
-      "archetype": "gt3_gt4",
-      "iracing_paint_dir": "paint/bmwz4gt3/",
-      "resolution": "2048x2048",
-      "uv_status": "archetype",
-      "uv_url": null,
-      "wireframe_url": null
+      "car_slug": "buick_lesabre_1987",
+      "name": "Buick Lesabre 1987",
+      "brand": "Buick",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
     },
     {
       "car_slug": "c6r",
@@ -428,25 +369,25 @@
     },
     {
       "car_slug": "cadillacctsvr",
-      "name": "Cadillacctsvr",
+      "name": "Cadillac CTS-VR",
       "brand": "Cadillac",
       "category": "TCR & Producción",
       "archetype": "tcr_touring",
       "iracing_paint_dir": "paint/cadillacctsvr/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
     {
       "car_slug": "cadillacvseriesrgtp",
-      "name": "Cadillacvseriesrgtp",
+      "name": "Cadillac VSeriesR GTP",
       "brand": "Cadillac",
       "category": "GTP / Hypercar",
       "archetype": "prototype_gtp",
       "iracing_paint_dir": "paint/cadillacvseriesrgtp/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
@@ -463,6 +404,146 @@
       "wireframe_url": null
     },
     {
+      "car_slug": "caterham_420r",
+      "name": "Caterham 420R",
+      "brand": "Caterham",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "caterham_academy",
+      "name": "Caterham Academy",
+      "brand": "Caterham",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "chevrolet_camaro_class_b",
+      "name": "Chevrolet Camaro Class B",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "chevrolet_camaro_class_b_2019",
+      "name": "Chevrolet Camaro Class B 2019",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "chevrolet_camaro_zl1_gen_6",
+      "name": "Chevrolet Camaro ZL1 Gen 6",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "extracted"
+    },
+    {
+      "car_slug": "chevrolet_camaro_zl1_nextgen",
+      "name": "Chevrolet Camaro ZL1 Nextgen",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "extracted"
+    },
+    {
+      "car_slug": "chevrolet_corvette_c7_daytona_prototype",
+      "name": "Chevrolet Corvette C7 Daytona Prototype",
+      "brand": "Chevrolet",
+      "category": "LMP2 / LMP3",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "chevrolet_corvette_c8r_gte",
+      "name": "Chevrolet Corvette C8R GTE",
+      "brand": "Chevrolet",
+      "category": "GT4 & Cup",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "chevrolet_corvette_z06_gt3r",
+      "name": "Chevrolet Corvette Z06 GT3r",
+      "brand": "Chevrolet",
+      "category": "GT3",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "chevrolet_impala_class_a",
+      "name": "Chevrolet Impala Class A",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "chevrolet_impala_class_b_2011",
+      "name": "Chevrolet Impala Class B 2011",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "chevrolet_impala_gen_4",
+      "name": "Chevrolet Impala GEN 4",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "chevrolet_impala_ss_class_b",
+      "name": "Chevrolet Impala SS Class B",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "extracted"
+    },
+    {
+      "car_slug": "chevrolet_monte_carlo_1987",
+      "name": "Chevrolet Monte Carlo 1987",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "chevrolet_monte_carlo_gen4",
+      "name": "Chevrolet Monte Carlo Gen4",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "extracted"
+    },
+    {
+      "car_slug": "chevrolet_monte_carlo_gen4_ss",
+      "name": "Chevrolet Monte Carlo Gen4 SS",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "extracted"
+    },
+    {
+      "car_slug": "chevrolet_silverado_truck",
+      "name": "Chevrolet Silverado Truck",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "chevrolet_silverado_truck_2015",
+      "name": "Chevrolet Silverado Truck 2015",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "chevrolet_silverado_truck_2019",
+      "name": "Chevrolet Silverado Truck 2019",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "chevrolet_ss",
+      "name": "Chevrolet SS",
+      "brand": "Chevrolet",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
       "car_slug": "chevyvettez06rgt3",
       "name": "Chevyvettez 06 Rgt 3",
       "brand": "Chevrolet",
@@ -473,6 +554,13 @@
       "uv_status": "archetype",
       "uv_url": null,
       "wireframe_url": null
+    },
+    {
+      "car_slug": "corvette_c6r",
+      "name": "Corvette C6r",
+      "brand": "Chevrolet",
+      "category": "GT4 & Cup",
+      "uv_status": "archetype"
     },
     {
       "car_slug": "crosscartn11",
@@ -495,6 +583,49 @@
       "iracing_paint_dir": "paint/dallara/",
       "resolution": "2048x2048",
       "uv_status": "archetype",
+      "uv_url": null,
+      "wireframe_url": null
+    },
+    {
+      "car_slug": "dallara_f312_f3",
+      "name": "Dallara F312 F3",
+      "brand": "Dallara",
+      "category": "Fórmula",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "dallarail15",
+      "name": "Dallara IL15",
+      "brand": "Dallara",
+      "category": "TCR & Producción",
+      "archetype": "open_wheel",
+      "iracing_paint_dir": "paint/dallarail15/",
+      "resolution": "2048x2048",
+      "uv_status": "archetype",
+      "uv_url": null,
+      "wireframe_url": null
+    },
+    {
+      "car_slug": "dallarair01",
+      "name": "Dallara IR01",
+      "brand": "Dallara",
+      "category": "Fórmula",
+      "archetype": "open_wheel",
+      "iracing_paint_dir": "paint/dallarair01/",
+      "resolution": "2048x2048",
+      "uv_status": "archetype",
+      "uv_url": null,
+      "wireframe_url": null
+    },
+    {
+      "car_slug": "dallarap217",
+      "name": "Dallara P217",
+      "brand": "Dallara",
+      "category": "LMP2 / LMP3",
+      "archetype": "prototype_gtp",
+      "iracing_paint_dir": "paint/dallarap217/",
+      "resolution": "2048x2048",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
@@ -523,30 +654,6 @@
       "wireframe_url": null
     },
     {
-      "car_slug": "dallarail15",
-      "name": "Dallarail 15",
-      "brand": "Dallara",
-      "category": "Fórmula",
-      "archetype": "open_wheel",
-      "iracing_paint_dir": "paint/dallarail15/",
-      "resolution": "2048x2048",
-      "uv_status": "archetype",
-      "uv_url": null,
-      "wireframe_url": null
-    },
-    {
-      "car_slug": "dallarair01",
-      "name": "Dallarair 01",
-      "brand": "Dallara",
-      "category": "Fórmula",
-      "archetype": "open_wheel",
-      "iracing_paint_dir": "paint/dallarair01/",
-      "resolution": "2048x2048",
-      "uv_status": "archetype",
-      "uv_url": null,
-      "wireframe_url": null
-    },
-    {
       "car_slug": "dallarair18",
       "name": "Dallarair 18",
       "brand": "Dallara",
@@ -559,56 +666,44 @@
       "wireframe_url": null
     },
     {
-      "car_slug": "dallarap217",
-      "name": "Dallarap 217",
-      "brand": "Dallara",
-      "category": "LMP2 / LMP3",
-      "archetype": "prototype_gtp",
-      "iracing_paint_dir": "paint/dallarap217/",
-      "resolution": "2048x2048",
-      "uv_status": "archetype",
-      "uv_url": null,
-      "wireframe_url": null
-    },
-    {
       "car_slug": "dirtlatemodel",
-      "name": "Dirtlatemodel",
+      "name": "Dirt Late Model",
       "brand": "iRacing",
       "category": "Dirt / Rallycross",
       "archetype": "stock_nascar",
       "iracing_paint_dir": "paint/dirtlatemodel/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
     {
       "car_slug": "dirtmicrosprint",
-      "name": "Dirtmicrosprint",
+      "name": "Dirt Micro Sprint",
       "brand": "iRacing",
       "category": "Dirt / Rallycross",
       "archetype": "stock_nascar",
       "iracing_paint_dir": "paint/dirtmicrosprint/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
     {
       "car_slug": "dirtmidget",
-      "name": "Dirtmidget",
+      "name": "Dirt Midget",
       "brand": "iRacing",
       "category": "Dirt / Rallycross",
       "archetype": "stock_nascar",
       "iracing_paint_dir": "paint/dirtmidget/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
     {
       "car_slug": "dirtministock",
-      "name": "Dirtministock",
+      "name": "Dirt Mini Stock",
       "brand": "iRacing",
       "category": "Dirt / Rallycross",
       "archetype": "stock_nascar",
@@ -620,39 +715,46 @@
     },
     {
       "car_slug": "dirtmodified",
-      "name": "Dirtmodified",
+      "name": "Dirt Modified",
       "brand": "iRacing",
       "category": "Dirt / Rallycross",
       "archetype": "stock_nascar",
       "iracing_paint_dir": "paint/dirtmodified/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
     {
       "car_slug": "dirtsprint",
-      "name": "Dirtsprint",
+      "name": "Dirt Sprint",
       "brand": "iRacing",
       "category": "Dirt / Rallycross",
       "archetype": "stock_nascar",
       "iracing_paint_dir": "paint/dirtsprint/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
     {
       "car_slug": "dirtstreetstock",
-      "name": "Dirtstreetstock",
+      "name": "Dirt Street Stock",
       "brand": "iRacing",
       "category": "Dirt / Rallycross",
       "archetype": "stock_nascar",
       "iracing_paint_dir": "paint/dirtstreetstock/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
+    },
+    {
+      "car_slug": "dirt_ump_modified",
+      "name": "Dirt UMP Modified",
+      "brand": "iRacing",
+      "category": "Dirt / Rallycross",
+      "uv_status": "extracted"
     },
     {
       "car_slug": "dirtumpmod",
@@ -665,6 +767,20 @@
       "uv_status": "archetype",
       "uv_url": null,
       "wireframe_url": null
+    },
+    {
+      "car_slug": "driver_suit",
+      "name": "Driver Suit",
+      "brand": "iRacing",
+      "category": "Piloto (Casco y Mono)",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "euro_nascar_rc01",
+      "name": "Euro Nascar RC01",
+      "brand": "iRacing",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
     },
     {
       "car_slug": "euronascar",
@@ -682,29 +798,29 @@
       "car_slug": "ferrari296challenge",
       "name": "Ferrari 296 Challenge",
       "brand": "Ferrari",
-      "category": "GT3",
+      "category": "GT4 & Cup",
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/ferrari296challenge/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
     {
       "car_slug": "ferrari296gt3",
-      "name": "Ferrari 296 Gt 3",
+      "name": "Ferrari 296 GT3",
       "brand": "Ferrari",
       "category": "GT3",
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/ferrari296gt3/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
     {
       "car_slug": "ferrari488gt3",
-      "name": "Ferrari 488 Gt 3",
+      "name": "Ferrari 488 GT3",
       "brand": "Ferrari",
       "category": "GT3",
       "archetype": "gt3_gt4",
@@ -716,9 +832,9 @@
     },
     {
       "car_slug": "ferrari488gte",
-      "name": "Ferrari 488 Gte",
+      "name": "Ferrari 488 GTE",
       "brand": "Ferrari",
-      "category": "GT3",
+      "category": "GT4 & Cup",
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/ferrari488gte/",
       "resolution": "2048x2048",
@@ -728,19 +844,19 @@
     },
     {
       "car_slug": "ferrari499p",
-      "name": "Ferrari 499 P",
+      "name": "Ferrari 499P",
       "brand": "Ferrari",
       "category": "GTP / Hypercar",
       "archetype": "prototype_gtp",
       "iracing_paint_dir": "paint/ferrari499p/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
     {
       "car_slug": "ferrarievogt3",
-      "name": "Ferrarievogt 3",
+      "name": "Ferrari EVO GT3",
       "brand": "Ferrari",
       "category": "GT3",
       "archetype": "gt3_gt4",
@@ -751,22 +867,38 @@
       "wireframe_url": null
     },
     {
-      "car_slug": "fordfiestarswrc",
-      "name": "Fordfiestarswrc",
+      "car_slug": "fia_cross_car",
+      "name": "FIA Cross Car",
+      "brand": "iRacing",
+      "category": "Dirt / Rallycross",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "ford_f150",
+      "name": "Ford F150",
+      "brand": "Ford",
+      "category": "Fórmula",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "ford_fiesta_st_wrc",
+      "name": "Ford Fiesta ST WRC",
+      "brand": "Ford",
+      "category": "Dirt / Rallycross",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "ford_fusion_gen_6",
+      "name": "Ford Fusion Gen 6",
       "brand": "Ford",
       "category": "TCR & Producción",
-      "archetype": "tcr_touring",
-      "iracing_paint_dir": "paint/fordfiestarswrc/",
-      "resolution": "2048x2048",
-      "uv_status": "archetype",
-      "uv_url": null,
-      "wireframe_url": null
+      "uv_status": "archetype"
     },
     {
       "car_slug": "fordgt",
-      "name": "Fordgt",
+      "name": "Ford GT",
       "brand": "Ford",
-      "category": "GT3",
+      "category": "TCR & Producción",
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/fordgt/",
       "resolution": "2048x2048",
@@ -776,35 +908,117 @@
     },
     {
       "car_slug": "fordgt2017",
-      "name": "Fordgt 2017",
+      "name": "Ford GT 2017",
       "brand": "Ford",
-      "category": "GT3",
+      "category": "GT4 & Cup",
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/fordgt2017/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
     {
+      "car_slug": "ford_gt_gt3",
+      "name": "Ford GT GT3",
+      "brand": "Ford",
+      "category": "GT3",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "ford_mustang_class_b_2013",
+      "name": "Ford Mustang Class B 2013",
+      "brand": "Ford",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "ford_mustang_class_b_2019",
+      "name": "Ford Mustang Class B 2019",
+      "brand": "Ford",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "ford_mustang_gen_6",
+      "name": "Ford Mustang Gen 6",
+      "brand": "Ford",
+      "category": "NASCAR / Oval",
+      "uv_status": "extracted"
+    },
+    {
       "car_slug": "fordmustanggt3",
-      "name": "Fordmustanggt 3",
+      "name": "Ford Mustang GT3",
       "brand": "Ford",
       "category": "GT3",
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/fordmustanggt3/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
     {
       "car_slug": "fordmustanggt4",
-      "name": "Fordmustanggt 4",
+      "name": "Ford Mustang GT4",
       "brand": "Ford",
       "category": "GT4 & Cup",
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/fordmustanggt4/",
+      "resolution": "2048x2048",
+      "uv_status": "extracted",
+      "uv_url": null,
+      "wireframe_url": null
+    },
+    {
+      "car_slug": "ford_mustang_nextgen",
+      "name": "Ford Mustang Nextgen",
+      "brand": "Ford",
+      "category": "NASCAR / Oval",
+      "uv_status": "extracted"
+    },
+    {
+      "car_slug": "ford_taurus_gen4",
+      "name": "Ford Taurus Gen4",
+      "brand": "Ford",
+      "category": "NASCAR / Oval",
+      "uv_status": "extracted"
+    },
+    {
+      "car_slug": "ford_taurus_gen4_ss",
+      "name": "Ford Taurus Gen4 SS",
+      "brand": "Ford",
+      "category": "NASCAR / Oval",
+      "uv_status": "extracted"
+    },
+    {
+      "car_slug": "ford_thunderbird_1987",
+      "name": "Ford Thunderbird 1987",
+      "brand": "Ford",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "ford_v8",
+      "name": "Ford V8",
+      "brand": "Ford",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "ford_v8sc_2014",
+      "name": "Ford V8sc 2014",
+      "brand": "Ford",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "fordfiestarswrc",
+      "name": "Fordfiestarswrc",
+      "brand": "Ford",
+      "category": "TCR & Producción",
+      "archetype": "tcr_touring",
+      "iracing_paint_dir": "paint/fordfiestarswrc/",
       "resolution": "2048x2048",
       "uv_status": "archetype",
       "uv_url": null,
@@ -824,19 +1038,19 @@
     },
     {
       "car_slug": "formulair04",
-      "name": "Formulair 04",
+      "name": "Formula IR04",
       "brand": "iRacing",
       "category": "Fórmula",
       "archetype": "open_wheel",
       "iracing_paint_dir": "paint/formulair04/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
     {
       "car_slug": "formulamazda",
-      "name": "Formulamazda",
+      "name": "Formula Mazda",
       "brand": "Mazda",
       "category": "Fórmula",
       "archetype": "open_wheel",
@@ -848,7 +1062,7 @@
     },
     {
       "car_slug": "formularenault20",
-      "name": "Formularenault 20",
+      "name": "Formula Renault 2.0",
       "brand": "Renault",
       "category": "Fórmula",
       "archetype": "open_wheel",
@@ -860,7 +1074,7 @@
     },
     {
       "car_slug": "formularenault35",
-      "name": "Formularenault 35",
+      "name": "Formula Renault 3_5",
       "brand": "Renault",
       "category": "Fórmula",
       "archetype": "open_wheel",
@@ -871,16 +1085,37 @@
       "wireframe_url": null
     },
     {
+      "car_slug": "formula_skip_barber_2000",
+      "name": "Formula Skip Barber 2000",
+      "brand": "Skip Barber",
+      "category": "Fórmula",
+      "uv_status": "archetype"
+    },
+    {
       "car_slug": "formulavee",
-      "name": "Formulavee",
+      "name": "Formula Vee",
       "brand": "iRacing",
       "category": "Fórmula",
       "archetype": "open_wheel",
       "iracing_paint_dir": "paint/formulavee/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
+    },
+    {
+      "car_slug": "formula_vee_2",
+      "name": "Formula Vee 2",
+      "brand": "iRacing",
+      "category": "Fórmula",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "formula_vee_3",
+      "name": "Formula Vee 3",
+      "brand": "iRacing",
+      "category": "Fórmula",
+      "uv_status": "archetype"
     },
     {
       "car_slug": "fr500s",
@@ -895,8 +1130,36 @@
       "wireframe_url": null
     },
     {
+      "car_slug": "fr500s_mustang",
+      "name": "FR500S Mustang",
+      "brand": "iRacing",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "gt4",
+      "name": "GT4",
+      "brand": "iRacing",
+      "category": "GT4 & Cup",
+      "uv_status": "extracted"
+    },
+    {
+      "car_slug": "helmet",
+      "name": "Helmet",
+      "brand": "iRacing",
+      "category": "Piloto (Casco y Mono)",
+      "uv_status": "extracted"
+    },
+    {
+      "car_slug": "holden_commodore_vf_v8",
+      "name": "Holden Commodore VF V8",
+      "brand": "Holden",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
       "car_slug": "hondacivictyper",
-      "name": "Hondacivictyper",
+      "name": "Honda Civic Type R",
       "brand": "Honda",
       "category": "TCR & Producción",
       "archetype": "tcr_touring",
@@ -907,12 +1170,38 @@
       "wireframe_url": null
     },
     {
+      "car_slug": "honda_performance_development_arx01c",
+      "name": "Honda Performance Development ARX01C",
+      "brand": "Honda",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
       "car_slug": "hpdarx01c",
       "name": "Hpdarx 01 C",
       "brand": "iRacing",
       "category": "LMP2 / LMP3",
       "archetype": "prototype_gtp",
       "iracing_paint_dir": "paint/hpdarx01c/",
+      "resolution": "2048x2048",
+      "uv_status": "archetype",
+      "uv_url": null,
+      "wireframe_url": null
+    },
+    {
+      "car_slug": "hyundai_elantra_n_tc",
+      "name": "Hyundai Elantra N TC",
+      "brand": "Hyundai",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "hyundaivelostern",
+      "name": "Hyundai Veloster N",
+      "brand": "Hyundai",
+      "category": "TCR & Producción",
+      "archetype": "tcr_touring",
+      "iracing_paint_dir": "paint/hyundaivelostern/",
       "resolution": "2048x2048",
       "uv_status": "archetype",
       "uv_url": null,
@@ -931,20 +1220,8 @@
       "wireframe_url": null
     },
     {
-      "car_slug": "hyundaivelostern",
-      "name": "Hyundaivelostern",
-      "brand": "Hyundai",
-      "category": "TCR & Producción",
-      "archetype": "tcr_touring",
-      "iracing_paint_dir": "paint/hyundaivelostern/",
-      "resolution": "2048x2048",
-      "uv_status": "archetype",
-      "uv_url": null,
-      "wireframe_url": null
-    },
-    {
       "car_slug": "indypropm18",
-      "name": "Indypropm 18",
+      "name": "Indy Pro PM18",
       "brand": "iRacing",
       "category": "Fórmula",
       "archetype": "open_wheel",
@@ -953,6 +1230,27 @@
       "uv_status": "archetype",
       "uv_url": null,
       "wireframe_url": null
+    },
+    {
+      "car_slug": "indycar_dallara_dw12",
+      "name": "Indycar Dallara DW12",
+      "brand": "Dallara",
+      "category": "Fórmula",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "indycar_dallara_ir18",
+      "name": "Indycar Dallara IR18",
+      "brand": "Dallara",
+      "category": "GTP / Hypercar",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "irl_dallara",
+      "name": "IRL Dallara",
+      "brand": "Dallara",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
     },
     {
       "car_slug": "jettatdi",
@@ -968,8 +1266,8 @@
     },
     {
       "car_slug": "kiaoptima",
-      "name": "Kiaoptima",
-      "brand": "iRacing",
+      "name": "Kia Optima",
+      "brand": "Kia",
       "category": "TCR & Producción",
       "archetype": "tcr_touring",
       "iracing_paint_dir": "paint/kiaoptima/",
@@ -980,15 +1278,22 @@
     },
     {
       "car_slug": "lamborghinievogt3",
-      "name": "Lamborghinievogt 3",
+      "name": "Lamborghini EVO GT3",
       "brand": "Lamborghini",
       "category": "GT3",
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/lamborghinievogt3/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
+    },
+    {
+      "car_slug": "late_model_stock",
+      "name": "Late Model Stock",
+      "brand": "iRacing",
+      "category": "NASCAR / Oval",
+      "uv_status": "extracted"
     },
     {
       "car_slug": "latemodel",
@@ -1027,10 +1332,24 @@
       "wireframe_url": null
     },
     {
+      "car_slug": "legends_ford34c",
+      "name": "Legends Ford34c",
+      "brand": "Ford",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "legends_ford34c_dirt",
+      "name": "Legends Ford34c Dirt",
+      "brand": "Ford",
+      "category": "Dirt / Rallycross",
+      "uv_status": "archetype"
+    },
+    {
       "car_slug": "ligierjsp320",
-      "name": "Ligierjsp 320",
+      "name": "Ligier JS P320",
       "brand": "Ligier",
-      "category": "LMP2 / LMP3",
+      "category": "TCR & Producción",
       "archetype": "prototype_gtp",
       "iracing_paint_dir": "paint/ligierjsp320/",
       "resolution": "2048x2048",
@@ -1063,8 +1382,22 @@
       "wireframe_url": null
     },
     {
+      "car_slug": "mazda_mx5",
+      "name": "Mazda MX5",
+      "brand": "Mazda",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "mazda_mx5_2016",
+      "name": "Mazda MX5 2016",
+      "brand": "Mazda",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
       "car_slug": "mclaren570sgt4",
-      "name": "Mclaren 570 Sgt 4",
+      "name": "Mclaren 570s GT4",
       "brand": "McLaren",
       "category": "GT4 & Cup",
       "archetype": "gt3_gt4",
@@ -1087,8 +1420,15 @@
       "wireframe_url": null
     },
     {
+      "car_slug": "mclaren_720s_evo_gt3",
+      "name": "McLaren 720s EVO GT3",
+      "brand": "McLaren",
+      "category": "GT3",
+      "uv_status": "archetype"
+    },
+    {
       "car_slug": "mclarenmp4",
-      "name": "Mclarenmp 4",
+      "name": "Mclaren MP4",
       "brand": "McLaren",
       "category": "TCR & Producción",
       "archetype": "tcr_touring",
@@ -1100,9 +1440,9 @@
     },
     {
       "car_slug": "mclarenmp430",
-      "name": "Mclarenmp 430",
+      "name": "Mclaren MP4-30",
       "brand": "McLaren",
-      "category": "Fórmula",
+      "category": "TCR & Producción",
       "archetype": "open_wheel",
       "iracing_paint_dir": "paint/mclarenmp430/",
       "resolution": "2048x2048",
@@ -1111,20 +1451,8 @@
       "wireframe_url": null
     },
     {
-      "car_slug": "mercedesamgevogt3",
-      "name": "Mercedesamgevogt 3",
-      "brand": "Mercedes-AMG",
-      "category": "GT3",
-      "archetype": "gt3_gt4",
-      "iracing_paint_dir": "paint/mercedesamgevogt3/",
-      "resolution": "2048x2048",
-      "uv_status": "archetype",
-      "uv_url": null,
-      "wireframe_url": null
-    },
-    {
       "car_slug": "mercedesamggt3",
-      "name": "Mercedesamggt 3",
+      "name": "Mercedes AMG GT3",
       "brand": "Mercedes-AMG",
       "category": "GT3",
       "archetype": "gt3_gt4",
@@ -1136,11 +1464,30 @@
     },
     {
       "car_slug": "mercedesamggt4",
-      "name": "Mercedesamggt 4",
+      "name": "Mercedes AMG GT4",
       "brand": "Mercedes-AMG",
       "category": "GT4 & Cup",
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/mercedesamggt4/",
+      "resolution": "2048x2048",
+      "uv_status": "extracted",
+      "uv_url": null,
+      "wireframe_url": null
+    },
+    {
+      "car_slug": "mercedes_amg_gt3_2020",
+      "name": "Mercedes-AMG GT3 2020",
+      "brand": "Mercedes-AMG",
+      "category": "GT3",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "mercedesamgevogt3",
+      "name": "Mercedesamgevogt 3",
+      "brand": "Mercedes-AMG",
+      "category": "GT3",
+      "archetype": "gt3_gt4",
+      "iracing_paint_dir": "paint/mercedesamgevogt3/",
       "resolution": "2048x2048",
       "uv_status": "archetype",
       "uv_url": null,
@@ -1172,13 +1519,13 @@
     },
     {
       "car_slug": "ministock",
-      "name": "Ministock",
+      "name": "Mini Stock",
       "brand": "iRacing",
-      "category": "TCR & Producción",
+      "category": "NASCAR / Oval",
       "archetype": "tcr_touring",
       "iracing_paint_dir": "paint/ministock/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
@@ -1196,19 +1543,33 @@
     },
     {
       "car_slug": "nissangtpzxt",
-      "name": "Nissangtpzxt",
-      "brand": "iRacing",
+      "name": "Nissan GTP ZXT",
+      "brand": "Nissan",
       "category": "GTP / Hypercar",
       "archetype": "prototype_gtp",
       "iracing_paint_dir": "paint/nissangtpzxt/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
     {
+      "car_slug": "pontiac_grand_prix_1987",
+      "name": "Pontiac Grand Prix 1987",
+      "brand": "Pontiac",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "pontiac_solstice",
+      "name": "Pontiac Solstice",
+      "brand": "Pontiac",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
       "car_slug": "porsche718gt4",
-      "name": "Porsche 718 Gt 4",
+      "name": "Porsche 718 GT4",
       "brand": "Porsche",
       "category": "GT4 & Cup",
       "archetype": "gt3_gt4",
@@ -1231,8 +1592,15 @@
       "wireframe_url": null
     },
     {
+      "car_slug": "porsche_911_rsr",
+      "name": "Porsche 911 RSR",
+      "brand": "Porsche",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
       "car_slug": "porsche911rgt3",
-      "name": "Porsche 911 Rgt 3",
+      "name": "Porsche 911R GT3",
       "brand": "Porsche",
       "category": "GT3",
       "archetype": "gt3_gt4",
@@ -1255,6 +1623,13 @@
       "wireframe_url": null
     },
     {
+      "car_slug": "porsche_919_hybrid",
+      "name": "Porsche 919 Hybrid",
+      "brand": "Porsche",
+      "category": "GTP / Hypercar",
+      "uv_status": "archetype"
+    },
+    {
       "car_slug": "porsche963gtp",
       "name": "Porsche 963 GTP",
       "brand": "Porsche",
@@ -1262,7 +1637,7 @@
       "archetype": "prototype_gtp",
       "iracing_paint_dir": "paint/porsche963gtp/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
@@ -1286,25 +1661,13 @@
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/porsche992cup/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
-      "uv_url": null,
-      "wireframe_url": null
-    },
-    {
-      "car_slug": "porsche992rgt3",
-      "name": "Porsche 992 Rgt 3",
-      "brand": "Porsche",
-      "category": "GT3",
-      "archetype": "gt3_gt4",
-      "iracing_paint_dir": "paint/porsche992rgt3/",
-      "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
     {
       "car_slug": "porsche9922cup",
-      "name": "Porsche 9922 Cup",
+      "name": "Porsche 992_2 Cup",
       "brand": "Porsche",
       "category": "GT4 & Cup",
       "archetype": "gt3_gt4",
@@ -1315,8 +1678,20 @@
       "wireframe_url": null
     },
     {
+      "car_slug": "porsche992rgt3",
+      "name": "Porsche 992r GT3",
+      "brand": "Porsche",
+      "category": "GT3",
+      "archetype": "gt3_gt4",
+      "iracing_paint_dir": "paint/porsche992rgt3/",
+      "resolution": "2048x2048",
+      "uv_status": "extracted",
+      "uv_url": null,
+      "wireframe_url": null
+    },
+    {
       "car_slug": "porschemissionr",
-      "name": "Porschemissionr",
+      "name": "Porsche Mission R",
       "brand": "Porsche",
       "category": "GT4 & Cup",
       "archetype": "gt3_gt4",
@@ -1325,6 +1700,20 @@
       "uv_status": "archetype",
       "uv_url": null,
       "wireframe_url": null
+    },
+    {
+      "car_slug": "pro2_stadium_truck",
+      "name": "Pro2 Stadium Truck",
+      "brand": "iRacing",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "pro4_stadium_truck",
+      "name": "Pro4 Stadium Truck",
+      "brand": "iRacing",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
     },
     {
       "car_slug": "protrucks",
@@ -1352,7 +1741,7 @@
     },
     {
       "car_slug": "radicalsr10",
-      "name": "Radicalsr 10",
+      "name": "Radical SR10",
       "brand": "Radical",
       "category": "LMP2 / LMP3",
       "archetype": "prototype_gtp",
@@ -1361,6 +1750,27 @@
       "uv_status": "archetype",
       "uv_url": null,
       "wireframe_url": null
+    },
+    {
+      "car_slug": "radical_sr8",
+      "name": "Radical SR8",
+      "brand": "Radical",
+      "category": "LMP2 / LMP3",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "ram_2026",
+      "name": "Ram 2026",
+      "brand": "iRacing",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "ray_ff1600",
+      "name": "Ray FF1600",
+      "brand": "iRacing",
+      "category": "Fórmula",
+      "uv_status": "archetype"
     },
     {
       "car_slug": "raygr22",
@@ -1375,6 +1785,13 @@
       "wireframe_url": null
     },
     {
+      "car_slug": "renault_clio",
+      "name": "Renault Clio",
+      "brand": "Renault",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
       "car_slug": "renaultcliocup",
       "name": "Renaultcliocup",
       "brand": "Renault",
@@ -1385,6 +1802,13 @@
       "uv_status": "archetype",
       "uv_url": null,
       "wireframe_url": null
+    },
+    {
+      "car_slug": "riley_daytona_prototype",
+      "name": "Riley Daytona Prototype",
+      "brand": "Riley",
+      "category": "LMP2 / LMP3",
+      "uv_status": "archetype"
     },
     {
       "car_slug": "rileydp",
@@ -1412,8 +1836,8 @@
     },
     {
       "car_slug": "rufrt12r",
-      "name": "Rufrt 12 R",
-      "brand": "Porsche",
+      "name": "Ruf RT12R",
+      "brand": "RUF",
       "category": "TCR & Producción",
       "archetype": "tcr_touring",
       "iracing_paint_dir": "paint/rufrt12r/",
@@ -1448,13 +1872,13 @@
     },
     {
       "car_slug": "skmodified",
-      "name": "Skmodified",
+      "name": "SK Modified",
       "brand": "iRacing",
       "category": "NASCAR / Oval",
       "archetype": "stock_nascar",
       "iracing_paint_dir": "paint/skmodified/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
@@ -1472,13 +1896,13 @@
     },
     {
       "car_slug": "specracer",
-      "name": "Specracer",
+      "name": "Spec Racer",
       "brand": "iRacing",
-      "category": "TCR & Producción",
+      "category": "LMP2 / LMP3",
       "archetype": "tcr_touring",
       "iracing_paint_dir": "paint/specracer/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
@@ -1495,8 +1919,15 @@
       "wireframe_url": null
     },
     {
+      "car_slug": "sprint_car",
+      "name": "Sprint Car",
+      "brand": "iRacing",
+      "category": "Dirt / Rallycross",
+      "uv_status": "archetype"
+    },
+    {
       "car_slug": "srx",
-      "name": "Srx",
+      "name": "SRX",
       "brand": "iRacing",
       "category": "TCR & Producción",
       "archetype": "tcr_touring",
@@ -1505,6 +1936,20 @@
       "uv_status": "archetype",
       "uv_url": null,
       "wireframe_url": null
+    },
+    {
+      "car_slug": "stock_car_pro_chevy_cruze",
+      "name": "Stock Car Pro Chevy Cruze",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "stock_car_pro_toyota_corolla",
+      "name": "Stock Car Pro Toyota Corolla",
+      "brand": "Toyota",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
     },
     {
       "car_slug": "stockcarbrasil",
@@ -1544,23 +1989,70 @@
     },
     {
       "car_slug": "streetstock",
-      "name": "Streetstock",
+      "name": "Street Stock",
       "brand": "iRacing",
       "category": "NASCAR / Oval",
       "archetype": "stock_nascar",
       "iracing_paint_dir": "paint/streetstock/",
+      "resolution": "2048x2048",
+      "uv_status": "extracted",
+      "uv_url": null,
+      "wireframe_url": null
+    },
+    {
+      "car_slug": "street_stock_casino",
+      "name": "Street Stock Casino",
+      "brand": "iRacing",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "street_stock_eagle",
+      "name": "Street Stock Eagle",
+      "brand": "iRacing",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "subaruwrxsti",
+      "name": "Subaru WRX STI",
+      "brand": "Subaru",
+      "category": "Dirt / Rallycross",
+      "archetype": "tcr_touring",
+      "iracing_paint_dir": "paint/subaruwrxsti/",
       "resolution": "2048x2048",
       "uv_status": "archetype",
       "uv_url": null,
       "wireframe_url": null
     },
     {
-      "car_slug": "subaruwrxsti",
-      "name": "Subaruwrxsti",
+      "car_slug": "super_formula_lights_sf23",
+      "name": "Super Formula Lights SF23",
       "brand": "iRacing",
-      "category": "TCR & Producción",
-      "archetype": "tcr_touring",
-      "iracing_paint_dir": "paint/subaruwrxsti/",
+      "category": "Fórmula",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "super_formula_sf23_honda",
+      "name": "Super Formula SF23 Honda",
+      "brand": "Honda",
+      "category": "Fórmula",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "super_formula_sf23_toyota",
+      "name": "Super Formula SF23 Toyota",
+      "brand": "Toyota",
+      "category": "Fórmula",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "superlatemodel",
+      "name": "Super Late Model",
+      "brand": "iRacing",
+      "category": "NASCAR / Oval",
+      "archetype": "stock_nascar",
+      "iracing_paint_dir": "paint/superlatemodel/",
       "resolution": "2048x2048",
       "uv_status": "archetype",
       "uv_url": null,
@@ -1577,6 +2069,34 @@
       "uv_status": "archetype",
       "uv_url": null,
       "wireframe_url": null
+    },
+    {
+      "car_slug": "supercars_chevy_camaro_gen_3",
+      "name": "Supercars Chevy Camaro Gen 3",
+      "brand": "Chevrolet",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "supercars_ford_mustang_gen_3",
+      "name": "Supercars Ford Mustang Gen 3",
+      "brand": "Ford",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "supercars_ford_mustang_gt",
+      "name": "Supercars Ford Mustang GT",
+      "brand": "Ford",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "supercars_holden_zb_commodore",
+      "name": "Supercars Holden ZB Commodore",
+      "brand": "Holden",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
     },
     {
       "car_slug": "superformulalights324",
@@ -1603,28 +2123,58 @@
       "wireframe_url": null
     },
     {
-      "car_slug": "superlatemodel",
-      "name": "Superlatemodel",
-      "brand": "iRacing",
+      "car_slug": "toyota_camry_class_b",
+      "name": "Toyota Camry Class B",
+      "brand": "Toyota",
       "category": "NASCAR / Oval",
-      "archetype": "stock_nascar",
-      "iracing_paint_dir": "paint/superlatemodel/",
-      "resolution": "2048x2048",
-      "uv_status": "archetype",
-      "uv_url": null,
-      "wireframe_url": null
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "toyota_camry_gen_6",
+      "name": "Toyota Camry Gen 6",
+      "brand": "Toyota",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "toyota_camry_nextgen",
+      "name": "Toyota Camry Nextgen",
+      "brand": "Toyota",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
     },
     {
       "car_slug": "toyotagr86",
-      "name": "Toyotagr 86",
+      "name": "Toyota GR86",
       "brand": "Toyota",
       "category": "TCR & Producción",
       "archetype": "tcr_touring",
       "iracing_paint_dir": "paint/toyotagr86/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
+    },
+    {
+      "car_slug": "toyota_supra_class_b",
+      "name": "Toyota Supra Class B",
+      "brand": "Toyota",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "toyota_tundra_truck_2015",
+      "name": "Toyota Tundra Truck 2015",
+      "brand": "Toyota",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
+    },
+    {
+      "car_slug": "toyota_tundra_truck_2022",
+      "name": "Toyota Tundra Truck 2022",
+      "brand": "Toyota",
+      "category": "NASCAR / Oval",
+      "uv_status": "archetype"
     },
     {
       "car_slug": "trucks",
@@ -1640,7 +2190,7 @@
     },
     {
       "car_slug": "usf2000usf17",
-      "name": "Usf 2000 Usf 17",
+      "name": "USF 2000 USF17",
       "brand": "iRacing",
       "category": "Fórmula",
       "archetype": "open_wheel",
@@ -1664,15 +2214,22 @@
     },
     {
       "car_slug": "vwbeetlegrc",
-      "name": "Vwbeetlegrc",
+      "name": "VW Beetle GRC",
       "brand": "Volkswagen",
-      "category": "TCR & Producción",
+      "category": "Dirt / Rallycross",
       "archetype": "tcr_touring",
       "iracing_paint_dir": "paint/vwbeetlegrc/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
+    },
+    {
+      "car_slug": "vw_jetta_tdi",
+      "name": "VW Jetta TDI",
+      "brand": "Volkswagen",
+      "category": "TCR & Producción",
+      "uv_status": "archetype"
     },
     {
       "car_slug": "williamsfw31",

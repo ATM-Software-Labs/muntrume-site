@@ -45,6 +45,16 @@ const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   formula: "/assets/models/formula-base.glb",
 };
 
+const CAR_SPECIFIC_GLB_PATHS: Record<string, string> = {
+  bmwm4gt3: "/assets/models/bmwm4gt3.glb",
+  bmw_m4_gt3: "/assets/models/bmwm4gt3.glb",
+  bmwm4gt4: "/assets/models/bmwm4gt3.glb",
+  bmw_m4_gt4: "/assets/models/bmwm4gt3.glb",
+  bmwm4g82gt4: "/assets/models/bmwm4gt3.glb",
+  bmwm4evogt4: "/assets/models/bmwm4gt3.glb",
+  bmw_m4_evo_gt4: "/assets/models/bmwm4gt3.glb",
+};
+
 export function mapCategoryStringToBody(category?: string): CarBodyCategory {
   const c = String(category || "").toLowerCase();
   if (c.includes("gtp") || c.includes("lmp") || c.includes("proto")) return "gtp";
@@ -110,8 +120,8 @@ function isPaintableBodyMesh(mesh: THREE.Mesh): boolean {
   const matId = getMeshMaterialNames(mesh);
   const meshId = (mesh.name || "").toLowerCase();
 
-  // 1. Explicit positive match on material name first (handles Khronos "Paint 1 Carmine", F1 "redbull_paint", "redbull_color")
-  if (/(paint|carpaint|livery|redbull_color|body_color|bodypaint)/.test(matId)) {
+  // 1. Explicit positive match on material name first (handles Khronos "Paint 1 Carmine", F1 "redbull_paint", BMW M4 "Meshesbody151Mtl" / "Mesheslivery1Mtl")
+  if (/(paint|carpaint|livery|redbull_color|body_color|bodypaint|meshesbody)/.test(matId)) {
     return true;
   }
 
@@ -119,7 +129,7 @@ function isPaintableBodyMesh(mesh: THREE.Mesh): boolean {
 
   // 2. Strictly preserve non-body materials (glass, tires, rims, lights, interior, carbon, grilles, mechanical)
   const excludedPattern =
-    /(glass|window|windshield|windscreen|visor|transparent|tire|tyre|tireside|tiretread|sidewall|rubber|slick|tread|wheel|rim|alloy|spoke|hub|centerlock|nut|brake|brakelight|caliper|disc|rotor|light|headlight|taillight|signallight|lamp|led|clearled|lens|indicator|emissive|interior|cockpit|seat|dash|dashboard|steering|cage|rollcage|net|belt|cinture|harness|floormat|hardware|mechanical|engine|pedal|wiper|gasket|license|lcd|carbon|splitter|diffuser|grille|grill|mesh|vent|intake|exhaust|pipe|underbody|underside|floor|strut|pylon|mirror|chrome|badge|emblem|logo|decal|plastic|trim|black_s|detail|generics|panel sides|shadow|ground|plane)/;
+    /(glass|window|windshield|windscreen|visor|transparent|tire|tyre|tireside|tiretread|sidewall|rubber|slick|tread|wheel|rim|alloy|spoke|hub|centerlock|nut|brake|brakelight|caliper|disc|rotor|light|headlight|taillight|signallight|redlight|lamp|led|clearled|lens|indicator|emissive|interior|cockpit|seat|dash|dashboard|steering|cage|rollcage|net|belt|cinture|harness|floormat|hardware|mechanical|engine|pedal|wiper|gasket|license|lcd|carbon|splitter|diffuser|grille|grill|piggrill|raidiator|pillars|mesh|vent|intake|exhaust|pipe|underbody|underside|floor|strut|pylon|mirror|chrome|badge|emblem|logo|decal|plastic|trim|black|detail|generics|panel sides|shadow|ground|plane)/;
   if (excludedPattern.test(id)) return false;
 
   // 3. Explicit positive match on mesh name for bodywork panels
@@ -442,9 +452,10 @@ export class WebGLPreviewEngine {
    * Attempts to load an optional category base .GLB from public/models/{gt3,gtp,formula}-base.glb.
    * If not present, cleanly falls back to the Automotive Speedform without errors or blocky cars.
    */
-  public async tryLoadCategoryBaseModel(category: CarBodyCategory): Promise<boolean> {
+  public async tryLoadCategoryBaseModel(category: CarBodyCategory, carSlug = ""): Promise<boolean> {
     this.currentCategory = category;
-    const url = CATEGORY_BASE_GLB_PATHS[category];
+    const slugKey = (carSlug || "").toLowerCase();
+    const url = CAR_SPECIFIC_GLB_PATHS[slugKey] || CATEGORY_BASE_GLB_PATHS[category];
     if (!url || this.missingBasePaths.has(url)) {
       this.buildAutomotiveSpeedform();
       return false;

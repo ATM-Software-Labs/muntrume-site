@@ -282,7 +282,7 @@ export function initSkinsStudio(): void {
       // IndexedDB unavailable or corrupted entry; fall back to clean parametric bodywork
     }
     if (state.carId !== carSlug) return;
-    await glEngine.tryLoadCategoryBaseModel(mapCategoryStringToBody(effectiveCategory));
+    await glEngine.tryLoadCategoryBaseModel(mapCategoryStringToBody(effectiveCategory), carSlug);
     glEngine.updateZones(state.zones);
     scheduleRender();
   }
