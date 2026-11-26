@@ -19,6 +19,12 @@ export function sanitizeCustomerId(raw: string): string {
   return digits || "000000";
 }
 
+function getExportBasePrefix(carId: string): string {
+  if (carId === "helmet") return "helmet";
+  if (carId === "suit") return "suit";
+  return "car";
+}
+
 async function renderTgaBuffers(
   state: SkinDesignState,
   onProgress?: (msg: string) => void,
@@ -70,7 +76,8 @@ export async function exportSingleDiffuseTga(
   workCanvas.width = 1;
   workCanvas.height = 1;
 
-  const filename = `car_${cid}.tga`;
+  const prefix = getExportBasePrefix(state.carId);
+  const filename = `${prefix}_${cid}.tga`;
   triggerDownload(new Blob([tga.buffer as ArrayBuffer], { type: "image/x-tga" }), filename);
   return filename;
 }
@@ -93,7 +100,8 @@ export async function exportSingleSpecTga(
   workCanvas.width = 1;
   workCanvas.height = 1;
 
-  const filename = `car_spec_${cid}.tga`;
+  const prefix = getExportBasePrefix(state.carId);
+  const filename = `${prefix}_spec_${cid}.tga`;
   triggerDownload(new Blob([tga.buffer as ArrayBuffer], { type: "image/x-tga" }), filename);
   return filename;
 }

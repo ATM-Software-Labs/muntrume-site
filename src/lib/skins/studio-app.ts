@@ -143,6 +143,7 @@ export function initSkinsStudio(): void {
       "Fórmula",
       "Stock Cars & Oval",
       "TCR / Turismo / Dirt",
+      "Piloto (Casco y Mono)",
     ];
     const items = workerCarsCatalog.length > 0
       ? workerCarsCatalog
@@ -157,7 +158,10 @@ export function initSkinsStudio(): void {
 
     const groups = new Map<string, typeof items>();
     for (const item of items) {
-      const cat = item.category || "TCR / Turismo / Dirt";
+      const cat =
+        item.car_slug === "helmet" || item.car_slug === "suit"
+          ? "Piloto (Casco y Mono)"
+          : item.category || "TCR / Turismo / Dirt";
       if (!groups.has(cat)) groups.set(cat, []);
       groups.get(cat)!.push(item);
     }
@@ -1421,6 +1425,22 @@ export function initSkinsStudio(): void {
       setStatus(`Logo añadido: ${file.name}`, "ok");
     };
     reader.readAsDataURL(file);
+  });
+
+  // 1-Click Pro Motorsport Palettes (inspired by dataset_manifest.json 4,483 iRacing skins)
+  document.querySelectorAll<HTMLButtonElement>("[data-quick-pal]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const parts = String(btn.dataset.quickPal || "").split(",");
+      if (parts.length < 5) return;
+      state.palette.primary = parts[0];
+      state.palette.secondary = parts[1];
+      state.palette.accent = parts[2];
+      state.palette.detail = parts[3];
+      state.pattern = parts[4] as SkinDesignState["pattern"];
+      syncControlsFromState();
+      scheduleRender();
+      setStatus(`Paleta aplicada: ${btn.textContent?.trim() || "Motorsport"}`, "ok");
+    });
   });
 
   // Muntrume AI Full-Auto Designer (1-click complete design for non-experts)
