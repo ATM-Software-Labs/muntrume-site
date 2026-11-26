@@ -282,8 +282,7 @@ export function initSkinsStudio(): void {
       // IndexedDB unavailable or corrupted entry; fall back to clean parametric bodywork
     }
     if (state.carId !== carSlug) return;
-    glEngine.resetToProofingBuck();
-    glEngine.setCategory(mapCategoryStringToBody(effectiveCategory));
+    await glEngine.tryLoadCategoryBaseModel(mapCategoryStringToBody(effectiveCategory));
     glEngine.updateZones(state.zones);
     scheduleRender();
   }
@@ -1491,7 +1490,7 @@ export function initSkinsStudio(): void {
     glEngine.setCategory(mapCategoryStringToBody(car.category));
     glEngine.updateZones(state.zones);
     scheduleRender();
-    setStatus(`Modelo cacheado eliminado para ${state.carId}. Restaurada carrocería paramétrica.`, "neutral");
+    setStatus(`Modelo cacheado eliminado para ${state.carId}. Restaurada muestra Speedform de estudio.`, "neutral");
   });
 
   // Populate Car select grouped cleanly by class (GT3 > GTP > LMP2/LMP3 > GT4 & Cup > Fórmula > TCR)

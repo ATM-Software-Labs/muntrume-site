@@ -267,8 +267,14 @@ const canonical = "https://skins.muntru.me/";
           <canvas id="skGlCanvas" class="sk-gl-canvas sk-hidden"></canvas>
 
           <div id="skGlOverlay" class="sk-gl-overlay sk-hidden">
+            <div id="skGlSpeedformCta" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 12px;margin-bottom:6px;border-radius:10px;background:rgba(9,13,20,0.86);border:1px solid rgba(0,230,153,0.42);backdrop-filter:blur(8px);">
+              <span style="font-size:12px;color:#cbd5e1;">Vista <strong>Speedform de estudio</strong> · Carga el modelo real de este coche para verlo en 3D (se guarda en tu navegador con IndexedDB):</span>
+              <label for="skObjInput" class="sk-btn sk-btn-primary sk-btn-sm" style="cursor:pointer;">
+                Cargar modelo 3D real (.GLB / .GLTF)
+              </label>
+            </div>
             <div id="skGlNotice" class="sk-gl-notice">
-              Visor 3D Three.js PBR en tiempo real (arrastra para orbitar · rueda para zoom)
+              Showroom 3D Three.js PBR (arrastra para orbitar · rueda para zoom)
             </div>
             <div class="sk-row" style="flex-wrap:wrap;">
               <button type="button" class="sk-btn sk-btn-sm" data-gl-cam="front34">Frontal 3/4</button>
