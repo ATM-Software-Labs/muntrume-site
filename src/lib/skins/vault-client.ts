@@ -258,14 +258,31 @@ export function mapWorkerUvToZones(
   const H = Number(hStr) || 2048;
   const norm = (r: WorkerUvRect | undefined, base: ZoneRect): ZoneRect => {
     if (!r || !r.width || !r.height) return { ...base };
-    const nw = r.width / W;
-    const nh = r.height / H;
-    // Reject corrupted full-canvas boxes (> 85% of UV)
-    if (nw > 0.85 && nh > 0.85) return { ...base };
+    const isAlreadyNorm = r.x <= 1.05 && r.y <= 1.05 && r.width <= 1.05 && r.height <= 1.05;
+    const nx = isAlreadyNorm ? r.x : r.x / W;
+    const ny = isAlreadyNorm ? r.y : r.y / H;
+    const nw = isAlreadyNorm ? r.width : r.width / W;
+    const nh = isAlreadyNorm ? r.height : r.height / H;
+    // Reject corrupted full-canvas boxes (> 82%) or tiny/out-of-bounds boxes (< 5% x 4%)
+    if (
+      !Number.isFinite(nx) ||
+      !Number.isFinite(ny) ||
+      !Number.isFinite(nw) ||
+      !Number.isFinite(nh) ||
+      (nw > 0.82 && nh > 0.82) ||
+      nw < 0.05 ||
+      nh < 0.04 ||
+      nx < 0 ||
+      ny < 0 ||
+      nx + nw > 1.02 ||
+      ny + nh > 1.02
+    ) {
+      return { ...base };
+    }
     return {
       ...base,
-      x: Number((r.x / W).toFixed(4)),
-      y: Number((r.y / H).toFixed(4)),
+      x: Number(nx.toFixed(4)),
+      y: Number(ny.toFixed(4)),
       w: Number(nw.toFixed(4)),
       h: Number(nh.toFixed(4)),
     };

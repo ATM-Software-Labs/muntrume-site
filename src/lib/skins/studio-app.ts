@@ -440,6 +440,9 @@ export function initSkinsStudio(): void {
     byId<HTMLElement>("skShowroomControls")?.classList.toggle("sk-hidden", !isShowroom);
     byId<HTMLElement>("skGlOverlay")?.classList.toggle("sk-hidden", !isGl);
     byId<HTMLElement>("skUvControls")?.classList.toggle("sk-hidden", !isUvOrSpec);
+    if (isGl) {
+      requestAnimationFrame(() => glEngine.render());
+    }
     scheduleRender();
   }
 
@@ -1350,11 +1353,11 @@ export function initSkinsStudio(): void {
         if (rect) state.zones[key as ZoneKey] = rect;
       }
       showTemplateOverlay = true;
-      showZonesOverlay = false;
+      showZonesOverlay = true;
       const wfChk = byId<HTMLInputElement>("skToggleWireframe");
       if (wfChk) wfChk.checked = true;
       const zChk = byId<HTMLInputElement>("skToggleZones");
-      if (zChk) zChk.checked = false;
+      if (zChk) zChk.checked = true;
       const infoEl = byId<HTMLElement>("skTemplateSummary");
       if (infoEl) {
         const patInfo = loadedTemplate.carPatterns?.length

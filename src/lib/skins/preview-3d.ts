@@ -12,7 +12,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { ZoneKey, ZoneRect } from "./types";
 
@@ -117,9 +116,8 @@ export class WebGLPreviewEngine {
   private hemiLight: THREE.HemisphereLight | null = null;
 
   private rafId = 0;
-  private isCustomModel = false;
   private currentCategory: CarBodyCategory = "gt3";
-  private meshLabel = "Showroom 3D GT PBR (Three.js · arrastra para orbitar)";
+  private meshLabel = "Cargando Showroom 3D GT3 Real (.GLB)...";
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -130,11 +128,7 @@ export class WebGLPreviewEngine {
   }
 
   private createGltfLoader(): GLTFLoader {
-    const draco = new DRACOLoader();
-    draco.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
-    const loader = new GLTFLoader();
-    loader.setDRACOLoader(draco);
-    return loader;
+    return new GLTFLoader();
   }
 
   private initScene(): void {
@@ -472,8 +466,10 @@ export class WebGLPreviewEngine {
       wrapper.add(wingGroup);
       this.carGroup = wrapper;
       this.scene.add(wrapper);
-      this.isCustomModel = false;
       this.meshLabel = "Showroom 3D GT3 Real (Three.js PBR + reflejos de estudio · arrastra para orbitar)";
+      const notice = document.getElementById("skGlNotice");
+      if (notice) notice.textContent = this.meshLabel;
+      this.render();
     } catch {
       this.buildProceduralMotorsportCar(this.currentCategory);
     }
@@ -673,7 +669,6 @@ export class WebGLPreviewEngine {
       wrapper.add(root);
       this.carGroup = wrapper;
       this.scene.add(wrapper);
-      this.isCustomModel = true;
       this.meshLabel = `Modelo 3D local cargado: ${file.name} (solo en tu navegador)`;
     } finally {
       URL.revokeObjectURL(blobUrl);
@@ -733,12 +728,10 @@ export class WebGLPreviewEngine {
     wrapper.add(new THREE.Mesh(geo, this.paintMaterial));
     this.carGroup = wrapper;
     this.scene.add(wrapper);
-    this.isCustomModel = true;
     this.meshLabel = `Malla .OBJ local: ${filename}`;
   }
 
   public resetToProofingBuck(): void {
-    this.isCustomModel = false;
     void this.loadDefaultGtShowroomModel();
   }
 
