@@ -1,10 +1,20 @@
 import { BUILTIN_DECALS, getCarById } from "./catalog";
 import type { DecalLayer, SkinDesignState, ZoneKey, ZoneRect } from "./types";
 
+export interface ReservedGuideBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  label?: string;
+}
+
 export interface CompositeOptions {
   size: number;
   templateCanvas?: HTMLCanvasElement | null;
   partsOverlayCanvas?: HTMLCanvasElement | null;
+  restrictedPlates?: ReservedGuideBox[];
+  seriesSlots?: ReservedGuideBox[];
   showTemplateOverlay?: boolean;
   templateOpacity?: number;
   showZonesOverlay?: boolean;
@@ -528,8 +538,100 @@ export async function renderSkinToCanvas(
     ctx.restore();
   }
 
+  // Huecos reservados para DORSAL (iRacing) y DECALS DE CATEGORÍA / SERIE (solo guía visual, nunca se exportan)
+  if (!opts.forExport && opts.showTemplateOverlay) {
+    drawReservedGuidesOverlay(ctx, state, size, opts.restrictedPlates, opts.seriesSlots);
+  }
+
   if (!opts.forExport && opts.showZonesOverlay) {
     drawZonesOverlay(ctx, state.zones, size, opts.selectedZone);
+  }
+}
+
+function drawReservedGuidesOverlay(
+  ctx: CanvasRenderingContext2D,
+  state: SkinDesignState,
+  size: number,
+  restrictedPlates?: ReservedGuideBox[],
+  seriesSlots?: ReservedGuideBox[],
+): void {
+  const drawBoxes = (
+    boxes: ReservedGuideBox[],
+    stroke: string,
+    fill: string,
+    badgeBg: string,
+    defaultLabel: string,
+  ) => {
+    for (const b of boxes) {
+      if (!b || b.w <= 0.01 || b.h <= 0.01) continue;
+      const x = b.x * size;
+      const y = b.y * size;
+      const w = b.w * size;
+      const h = b.h * size;
+
+      ctx.save();
+      ctx.fillStyle = fill;
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = Math.max(2, size * 0.0024);
+      ctx.setLineDash([Math.max(6, size * 0.007), Math.max(4, size * 0.0045)]);
+      ctx.strokeRect(x, y, w, h);
+      ctx.setLineDash([]);
+
+      const label = b.label || defaultLabel;
+      const fontSize = Math.max(10, Math.round(size * 0.012));
+      ctx.font = `700 ${fontSize}px Inter, system-ui, sans-serif`;
+      const textW = ctx.measureText(label).width;
+      const padX = Math.max(5, size * 0.005);
+      const tagH = fontSize + 6;
+      const tagY = Math.max(2, y - tagH - 2);
+      ctx.fillStyle = badgeBg;
+      ctx.fillRect(x, tagY, textW + padX * 2, tagH);
+      ctx.fillStyle = "#ffffff";
+      ctx.textBaseline = "middle";
+      ctx.fillText(label, x + padX, tagY + tagH / 2);
+      ctx.restore();
+    }
+  };
+
+  // 1. Huecos reservados de DORSAL iRacing (rojo)
+  const numBoxes: ReservedGuideBox[] =
+    Array.isArray(restrictedPlates) && restrictedPlates.length > 0
+      ? restrictedPlates
+      : [
+          {
+            x: state.zones.numberPlateLeft.x,
+            y: state.zones.numberPlateLeft.y,
+            w: state.zones.numberPlateLeft.w,
+            h: state.zones.numberPlateLeft.h,
+            label: "DORSAL IZQ. (iRacing)",
+          },
+          {
+            x: state.zones.numberPlateRight.x,
+            y: state.zones.numberPlateRight.y,
+            w: state.zones.numberPlateRight.w,
+            h: state.zones.numberPlateRight.h,
+            label: "DORSAL DER. (iRacing)",
+          },
+        ];
+
+  drawBoxes(
+    numBoxes,
+    "rgba(239, 68, 68, 0.92)",
+    "rgba(239, 68, 68, 0.16)",
+    "rgba(185, 28, 28, 0.92)",
+    "DORSAL # (NO TAPAR)",
+  );
+
+  // 2. Huecos reservados de DECALS DE CATEGORÍA / SERIE (ámbar)
+  if (Array.isArray(seriesSlots) && seriesSlots.length > 0) {
+    drawBoxes(
+      seriesSlots.slice(0, 4),
+      "rgba(245, 158, 11, 0.90)",
+      "rgba(245, 158, 11, 0.12)",
+      "rgba(180, 83, 9, 0.92)",
+      "SERIE / CATEGORÍA",
+    );
   }
 }
 

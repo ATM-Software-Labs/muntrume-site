@@ -8,7 +8,7 @@ import {
   getCarById,
   getDriverById,
 } from "./catalog";
-import { renderSkinToCanvas, renderSpecMapToCanvas } from "./compositor";
+import { renderSkinToCanvas, renderSpecMapToCanvas, type ReservedGuideBox } from "./compositor";
 import { renderShowroomCarView, type ShowroomAngle } from "./car-showroom-view";
 import { BRAND_DECALS, SERIES_DECALS, TEAM_DECALS, type LibraryDecalItem } from "./decals-library";
 import {
@@ -86,6 +86,8 @@ export function initSkinsStudio(): void {
   let loadedTemplate: LoadedTemplate | null = null;
   let workerWireframeCanvas: HTMLCanvasElement | null = null;
   let workerSponsorBlocks: Array<{ id: string; cx: number; cy: number; nw: number; nh: number }> = [];
+  let workerRestrictedPlates: ReservedGuideBox[] = [];
+  let workerSeriesSlots: ReservedGuideBox[] = [];
   let workerCarsCatalog: Array<{ car_slug: string; name: string; brand: string; category?: string; iracing_folder: string; uv_status: string }> = [];
   let showTemplateOverlay = true;
   let templateOpacity = 0.96;
@@ -185,6 +187,36 @@ export function initSkinsStudio(): void {
       workerSponsorBlocks = Array.isArray(rawZones?.sponsor_blocks)
         ? (rawZones.sponsor_blocks as Array<{ id: string; cx: number; cy: number; nw: number; nh: number }>)
         : [];
+      const rawPlates = Array.isArray(uv.restricted_number_plates) ? uv.restricted_number_plates : [];
+      workerRestrictedPlates = rawPlates.map((p, i) => ({
+        x: (p.x > 1 ? p.x / 2048 : p.x),
+        y: (p.y > 1 ? p.y / 2048 : p.y),
+        w: (p.width > 1 ? p.width / 2048 : p.width),
+        h: (p.height > 1 ? p.height / 2048 : p.height),
+        label: p.label || `DORSAL #${i + 1} (iRacing)`,
+      }));
+
+      // Coordenadas verificadas para Acura NSX GT3 EVO 22 (placas IMSA/GTD + dorsales oficiales)
+      if (carSlug === "acuransxevo22gt3" && workerRestrictedPlates.length === 0) {
+        workerRestrictedPlates = [
+          { x: 0.325, y: 0.31, w: 0.075, h: 0.095, label: "DORSAL IZQ. (iRacing)" },
+          { x: 0.295, y: 0.59, w: 0.06, h: 0.09, label: "DORSAL CAPÓ (iRacing)" },
+          { x: 0.325, y: 0.87, w: 0.075, h: 0.095, label: "DORSAL DER. (iRacing)" },
+        ];
+        workerSeriesSlots = [
+          { x: 0.23, y: 0.165, w: 0.09, h: 0.04, label: "SERIE / IMSA FRONTAL" },
+          { x: 0.625, y: 0.33, w: 0.075, h: 0.045, label: "CATEGORÍA / GTD IZQ." },
+          { x: 0.625, y: 0.855, w: 0.075, h: 0.045, label: "CATEGORÍA / GTD DER." },
+        ];
+      } else {
+        workerSeriesSlots = workerSponsorBlocks.slice(0, 4).map((b, i) => ({
+          x: Math.max(0.01, b.cx - b.nw / 2),
+          y: Math.max(0.01, b.cy - b.nh / 2),
+          w: b.nw,
+          h: b.nh,
+          label: i === 0 ? "SERIE / SPONSOR PRINCIPAL" : `DECAL SERIE / CATEGORÍA #${i + 1}`,
+        }));
+      }
       workerWireframeCanvas = await renderSvgStringToCanvas(uv.wireframe_svg || "");
       const infoEl = byId<HTMLElement>("skTemplateSummary");
       if (infoEl) {
@@ -330,6 +362,8 @@ export function initSkinsStudio(): void {
             size: 1024,
             templateCanvas: loadedTemplate?.wireframeCanvas ?? loadedTemplate?.canvas ?? workerWireframeCanvas,
             partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
+            restrictedPlates: workerRestrictedPlates,
+            seriesSlots: workerSeriesSlots,
             showTemplateOverlay,
             templateOpacity,
             showZonesOverlay,
