@@ -88,7 +88,7 @@ export function initSkinsStudio(): void {
   let workerSponsorBlocks: Array<{ id: string; cx: number; cy: number; nw: number; nh: number }> = [];
   let workerCarsCatalog: Array<{ car_slug: string; name: string; brand: string; category?: string; iracing_folder: string; uv_status: string }> = [];
   let showTemplateOverlay = true;
-  let templateOpacity = 0.85;
+  let templateOpacity = 0.96;
   let showZonesOverlay = false;
   let selectedZone: ZoneKey | null = "hood";
   let selectedDecalId: string | null = state.decals[0]?.id ?? null;

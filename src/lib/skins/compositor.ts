@@ -75,121 +75,192 @@ function zonePx(z: ZoneRect, size: number): { x: number; y: number; w: number; h
 function drawPatternGeometry(ctx: CanvasRenderingContext2D, state: SkinDesignState, size: number): void {
   const { palette, pattern, spec } = state;
 
-  // Base full-body coat (subtle rich gradient so it never looks like flat dead black)
-  const baseGrad = ctx.createLinearGradient(0, 0, size, size);
-  baseGrad.addColorStop(0, palette.primary);
-  baseGrad.addColorStop(1, pattern === "freeform" ? palette.primary : palette.secondary);
-  ctx.fillStyle = baseGrad;
+  // Base 100 % opaca y sólida sobre todo el lienzo
+  ctx.save();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = palette.primary;
   ctx.fillRect(0, 0, size, size);
 
   if (spec.finish === "carbon" || spec.carbonAccent) {
-    drawCarbonPattern(ctx, 0, 0, size, size, size / 128);
+    drawCarbonPattern(ctx, 0, 0, size, size, size / 112);
   }
 
-  // Modo Diseño Libre: lienzo 100 % limpio sin trazos ni gráficos impuestos
+  // Modo Diseño Libre: pintura base sólida limpia sin gráficos impuestos
   if (pattern === "freeform") {
+    ctx.restore();
     return;
   }
 
-  // Todos los patrones pintan geometría fluida a lienzo completo (2048×2048) sin cajas rectangulares flotantes
   if (pattern === "endurance") {
-    // Sweeping motorsport diagonal aerodynamic bands across the entire UV
-    ctx.save();
+    // Livery pro Endurance (bloques aerodinámicos opacos multi-capa estilo IMSA / WEC)
+    // 1. Bloque superior e inferior en color secundario con corte angular agresivo
     ctx.fillStyle = palette.secondary;
     ctx.beginPath();
-    ctx.moveTo(0, size * 0.58);
-    ctx.lineTo(size, size * 0.22);
-    ctx.lineTo(size, size);
-    ctx.lineTo(0, size);
+    ctx.moveTo(0, 0);
+    ctx.lineTo(size * 0.42, 0);
+    ctx.lineTo(size * 0.18, size * 0.34);
+    ctx.lineTo(0, size * 0.28);
     ctx.closePath();
     ctx.fill();
 
-    // Primary sharp accent spear
-    ctx.strokeStyle = palette.accent;
-    ctx.lineWidth = Math.max(12, size * 0.022);
     ctx.beginPath();
-    ctx.moveTo(-size * 0.05, size * 0.60);
-    ctx.lineTo(size * 1.05, size * 0.20);
-    ctx.stroke();
+    ctx.moveTo(size, size);
+    ctx.lineTo(size * 0.24, size);
+    ctx.lineTo(size * 0.62, size * 0.56);
+    ctx.lineTo(size, size * 0.42);
+    ctx.closePath();
+    ctx.fill();
 
-    // Parallel fine motorsport pinstripe
-    ctx.strokeStyle = palette.detail;
-    ctx.lineWidth = Math.max(4, size * 0.006);
+    // 2. Cuña principal de acento motorsport (gruesa, sólida y equilibrada)
+    ctx.fillStyle = palette.accent;
     ctx.beginPath();
-    ctx.moveTo(-size * 0.05, size * 0.555);
-    ctx.lineTo(size * 1.05, size * 0.155);
-    ctx.stroke();
+    ctx.moveTo(0, size * 0.72);
+    ctx.lineTo(size * 0.68, size * 0.36);
+    ctx.lineTo(size, size * 0.24);
+    ctx.lineTo(size, size * 0.34);
+    ctx.lineTo(size * 0.66, size * 0.48);
+    ctx.lineTo(0, size * 0.84);
+    ctx.closePath();
+    ctx.fill();
 
-    // Subtle secondary chevron accent on lower body
-    ctx.strokeStyle = palette.accent;
-    ctx.globalAlpha = 0.55;
-    ctx.lineWidth = Math.max(6, size * 0.01);
+    // 3. Franja superior de contraste y borde nítido en color detalle
+    ctx.fillStyle = palette.detail;
     ctx.beginPath();
-    ctx.moveTo(-size * 0.05, size * 0.84);
-    ctx.lineTo(size * 1.05, size * 0.44);
-    ctx.stroke();
-    ctx.restore();
+    ctx.moveTo(0, size * 0.69);
+    ctx.lineTo(size * 0.68, size * 0.33);
+    ctx.lineTo(size, size * 0.21);
+    ctx.lineTo(size, size * 0.235);
+    ctx.lineTo(size * 0.68, size * 0.355);
+    ctx.lineTo(0, size * 0.715);
+    ctx.closePath();
+    ctx.fill();
+
+    // 4. Bandas aerodinámicas secundarias en extremos opuestos (cobertura homogénea en capó, laterales y alerón)
+    ctx.fillStyle = palette.accent;
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.16);
+    ctx.lineTo(size * 0.34, 0);
+    ctx.lineTo(size * 0.44, 0);
+    ctx.lineTo(0, size * 0.24);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = palette.detail;
+    ctx.beginPath();
+    ctx.moveTo(size * 0.56, size);
+    ctx.lineTo(size, size * 0.74);
+    ctx.lineTo(size, size * 0.79);
+    ctx.lineTo(size * 0.64, size);
+    ctx.closePath();
+    ctx.fill();
   } else if (pattern === "sprint") {
-    // Classic bold twin center racing stripes running cleanly down the full UV center axis
+    // Livery Sprint Factory: bloques laterales en secundario + doble franja racing gruesa + puntas aerodinámicas
+    ctx.fillStyle = palette.secondary;
+    ctx.fillRect(0, 0, size * 0.22, size);
+    ctx.fillRect(size * 0.78, 0, size * 0.22, size);
+
+    // Bandas de separación lateral en acento
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(size * 0.22, 0, size * 0.025, size);
+    ctx.fillRect(size * 0.755, 0, size * 0.025, size);
+
+    // Doble franja central racing sólida
     const cx = size * 0.5;
-    const stripeW = size * 0.055;
-    const gap = size * 0.018;
+    const stripeW = size * 0.068;
+    const gap = size * 0.022;
     ctx.fillStyle = palette.accent;
     ctx.fillRect(cx - gap / 2 - stripeW, 0, stripeW, size);
     ctx.fillRect(cx + gap / 2, 0, stripeW, size);
 
-    // Crisp outer pinstripes
+    // Filetes exteriores de alto contraste
     ctx.fillStyle = palette.detail;
-    const pinW = Math.max(3, size * 0.005);
-    ctx.fillRect(cx - gap / 2 - stripeW - pinW * 2.4, 0, pinW, size);
-    ctx.fillRect(cx + gap / 2 + stripeW + pinW * 1.4, 0, pinW, size);
+    const pinW = Math.max(5, size * 0.008);
+    ctx.fillRect(cx - gap / 2 - stripeW - pinW * 2.2, 0, pinW, size);
+    ctx.fillRect(cx + gap / 2 + stripeW + pinW * 1.2, 0, pinW, size);
   } else if (pattern === "carbon-stealth") {
-    // Full exposed carbon weave + sleek razor-thin diagonal stealth highlights (zero solid blocks)
-    drawCarbonPattern(ctx, 0, 0, size, size, size / 140);
-    ctx.save();
-    ctx.strokeStyle = palette.accent;
-    ctx.lineWidth = Math.max(5, size * 0.008);
-    ctx.beginPath();
-    ctx.moveTo(0, size * 0.34);
-    ctx.lineTo(size, size * 0.64);
-    ctx.moveTo(0, size * 0.66);
-    ctx.lineTo(size, size * 0.36);
-    ctx.stroke();
+    // Livery Carbono / Stealth geométrico (facetas angulares estilo Lamborghini Squadra Corse / Audi Sport)
+    drawCarbonPattern(ctx, 0, 0, size, size, size / 110);
 
+    // Facetas geométricas sólidas en secundario
+    ctx.fillStyle = palette.secondary;
+    const facets: Array<Array<[number, number]>> = [
+      [[0, 0], [0.55, 0], [0.28, 0.42], [0, 0.34]],
+      [[1, 0.12], [1, 0.64], [0.58, 0.46], [0.76, 0.16]],
+      [[0, 0.58], [0.46, 0.74], [0.32, 1], [0, 1]],
+      [[0.52, 0.62], [1, 0.82], [1, 1], [0.42, 1]],
+    ];
+    for (const poly of facets) {
+      ctx.beginPath();
+      poly.forEach(([px, py], i) => {
+        if (i === 0) ctx.moveTo(px * size, py * size);
+        else ctx.lineTo(px * size, py * size);
+      });
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Fragmentos afilados de acento neón
+    ctx.fillStyle = palette.accent;
+    const shards: Array<Array<[number, number]>> = [
+      [[0, 0.33], [0.30, 0.41], [0.27, 0.46], [0, 0.38]],
+      [[0.56, 0.45], [1, 0.62], [1, 0.68], [0.53, 0.50]],
+      [[0, 0.56], [0.48, 0.73], [0.45, 0.77], [0, 0.61]],
+      [[0.52, 0.61], [1, 0.80], [1, 0.84], [0.50, 0.65]],
+    ];
+    for (const poly of shards) {
+      ctx.beginPath();
+      poly.forEach(([px, py], i) => {
+        if (i === 0) ctx.moveTo(px * size, py * size);
+        else ctx.lineTo(px * size, py * size);
+      });
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Filos finos en color detalle
     ctx.strokeStyle = palette.detail;
-    ctx.globalAlpha = 0.65;
-    ctx.lineWidth = Math.max(2, size * 0.003);
+    ctx.lineWidth = Math.max(3, size * 0.0045);
     ctx.beginPath();
-    ctx.moveTo(0, size * 0.32);
-    ctx.lineTo(size, size * 0.62);
+    ctx.moveTo(0, size * 0.315);
+    ctx.lineTo(size * 0.31, size * 0.395);
+    ctx.moveTo(size * 0.55, size * 0.435);
+    ctx.lineTo(size, size * 0.605);
     ctx.stroke();
-    ctx.restore();
   } else if (pattern === "tricolor") {
-    // Classic 3-stripe diagonal factory motorsport livery across the full body
-    const colors = [palette.secondary, palette.accent, palette.detail];
-    const bandW = size * 0.065;
-    ctx.save();
+    // Livery Tricolor Motorsport oficial (3 bandas anchas sólidas cruzando toda la carrocería + bloques de contraste)
+    ctx.fillStyle = palette.secondary;
+    ctx.beginPath();
+    ctx.moveTo(size * 0.55, 0);
+    ctx.lineTo(size, 0);
+    ctx.lineTo(size, size);
+    ctx.lineTo(size * 0.15, size);
+    ctx.closePath();
+    ctx.fill();
+
+    const colors = [palette.detail, palette.accent, palette.primary];
+    const bandW = size * 0.085;
     colors.forEach((c, idx) => {
       ctx.fillStyle = c;
-      const ox = size * 0.32 + idx * bandW * 1.18;
+      const ox = size * 0.38 + idx * bandW * 1.05;
       ctx.beginPath();
       ctx.moveTo(ox, 0);
       ctx.lineTo(ox + bandW, 0);
-      ctx.lineTo(ox - size * 0.38 + bandW, size);
-      ctx.lineTo(ox - size * 0.38, size);
+      ctx.lineTo(ox - size * 0.42 + bandW, size);
+      ctx.lineTo(ox - size * 0.42, size);
       ctx.closePath();
       ctx.fill();
     });
-    ctx.restore();
   } else {
-    // Clean minimal: factory-team two-tone split with a refined single pinstripe
+    // Clean Minimal Factory: carrocería bitono sólida de escudería oficial con doble banda de cintura
     ctx.fillStyle = palette.secondary;
-    ctx.fillRect(0, size * 0.64, size, size * 0.36);
+    ctx.fillRect(0, size * 0.56, size, size * 0.44);
     ctx.fillStyle = palette.accent;
-    ctx.fillRect(0, size * 0.632, size, Math.max(5, size * 0.008));
+    ctx.fillRect(0, size * 0.54, size, size * 0.028);
     ctx.fillStyle = palette.detail;
-    ctx.fillRect(0, size * 0.622, size, Math.max(2, size * 0.003));
+    ctx.fillRect(0, size * 0.525, size, size * 0.01);
   }
+
+  ctx.restore();
 }
 
 function getFontFamily(style: SkinDesignState["fontStyle"]): string {

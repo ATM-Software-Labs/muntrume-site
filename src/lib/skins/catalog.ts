@@ -371,8 +371,8 @@ export const SKIN_PRESETS: PresetDefinition[] = [
     name: "MMT Endurance",
     tagline: "Base grafito, flechas esmeralda MMT y techo de alta visibilidad",
     palette: {
-      primary: "#0d131a",
-      secondary: "#18222e",
+      primary: "#16202e",
+      secondary: "#243447",
       accent: "#00e699",
       detail: "#f8fafc",
       numberColor: "#090b0f",
