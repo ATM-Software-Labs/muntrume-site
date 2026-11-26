@@ -1,58 +1,72 @@
 ---
 const year = new Date().getFullYear();
 
+const BASE = "https://muntru.me";
+
+const ecosystemLinks = [
+  { id: "portal", href: "https://muntru.me/", label: "Portal Principal", tag: "muntru.me" },
+  { id: "vault", href: "https://muntru.me/garage/", label: "Setup Vault (.sto)", tag: "/garage" },
+  { id: "skins", href: "https://skins.muntru.me/", label: "Skins Studio (2D/3D)", tag: "skins.muntru.me" },
+  { id: "sync", href: "https://muntru.me/app/vincular/", label: "Vincular App / Sync", tag: "MMT Sync" },
+];
+
+const teamContacts = [
+  { email: "alberto@muntru.me", label: "alberto@muntru.me" },
+  { email: "mateo@muntru.me", label: "mateo@muntru.me" },
+  { email: "admin@muntru.me", label: "admin@muntru.me" },
+];
+
 const columns = [
   {
     title: "Escudería",
     links: [
-      { href: "/", label: "Inicio", key: "nav.home" },
-      { href: "/pilotos/", label: "Pilotos", key: "nav.drivers" },
-      { href: "/logros/", label: "Logros e Insignias (108)" },
-      { href: "/about/", label: "Quiénes somos" },
-      { href: "/noticias/", label: "Sala de prensa", key: "nav.news" },
-      { href: "/communications/", label: "Comunicaciones" },
+      { href: `${BASE}/`, label: "Inicio", key: "nav.home" },
+      { href: `${BASE}/pilotos/`, label: "Pilotos", key: "nav.drivers" },
+      { href: `${BASE}/logros/`, label: "Logros e Insignias (108)" },
+      { href: `${BASE}/about/`, label: "Quiénes somos" },
+      { href: `${BASE}/noticias/`, label: "Sala de prensa", key: "nav.news" },
+      { href: `${BASE}/communications/`, label: "Comunicaciones" },
       { href: "https://forum.muntru.me/", label: "Foro técnico (forum.muntru.me)" },
       { href: "https://support.muntru.me/", label: "Centro de Ayuda y Soporte" },
-      { href: "/contact/", label: "Contacto", key: "footer.contact" },
+      { href: `${BASE}/contact/`, label: "Contacto", key: "footer.contact" },
     ],
   },
   {
     title: "Ingeniería y Setups",
     links: [
-      { href: "/garage/", label: "Garage (.sto)", key: "nav.garage" },
-      { href: "/setup-builder/", label: "Setup Builder" },
+      { href: `${BASE}/garage/`, label: "Setup Vault (.sto)", key: "nav.garage" },
+      { href: "https://skins.muntru.me/", label: "Skins Studio (2D/3D)" },
+      { href: `${BASE}/setup-builder/`, label: "Setup Builder" },
       { href: "https://ai.muntru.me/", label: "Muntrume AI" },
       { href: "https://docs.muntru.me/", label: "Documentación (docs.muntru.me)" },
-      { href: "/app/", label: "MMT Sync (App)", key: "footer.app" },
-      { href: "/app/install/", label: "Instalar MMT Sync" },
-      { href: "/overlay/", label: "MMT Sync Overlays" },
-      { href: "/overlay/brands/", label: "Marcas de Overlay" },
+      { href: `${BASE}/app/`, label: "MMT Sync (App)", key: "footer.app" },
+      { href: `${BASE}/app/install/`, label: "Instalar MMT Sync" },
+      { href: `${BASE}/overlay/`, label: "MMT Sync Overlays" },
     ],
   },
   {
     title: "Paddock y Competición",
     links: [
-      { href: "/paddock/", label: "Paddock", key: "nav.paddock" },
-      { href: "/calendar/", label: "Calendario 2026 S4" },
-      { href: "/calendar/content/", label: "Mi Contenido (Coches y Circuitos)" },
-      { href: "/calendar/special-events/", label: "Special Events 2026" },
-      { href: "/series/", label: "Series Oficiales" },
-      { href: "/tracks/", label: "Circuitos" },
-      { href: "/albums/", label: "Álbumes de Coches" },
-      { href: "/gallery/", label: "Galería en Pista" },
-      { href: "/wallpapers/", label: "Wallpapers 16:9 & 9:16" },
-      { href: "/paddock/marca/", label: "Branding y Marca" },
+      { href: `${BASE}/paddock/`, label: "Paddock", key: "nav.paddock" },
+      { href: `${BASE}/calendar/`, label: "Calendario 2026 S4" },
+      { href: `${BASE}/calendar/content/`, label: "Mi Contenido (Coches y Circuitos)" },
+      { href: `${BASE}/calendar/special-events/`, label: "Special Events 2026" },
+      { href: `${BASE}/series/`, label: "Series Oficiales" },
+      { href: `${BASE}/tracks/`, label: "Circuitos" },
+      { href: `${BASE}/albums/`, label: "Álbumes de Coches" },
+      { href: `${BASE}/gallery/`, label: "Galería en Pista" },
+      { href: `${BASE}/wallpapers/`, label: "Wallpapers 16:9 & 9:16" },
     ],
   },
   {
     title: "Acceso, Comunidad y Legal",
     links: [
-      { href: "/login/", label: "Acceso piloto" },
-      { href: "/app/vincular/", label: "Vincular App" },
-      { href: "/email-preferences/", label: "Preferencias de email" },
-      { href: "/legal/fuentes/", label: "Fuentes RSS", key: "footer.sources" },
-      { href: "/legal/retirada/", label: "Política de retirada", key: "footer.takedown" },
-      { href: "/remove-image/", label: "Retirar imagen" },
+      { href: `${BASE}/login/`, label: "Acceso piloto" },
+      { href: `${BASE}/app/vincular/`, label: "Vincular App / Sync" },
+      { href: `${BASE}/email-preferences/`, label: "Preferencias de email" },
+      { href: `${BASE}/legal/fuentes/`, label: "Fuentes RSS", key: "footer.sources" },
+      { href: `${BASE}/legal/retirada/`, label: "Política de retirada", key: "footer.takedown" },
+      { href: `${BASE}/remove-image/`, label: "Retirar imagen" },
       { href: "https://discord.gg/ehX6B8JUtE", label: "Discord oficial", external: true },
       { href: "https://garage61.net/app/teams/muntrume-motorsport", label: "Garage 61", external: true },
     ],
@@ -60,8 +74,58 @@ const columns = [
 ];
 ---
 
-<footer class="mmt-footer">
+<footer class="mmt-footer" id="mmtEcosystemFooter">
   <div class="mmt-footer__inner">
+    <!-- Bloque Ecosistema Unificado MMT (muntru.me <-> skins.muntru.me) -->
+    <div class="mmt-eco">
+      <div class="mmt-eco__identity">
+        <div class="mmt-eco__title-row">
+          <a class="mmt-footer__wordmark" href="https://muntru.me/">
+            <img src="/assets/img/logo-64.webp" width="26" height="26" alt="" loading="lazy" decoding="async" />
+            <span>MUNTRUME MOTORSPORT (MMT)</span>
+          </a>
+          <span class="mmt-eco__status" id="mmtFooterApiStatus" title="Estado de conexión con api.muntru.me">
+            <span class="mmt-eco__dot" aria-hidden="true"></span>
+            <span id="mmtFooterApiText">Verificando API...</span>
+          </span>
+        </div>
+        <p class="mmt-eco__desc">
+          Ecosistema técnico de simracing para iRacing: gestión de setups <code>.sto</code>, telemetría MMT Sync, asistencia IA y estudio web de liveries 2D/3D.
+        </p>
+        <div class="mmt-eco__contacts" aria-label="Contacto directo del equipo">
+          <span class="mmt-eco__label">Contacto directo:</span>
+          {teamContacts.map((c) => (
+            <a href={`mailto:${c.email}`} class="mmt-eco__mail">{c.label}</a>
+          ))}
+        </div>
+      </div>
+
+      <nav class="mmt-eco__map" aria-label="Mapa del ecosistema Muntrume Motorsport">
+        <span class="mmt-eco__label">Ecosistema .muntru.me</span>
+        <div class="mmt-eco__pills">
+          {ecosystemLinks.map((item) => (
+            <a href={item.href} class="mmt-eco__pill" data-eco-id={item.id}>
+              <span class="mmt-eco__pill-label">{item.label}</span>
+              <span class="mmt-eco__pill-tag">{item.tag}</span>
+            </a>
+          ))}
+        </div>
+      </nav>
+    </div>
+
+    <!-- Barra de sesión sincronizada entre muntru.me y skins.muntru.me -->
+    <div class="mmt-eco__session" id="mmtFooterSessionBar">
+      <div class="mmt-eco__session-info">
+        <span class="mmt-eco__session-dot" id="mmtFooterSessionDot" aria-hidden="true"></span>
+        <span id="mmtFooterSessionText">Sesión no iniciada en .muntru.me</span>
+      </div>
+      <div class="mmt-eco__session-actions" id="mmtFooterSessionActions">
+        <a href="https://muntru.me/login/" id="mmtFooterLoginLink" class="mmt-eco__btn mmt-eco__btn--accent">Iniciar sesión</a>
+        <a href="https://muntru.me/" class="mmt-eco__btn">Portal Principal</a>
+        <button type="button" id="mmtFooterLogoutBtn" class="mmt-eco__btn mmt-eco__btn--danger" hidden>Cerrar sesión (.muntru.me)</button>
+      </div>
+    </div>
+
     <div class="mmt-footer__grid">
       {columns.map((col) => (
         <div class="mmt-footer__col">
@@ -86,18 +150,21 @@ const columns = [
 
     <div class="mmt-footer__bottom">
       <div class="mmt-footer__brand-row">
-        <a class="mmt-footer__wordmark" href="/">
+        <a class="mmt-footer__wordmark" href="https://muntru.me/">
           <img src="/assets/img/logo-64.webp" width="26" height="26" alt="" loading="lazy" decoding="async" />
           <span>Muntrume Motorsport</span>
         </a>
         <span class="mmt-footer__pill">iRacing · Endurance &amp; GT</span>
         <nav class="mmt-footer__legal" aria-label="Información legal" data-i18n-aria="footer.legal">
-          <a href="/contact/" data-i18n="footer.contact">Contacto</a>
-          <a href="/privacy/" data-i18n="footer.privacy">Privacidad</a>
-          <a href="/aviso-legal/" data-i18n="footer.aviso">Términos</a>
-          <a href="/cookies/" data-i18n="footer.cookies">Cookies</a>
+          <a href="https://muntru.me/contact/" data-i18n="footer.contact">Contacto</a>
+          <a href="https://muntru.me/privacy/" data-i18n="footer.privacy">Privacidad</a>
+          <a href="https://muntru.me/aviso-legal/" data-i18n="footer.aviso">Términos</a>
+          <a href="https://muntru.me/cookies/" data-i18n="footer.cookies">Cookies</a>
           <span class="mmt-footer__copy">© <span id="copyYear">{year}</span> MMT</span>
         </nav>
+        <p class="mmt-eco__disclaimer">
+          Aviso técnico y legal: <strong>muntru.me</strong> y <strong>skins.muntru.me</strong> son herramientas independientes desarrolladas por Muntrume Motorsport (MMT), sin afiliación oficial ni respaldo de iRacing.com Motorsport Simulations, LLC ni Trading Paints.
+        </p>
       </div>
 
       <div class="mmt-footer__utils">
@@ -154,6 +221,222 @@ const columns = [
   .mmt-footer__inner {
     max-width: 1200px;
     margin: 0 auto;
+  }
+  .mmt-eco {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 24px 32px;
+    padding-bottom: 22px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--r-line);
+  }
+  .mmt-eco__title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    margin-bottom: 8px;
+  }
+  .mmt-eco__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--r-muted);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--r-line);
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+  .mmt-eco__status.is-online {
+    color: var(--r-accent, #00e699);
+    border-color: rgba(0, 230, 153, 0.32);
+    background: rgba(0, 230, 153, 0.08);
+  }
+  .mmt-eco__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #f59e0b;
+  }
+  .mmt-eco__status.is-online .mmt-eco__dot {
+    background: var(--r-accent, #00e699);
+    box-shadow: 0 0 8px rgba(0, 230, 153, 0.7);
+  }
+  .mmt-eco__desc {
+    margin: 0 0 12px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--r-muted);
+    max-width: 540px;
+  }
+  .mmt-eco__desc code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    color: var(--r-text);
+  }
+  .mmt-eco__contacts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    font-size: 12px;
+  }
+  .mmt-eco__label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--r-muted);
+  }
+  .mmt-eco__mail {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    color: var(--r-text);
+    text-decoration: none;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--r-line);
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .mmt-eco__mail:hover {
+    color: var(--r-accent, #00e699);
+    border-color: rgba(0, 230, 153, 0.4);
+  }
+  .mmt-eco__map {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .mmt-eco__pills {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .mmt-eco__pill {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--r-line);
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+  }
+  .mmt-eco__pill:hover {
+    border-color: rgba(0, 230, 153, 0.45);
+    background: rgba(0, 230, 153, 0.06);
+    transform: translateY(-1px);
+  }
+  .mmt-eco__pill.is-active {
+    border-color: rgba(0, 230, 153, 0.65);
+    background: rgba(0, 230, 153, 0.11);
+  }
+  .mmt-eco__pill-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--r-text);
+  }
+  .mmt-eco__pill-tag {
+    font-size: 11px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--r-muted);
+  }
+  .mmt-eco__pill.is-active .mmt-eco__pill-tag {
+    color: var(--r-accent, #00e699);
+  }
+  .mmt-eco__session {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+    padding: 10px 14px;
+    margin-bottom: 30px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--r-line);
+    font-size: 12.5px;
+  }
+  .mmt-eco__session-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--r-text);
+    font-weight: 500;
+  }
+  .mmt-eco__session-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #64748b;
+  }
+  .mmt-eco__session-dot.is-connected {
+    background: var(--r-accent, #00e699);
+    box-shadow: 0 0 8px rgba(0, 230, 153, 0.65);
+  }
+  .mmt-eco__session-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .mmt-eco__btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 11px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    color: var(--r-text);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--r-line);
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .mmt-eco__btn:hover {
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.09);
+  }
+  .mmt-eco__btn--accent {
+    color: #06130d;
+    background: var(--r-accent, #00e699);
+    border-color: var(--r-accent, #00e699);
+  }
+  .mmt-eco__btn--accent:hover {
+    background: #10f0a4;
+    border-color: #10f0a4;
+  }
+  .mmt-eco__btn--danger {
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.08);
+  }
+  .mmt-eco__btn--danger:hover {
+    border-color: rgba(239, 68, 68, 0.65);
+    background: rgba(239, 68, 68, 0.16);
+  }
+  .mmt-eco__disclaimer {
+    margin: 8px 0 0;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--r-muted);
+    flex: 1 1 100%;
+    opacity: 0.88;
+  }
+  @media (max-width: 900px) {
+    .mmt-eco {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 560px) {
+    .mmt-eco__pills {
+      grid-template-columns: 1fr;
+    }
   }
   .mmt-footer__grid {
     display: grid;
@@ -431,5 +714,112 @@ const columns = [
   });
   document.addEventListener("muntru:i18n", syncMenu);
   syncMenu();
+
+  // --- Ecosistema MMT: dominio activo, estado API y sincronización de sesión .muntru.me ---
+  var host = (window.location.hostname || "").toLowerCase();
+  var path = (window.location.pathname || "/").toLowerCase();
+  var activeEcoId = "portal";
+  if (host === "skins.muntru.me" || path.indexOf("/skins") === 0) activeEcoId = "skins";
+  else if (path.indexOf("/garage") === 0) activeEcoId = "vault";
+  else if (path.indexOf("/app/vincular") === 0) activeEcoId = "sync";
+
+  document.querySelectorAll("[data-eco-id]").forEach(function (el) {
+    var isAct = el.getAttribute("data-eco-id") === activeEcoId;
+    el.classList.toggle("is-active", isAct);
+    if (isAct) {
+      el.setAttribute("aria-current", "page");
+      var tag = el.querySelector(".mmt-eco__pill-tag");
+      if (tag) tag.textContent = (tag.textContent || "") + " · ACTIVO";
+    }
+  });
+
+  // Estado discreto del Worker / API
+  var apiBadge = document.getElementById("mmtFooterApiStatus");
+  var apiText = document.getElementById("mmtFooterApiText");
+  if (apiBadge && apiText) {
+    var ac = typeof AbortController !== "undefined" ? new AbortController() : null;
+    var tId = ac ? setTimeout(function () { ac.abort(); }, 4500) : null;
+    fetch("https://api.muntru.me/", { method: "GET", mode: "cors", signal: ac ? ac.signal : undefined })
+      .then(function (r) {
+        if (tId) clearTimeout(tId);
+        if (r.ok || r.status < 500) {
+          apiBadge.classList.add("is-online");
+          apiText.textContent = "API Online · Cloudflare Edge";
+        } else {
+          apiText.textContent = "API degradada (" + r.status + ")";
+        }
+      })
+      .catch(function () {
+        if (tId) clearTimeout(tId);
+        apiText.textContent = "API sin respuesta";
+      });
+  }
+
+  // Sincronización de sesión ligera entre muntru.me y skins.muntru.me (cookie .muntru.me <-> localStorage)
+  function readCookie(name) {
+    var m = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
+    return m ? decodeURIComponent(m[1]) : "";
+  }
+  function syncCrossSubdomainSession() {
+    var tk = "";
+    try { tk = localStorage.getItem("mrt_vault_token") || ""; } catch (e) {}
+    var cookieTk = readCookie("mm_sso_tk");
+    if (!tk && cookieTk) {
+      tk = cookieTk;
+      try { localStorage.setItem("mrt_vault_token", cookieTk); } catch (e) {}
+    } else if (tk && !cookieTk && host.indexOf("muntru.me") !== -1) {
+      document.cookie = "mm_sso_tk=" + encodeURIComponent(tk) + "; Domain=.muntru.me; Path=/; Max-Age=604800; SameSite=Lax; Secure";
+    }
+
+    var user = null;
+    try {
+      var uStr = localStorage.getItem("mrt_vault_user");
+      if (uStr) user = JSON.parse(uStr);
+    } catch (e) {}
+
+    if (!user && tk && tk.split(".").length === 3) {
+      try {
+        var b64 = tk.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+        user = JSON.parse(atob(b64));
+      } catch (e) {}
+    }
+
+    var sDot = document.getElementById("mmtFooterSessionDot");
+    var sText = document.getElementById("mmtFooterSessionText");
+    var loginLink = document.getElementById("mmtFooterLoginLink");
+    var logoutBtn = document.getElementById("mmtFooterLogoutBtn");
+
+    if (loginLink) {
+      loginLink.setAttribute("href", "https://muntru.me/login/?next=" + encodeURIComponent(window.location.href));
+    }
+
+    if (tk) {
+      var displayName = (user && (user.name || user.full_name || user.username || user.email)) || "Piloto MMT";
+      var num = user && (user.number || user.dorsal) ? " · #" + String(user.number || user.dorsal) : "";
+      if (sDot) sDot.classList.add("is-connected");
+      if (sText) sText.textContent = "Conectado como " + displayName + num;
+      if (loginLink) loginLink.hidden = true;
+      if (logoutBtn) logoutBtn.hidden = false;
+    } else {
+      if (sDot) sDot.classList.remove("is-connected");
+      if (sText) sText.textContent = "Sesión no iniciada en el ecosistema .muntru.me";
+      if (loginLink) loginLink.hidden = false;
+      if (logoutBtn) logoutBtn.hidden = true;
+    }
+
+    if (logoutBtn && !logoutBtn.dataset.bound) {
+      logoutBtn.dataset.bound = "1";
+      logoutBtn.addEventListener("click", function () {
+        try {
+          localStorage.removeItem("mrt_vault_token");
+          localStorage.removeItem("mrt_vault_user");
+        } catch (e) {}
+        document.cookie = "mm_sso_tk=; Domain=.muntru.me; Path=/; Max-Age=0; SameSite=Lax; Secure";
+        document.cookie = "mm_sso_tk=; Path=/; Max-Age=0; SameSite=Lax";
+        window.location.reload();
+      });
+    }
+  }
+  syncCrossSubdomainSession();
 })();
 </script>
