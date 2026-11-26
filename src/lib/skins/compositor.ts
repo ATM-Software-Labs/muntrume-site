@@ -27,21 +27,66 @@ export interface CompositeOptions {
 
 const imageCache = new Map<string, HTMLImageElement>();
 
-function loadImageCached(key: string, src: string): Promise<HTMLImageElement | null> {
-  const existing = imageCache.get(key);
-  if (existing && existing.complete && existing.naturalWidth > 0) {
-    return Promise.resolve(existing);
-  }
+function loadRawImage(src: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.onload = () => {
-      imageCache.set(key, img);
-      resolve(img);
-    };
+    img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
     img.src = src;
   });
+}
+
+async function loadImageCached(key: string, src: string): Promise<HTMLImageElement | null> {
+  const existing = imageCache.get(key);
+  if (existing && existing.complete && existing.naturalWidth > 0) {
+    return existing;
+  }
+
+  // Ensure external SVGs without explicit width/height render crisply on <canvas>
+  if (/\.svg(?:[?#].*)?$/i.test(src) && !src.startsWith("data:")) {
+    try {
+      const resp = await fetch(src);
+      if (resp.ok) {
+        let svgText = await resp.text();
+        // Unwrap <image href="...webp"/> wrappers directly to their real raster asset
+        const wrappedRaster = svgText.match(/<image[^>]+href=["']([^"']+\.(?:webp|png|jpg|jpeg))["']/i);
+        if (wrappedRaster && wrappedRaster[1]) {
+          const baseDir = src.slice(0, src.lastIndexOf("/") + 1);
+          const rasterUrl = wrappedRaster[1].startsWith("/") || /^https?:/.test(wrappedRaster[1])
+            ? wrappedRaster[1]
+            : `${baseDir}${wrappedRaster[1]}`;
+          const rImg = await loadRawImage(rasterUrl);
+          if (rImg && rImg.naturalWidth > 0) {
+            imageCache.set(key, rImg);
+            return rImg;
+          }
+        }
+        // Inject explicit width/height from viewBox if missing so naturalWidth/Height are always exact
+        if (!/\bwidth\s*=/i.test(svgText.slice(0, 260)) || !/\bheight\s*=/i.test(svgText.slice(0, 260))) {
+          const vb = svgText.match(/viewBox=["']\s*[\d.-]+\s+[\d.-]+\s+([\d.]+)\s+([\d.]+)\s*["']/i);
+          const w = vb ? Math.max(64, Math.round(Number(vb[1]) * 4)) : 512;
+          const h = vb ? Math.max(64, Math.round(Number(vb[2]) * 4)) : 512;
+          svgText = svgText.replace(/<svg\b/i, `<svg width="${w}" height="${h}"`);
+        }
+        const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`;
+        const sImg = await loadRawImage(dataUrl);
+        if (sImg && sImg.naturalWidth > 0) {
+          imageCache.set(key, sImg);
+          return sImg;
+        }
+      }
+    } catch {
+      // Fall through to standard image load
+    }
+  }
+
+  const img = await loadRawImage(src);
+  if (img && img.naturalWidth > 0) {
+    imageCache.set(key, img);
+    return img;
+  }
+  return null;
 }
 
 function getDecalSource(decal: DecalLayer): { key: string; src: string } | null {
@@ -719,17 +764,30 @@ async function drawDecals(ctx: CanvasRenderingContext2D, state: SkinDesignState,
         ctx.fillText(decal.text || decal.name, 0, 0);
         drawH = fontSize * 1.25;
       } else if (img) {
-        const aspect = img.naturalHeight > 0 && img.naturalWidth > 0 ? img.naturalHeight / img.naturalWidth : 0.35;
+        const isFullUv = decal.scale >= 0.95 && Math.abs(pos.x - 0.5) < 0.05 && Math.abs(pos.y - 0.5) < 0.05;
+        const aspect = isFullUv
+          ? 1
+          : img.naturalHeight > 0 && img.naturalWidth > 0
+            ? img.naturalHeight / img.naturalWidth
+            : 0.35;
         drawH = drawW * aspect;
         ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
       }
 
-      if (!forExport && idx === 0 && selectedDecalId === decal.id) {
+      if (!forExport && idx === 0 && selectedDecalId === decal.id && decal.scale < 0.95) {
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#00ff9d";
         ctx.lineWidth = Math.max(2, size * 0.0025);
         ctx.setLineDash([6, 4]);
         ctx.strokeRect(-drawW / 2 - 4, -drawH / 2 - 4, drawW + 8, drawH + 8);
+        // Bottom-right resize handle
+        ctx.setLineDash([]);
+        const hs = Math.max(10, size * 0.014);
+        ctx.fillStyle = "#00ff9d";
+        ctx.fillRect(drawW / 2 + 4 - hs / 2, drawH / 2 + 4 - hs / 2, hs, hs);
+        ctx.strokeStyle = "#061018";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(drawW / 2 + 4 - hs / 2, drawH / 2 + 4 - hs / 2, hs, hs);
       }
       ctx.restore();
     }

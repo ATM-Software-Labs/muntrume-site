@@ -806,7 +806,7 @@ export function initSkinsStudio(): void {
   let brushMirror = true;
   let activeStroke: { color: string; size: number; mirrorX: boolean; points: Array<{ x: number; y: number }> } | null = null;
 
-  let dragMode: "none" | "pan" | "zone-move" | "zone-resize" | "decal-move" | "brush" = "none";
+  let dragMode: "none" | "pan" | "zone-move" | "zone-resize" | "decal-move" | "decal-resize" | "brush" = "none";
   let dragStartX = 0;
   let dragStartY = 0;
   let origPanX = 0;
@@ -840,7 +840,27 @@ export function initSkinsStudio(): void {
       return;
     }
 
-    // 1. Check resize handle of selected zone
+    // 1. Check resize handle of selected decal first (so resizing never gets stolen by zone/pan)
+    if (selectedDecalId) {
+      const selD = state.decals.find((item) => item.id === selectedDecalId);
+      if (selD && selD.scale < 0.95) {
+        const halfW = selD.scale * 0.5;
+        const halfH = Math.max(0.035, selD.scale * 0.35);
+        const rad = (selD.rotation * Math.PI) / 180;
+        const cos = Math.cos(rad);
+        const sin = Math.sin(rad);
+        const hx = selD.x + halfW * cos - halfH * sin;
+        const hy = selD.y + halfW * sin + halfH * cos;
+        if (Math.hypot(u - hx, v - hy) < 0.038) {
+          dragMode = "decal-resize" as typeof dragMode;
+          origRect = { x: selD.x, y: selD.y, w: selD.scale, h: selD.scale };
+          uvCanvas.setPointerCapture(e.pointerId);
+          return;
+        }
+      }
+    }
+
+    // 1b. Check resize handle of selected zone
     if (showZonesOverlay && selectedZone) {
       const z = state.zones[selectedZone];
       if (Math.hypot(u - (z.x + z.w), v - (z.y + z.h)) < 0.03) {
@@ -851,14 +871,35 @@ export function initSkinsStudio(): void {
       }
     }
 
-    // 2. Check decal hit
+    // 2. Check decal hit (supports rotation, mirrorX copy, and generous clickable box for small logos)
     for (let i = state.decals.length - 1; i >= 0; i--) {
       const d = state.decals[i];
-      if (Math.abs(u - d.x) < d.scale * 0.5 && Math.abs(v - d.y) < d.scale * 0.35) {
+      if (d.scale >= 0.95) continue; // Full-UV official overlay layers stay locked in place
+      const halfW = Math.max(0.045, d.scale * 0.55);
+      const halfH = Math.max(0.045, d.scale * 0.55);
+      const candidates = d.mirrorX
+        ? [
+            { x: d.x, y: d.y, rot: d.rotation, mirrored: false },
+            { x: 1 - d.x, y: d.y, rot: -d.rotation, mirrored: true },
+          ]
+        : [{ x: d.x, y: d.y, rot: d.rotation, mirrored: false }];
+      let hit = false;
+      for (const c of candidates) {
+        const rad = (-c.rot * Math.PI) / 180;
+        const dx = u - c.x;
+        const dy = v - c.y;
+        const lx = dx * Math.cos(rad) - dy * Math.sin(rad);
+        const ly = dx * Math.sin(rad) + dy * Math.cos(rad);
+        if (Math.abs(lx) <= halfW && Math.abs(ly) <= halfH) {
+          hit = true;
+          break;
+        }
+      }
+      if (hit) {
         selectedDecalId = d.id;
         selectedZone = null;
         dragMode = "decal-move";
-        origRect = { x: d.x, y: d.y, w: 0, h: 0 };
+        origRect = { x: d.x, y: d.y, w: d.scale, h: 0 };
         renderZoneList();
         renderDecalList();
         renderDecalEditor();
@@ -921,17 +962,59 @@ export function initSkinsStudio(): void {
         d.y = Math.max(0.02, Math.min(0.98, origRect.y + dv));
         scheduleRender();
       }
+    } else if (dragMode === "decal-resize" && selectedDecalId) {
+      const d = state.decals.find((item) => item.id === selectedDecalId);
+      if (d) {
+        const delta = Math.max(du, dv) * 1.8;
+        d.scale = Math.max(0.04, Math.min(0.85, origRect.w + delta));
+        scheduleRender();
+      }
     }
   });
 
   const endUvDrag = () => {
     if (dragMode === "zone-move" || dragMode === "zone-resize") renderZoneList();
-    if (dragMode === "decal-move") renderDecalEditor();
+    if (dragMode === "decal-move" || dragMode === "decal-resize") renderDecalEditor();
     activeStroke = null;
     dragMode = "none";
   };
   uvCanvas.addEventListener("pointerup", endUvDrag);
   uvCanvas.addEventListener("pointercancel", endUvDrag);
+
+  // Precision keyboard nudge for selected decal (Arrows + Shift, Delete to remove)
+  window.addEventListener("keydown", (e) => {
+    if (!selectedDecalId) return;
+    const tag = (e.target as HTMLElement | null)?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+    const d = state.decals.find((item) => item.id === selectedDecalId);
+    if (!d || d.scale >= 0.95) return;
+    const step = e.shiftKey ? 0.02 : 0.005;
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      d.x = Math.max(0.02, d.x - step);
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      d.x = Math.min(0.98, d.x + step);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      d.y = Math.max(0.02, d.y - step);
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      d.y = Math.min(0.98, d.y + step);
+    } else if (e.key === "Delete") {
+      e.preventDefault();
+      state.decals = state.decals.filter((item) => item.id !== d.id);
+      selectedDecalId = null;
+      renderDecalList();
+      renderDecalEditor();
+      scheduleRender();
+      return;
+    } else {
+      return;
+    }
+    renderDecalEditor();
+    scheduleRender();
+  });
 
   byId<HTMLElement>("skCanvasWrap")?.addEventListener(
     "wheel",
@@ -1501,10 +1584,14 @@ export function initSkinsStudio(): void {
         };
         state.decals.push(layer);
         selectedDecalId = layer.id;
+        if (viewMode === "showroom") {
+          viewMode = "uv";
+          updateViewModeUI();
+        }
         renderDecalList();
         renderDecalEditor();
         scheduleRender();
-        setStatus(`Logo "${item.label}" encajado en ${targetZoneKey} (arrástralo libremente si quieres moverlo)`, "ok");
+        setStatus(`Logo "${item.label}" añadido en ${targetZoneKey} · Arrástralo en el lienzo UV o usa las flechas`, "ok");
       });
     });
   };
@@ -1512,6 +1599,60 @@ export function initSkinsStudio(): void {
   mountLibraryDecals("skTeamDecals", TEAM_DECALS, false);
   mountLibraryDecals("skSeriesDecals", SERIES_DECALS, true);
   mountLibraryDecals("skBrandDecals", BRAND_DECALS, false);
+
+  // Official iRacing 1-click UV layers (brand decals, IMSA, GT3 plates, wireframe)
+  type OfficialKitManifest = Record<string, { sourceSlug: string; layers: Record<string, string> }>;
+  let officialKits: OfficialKitManifest = {};
+  fetch("/assets/skins/kits/manifest.json")
+    .then((r) => (r.ok ? r.json() : {}))
+    .then((data: OfficialKitManifest) => {
+      officialKits = data || {};
+    })
+    .catch(() => {});
+
+  const toggleOfficialUvLayer = (layerKey: "brand_decals" | "imsa_decals" | "series_blocks" | "wireframe", label: string) => {
+    const kit = officialKits[state.carId];
+    const url = kit?.layers?.[layerKey];
+    if (!url) {
+      setStatus(`Este coche (${state.carId}) no tiene capa oficial "${label}" en su plantilla iRacing`, "neutral");
+      return;
+    }
+    const layerId = `official-uv-${state.carId}-${layerKey}`;
+    const existingIdx = state.decals.findIndex((d) => d.id === layerId);
+    if (existingIdx !== -1) {
+      state.decals.splice(existingIdx, 1);
+      if (selectedDecalId === layerId) selectedDecalId = null;
+      renderDecalList();
+      renderDecalEditor();
+      scheduleRender();
+      setStatus(`Capa oficial "${label}" quitada`, "ok");
+      return;
+    }
+    const layer: DecalLayer = {
+      id: layerId,
+      name: `${label} (${getCarById(state.carId).name})`,
+      kind: "custom",
+      dataUrl: url,
+      color: "#ffffff",
+      x: 0.5,
+      y: 0.5,
+      scale: 1.0,
+      rotation: 0,
+      opacity: layerKey === "wireframe" ? 0.55 : 1,
+      mirrorX: false,
+    };
+    state.decals.push(layer);
+    selectedDecalId = layer.id;
+    renderDecalList();
+    renderDecalEditor();
+    scheduleRender();
+    setStatus(`Capa oficial "${label}" aplicada al píxel exacto sobre ${getCarById(state.carId).name}`, "ok");
+  };
+
+  byId<HTMLButtonElement>("skKitAddBrand")?.addEventListener("click", () => toggleOfficialUvLayer("brand_decals", "Logos Marca iRacing"));
+  byId<HTMLButtonElement>("skKitAddImsa")?.addEventListener("click", () => toggleOfficialUvLayer("imsa_decals", "Etiquetas IMSA"));
+  byId<HTMLButtonElement>("skKitAddSeries")?.addEventListener("click", () => toggleOfficialUvLayer("series_blocks", "Placas GT3 / Dorsales"));
+  byId<HTMLButtonElement>("skKitAddWire")?.addEventListener("click", () => toggleOfficialUvLayer("wireframe", "Cascarón UV Wireframe"));
 
   byId<HTMLButtonElement>("skAddTextDecal")?.addEventListener("click", () => {
     const txtInput = byId<HTMLInputElement>("skCustomTextInput");

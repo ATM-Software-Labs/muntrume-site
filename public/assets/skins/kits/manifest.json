@@ -1,0 +1,259 @@
+{
+  "acuransxevo22gt3": {
+    "sourceSlug": "acura_nsx_evo22_gt3",
+    "layers": {
+      "wireframe": "/assets/skins/kits/acuransxevo22gt3/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/acuransxevo22gt3/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/acuransxevo22gt3/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/acuransxevo22gt3/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/acuransxevo22gt3/car_mandatory.webp"
+    }
+  },
+  "astonmartinvantagegt3": {
+    "sourceSlug": "aston_martin_vantage_evo_gt3",
+    "layers": {
+      "wireframe": "/assets/skins/kits/astonmartinvantagegt3/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/astonmartinvantagegt3/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/astonmartinvantagegt3/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/astonmartinvantagegt3/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/astonmartinvantagegt3/car_mandatory.webp"
+    }
+  },
+  "audir8lmsevo2gt3": {
+    "sourceSlug": "audi_r8_lms_evo_ii_gt3",
+    "layers": {
+      "wireframe": "/assets/skins/kits/audir8lmsevo2gt3/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/audir8lmsevo2gt3/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/audir8lmsevo2gt3/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/audir8lmsevo2gt3/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/audir8lmsevo2gt3/car_mandatory.webp"
+    }
+  },
+  "bmwm4gt3": {
+    "sourceSlug": "bmw_m4_gt3",
+    "layers": {
+      "wireframe": "/assets/skins/kits/bmwm4gt3/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/bmwm4gt3/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/bmwm4gt3/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/bmwm4gt3/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/bmwm4gt3/car_mandatory.webp"
+    }
+  },
+  "chevyvettez06rgt3": {
+    "sourceSlug": "chevrolet_corvette_z06_gt3r",
+    "layers": {
+      "wireframe": "/assets/skins/kits/chevyvettez06rgt3/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/chevyvettez06rgt3/brand_decals.webp",
+      "car_mandatory": "/assets/skins/kits/chevyvettez06rgt3/car_mandatory.webp"
+    }
+  },
+  "ferrari296gt3": {
+    "sourceSlug": "ferrari_296_gt3",
+    "layers": {
+      "wireframe": "/assets/skins/kits/ferrari296gt3/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/ferrari296gt3/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/ferrari296gt3/imsa_decals.webp",
+      "car_mandatory": "/assets/skins/kits/ferrari296gt3/car_mandatory.webp"
+    }
+  },
+  "fordmustanggt3": {
+    "sourceSlug": "ford_mustang_gt3",
+    "layers": {
+      "wireframe": "/assets/skins/kits/fordmustanggt3/wireframe.webp",
+      "series_blocks": "/assets/skins/kits/fordmustanggt3/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/fordmustanggt3/car_mandatory.webp"
+    }
+  },
+  "lamborghinievogt3": {
+    "sourceSlug": "lamborghini_evo_gt3",
+    "layers": {
+      "wireframe": "/assets/skins/kits/lamborghinievogt3/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/lamborghinievogt3/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/lamborghinievogt3/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/lamborghinievogt3/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/lamborghinievogt3/car_mandatory.webp"
+    }
+  },
+  "mclaren720sgt3": {
+    "sourceSlug": "mclaren_720s_evo_gt3",
+    "layers": {
+      "wireframe": "/assets/skins/kits/mclaren720sgt3/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/mclaren720sgt3/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/mclaren720sgt3/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/mclaren720sgt3/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/mclaren720sgt3/car_mandatory.webp"
+    }
+  },
+  "mercedesamggt3": {
+    "sourceSlug": "mercedes_amg_gt3_2020",
+    "layers": {
+      "wireframe": "/assets/skins/kits/mercedesamggt3/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/mercedesamggt3/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/mercedesamggt3/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/mercedesamggt3/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/mercedesamggt3/car_mandatory.webp"
+    }
+  },
+  "porsche992rgt3": {
+    "sourceSlug": "porsche_992r_gt3",
+    "layers": {
+      "wireframe": "/assets/skins/kits/porsche992rgt3/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/porsche992rgt3/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/porsche992rgt3/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/porsche992rgt3/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/porsche992rgt3/car_mandatory.webp"
+    }
+  },
+  "acuraarx06gtp": {
+    "sourceSlug": "acura_arx06_gtp",
+    "layers": {
+      "wireframe": "/assets/skins/kits/acuraarx06gtp/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/acuraarx06gtp/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/acuraarx06gtp/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/acuraarx06gtp/car_mandatory.webp"
+    }
+  },
+  "bmwlmdh": {
+    "sourceSlug": "bmw_m_hybrid_v8",
+    "layers": {
+      "wireframe": "/assets/skins/kits/bmwlmdh/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/bmwlmdh/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/bmwlmdh/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/bmwlmdh/car_mandatory.webp"
+    }
+  },
+  "cadillacvseriesrgtp": {
+    "sourceSlug": "cadillac_vseriesr_gtp",
+    "layers": {
+      "wireframe": "/assets/skins/kits/cadillacvseriesrgtp/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/cadillacvseriesrgtp/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/cadillacvseriesrgtp/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/cadillacvseriesrgtp/car_mandatory.webp"
+    }
+  },
+  "ferrari499p": {
+    "sourceSlug": "ferrari_499p",
+    "layers": {
+      "wireframe": "/assets/skins/kits/ferrari499p/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/ferrari499p/brand_decals.webp",
+      "car_mandatory": "/assets/skins/kits/ferrari499p/car_mandatory.webp"
+    }
+  },
+  "porsche963gtp": {
+    "sourceSlug": "porsche_963_gtp",
+    "layers": {
+      "wireframe": "/assets/skins/kits/porsche963gtp/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/porsche963gtp/brand_decals.webp",
+      "car_mandatory": "/assets/skins/kits/porsche963gtp/car_mandatory.webp"
+    }
+  },
+  "dallarap217": {
+    "sourceSlug": "dallara_p217",
+    "layers": {
+      "wireframe": "/assets/skins/kits/dallarap217/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/dallarap217/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/dallarap217/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/dallarap217/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/dallarap217/car_mandatory.webp"
+    }
+  },
+  "ligierjsp320": {
+    "sourceSlug": "ligier_js_p320",
+    "layers": {
+      "wireframe": "/assets/skins/kits/ligierjsp320/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/ligierjsp320/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/ligierjsp320/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/ligierjsp320/car_mandatory.webp"
+    }
+  },
+  "amvantagegt4": {
+    "sourceSlug": "aston_martin_vantage_gt4",
+    "layers": {
+      "wireframe": "/assets/skins/kits/amvantagegt4/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/amvantagegt4/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/amvantagegt4/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/amvantagegt4/car_mandatory.webp"
+    }
+  },
+  "bmwm4g82gt4": {
+    "sourceSlug": "bmw_m4_evo_gt4",
+    "layers": {
+      "wireframe": "/assets/skins/kits/bmwm4g82gt4/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/bmwm4g82gt4/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/bmwm4g82gt4/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/bmwm4g82gt4/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/bmwm4g82gt4/car_mandatory.webp"
+    }
+  },
+  "mercedesamggt4": {
+    "sourceSlug": "mercedes_amg_gt4",
+    "layers": {
+      "wireframe": "/assets/skins/kits/mercedesamggt4/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/mercedesamggt4/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/mercedesamggt4/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/mercedesamggt4/car_mandatory.webp"
+    }
+  },
+  "dallaraf3": {
+    "sourceSlug": "dallara_f312_f3",
+    "layers": {
+      "wireframe": "/assets/skins/kits/dallaraf3/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/dallaraf3/brand_decals.webp",
+      "car_mandatory": "/assets/skins/kits/dallaraf3/car_mandatory.webp"
+    }
+  },
+  "formulair04": {
+    "sourceSlug": "formula_ir04",
+    "layers": {
+      "wireframe": "/assets/skins/kits/formulair04/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/formulair04/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/formulair04/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/formulair04/car_mandatory.webp"
+    }
+  },
+  "superformulalights324": {
+    "sourceSlug": "super_formula_lights_sf23",
+    "layers": {
+      "wireframe": "/assets/skins/kits/superformulalights324/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/superformulalights324/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/superformulalights324/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/superformulalights324/car_mandatory.webp"
+    }
+  },
+  "superformulasf23": {
+    "sourceSlug": "super_formula_lights_sf23",
+    "layers": {
+      "wireframe": "/assets/skins/kits/superformulasf23/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/superformulasf23/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/superformulasf23/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/superformulasf23/car_mandatory.webp"
+    }
+  },
+  "hyundaielantrantc": {
+    "sourceSlug": "hyundai_elantra_n_tc",
+    "layers": {
+      "wireframe": "/assets/skins/kits/hyundaielantrantc/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/hyundaielantrantc/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/hyundaielantrantc/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/hyundaielantrantc/car_mandatory.webp"
+    }
+  },
+  "mx5": {
+    "sourceSlug": "mazda_mx5_2016",
+    "layers": {
+      "wireframe": "/assets/skins/kits/mx5/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/mx5/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/mx5/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/mx5/car_mandatory.webp"
+    }
+  },
+  "toyotagr86": {
+    "sourceSlug": "toyota_gr86",
+    "layers": {
+      "wireframe": "/assets/skins/kits/toyotagr86/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/toyotagr86/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/toyotagr86/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/toyotagr86/car_mandatory.webp"
+    }
+  }
+}

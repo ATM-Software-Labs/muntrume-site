@@ -24,7 +24,7 @@ export const SERIES_DECALS: LibraryDecalItem[] = [
 ];
 
 export const BRAND_DECALS: LibraryDecalItem[] = [
-  { id: "brand-porsche", label: "Porsche", group: "brand", src: "/assets/brand/logos/logo-porsche.svg", defaultScale: 0.10 },
+  { id: "brand-porsche", label: "Porsche", group: "brand", src: "/assets/brand/logos/logo-porsche.webp", defaultScale: 0.10 },
   { id: "brand-ferrari", label: "Ferrari", group: "brand", src: "/assets/brand/logos/logo-ferrari.svg", defaultScale: 0.10 },
   { id: "brand-lambo", label: "Lamborghini", group: "brand", src: "/assets/brand/logos/logo-lambo.svg", defaultScale: 0.10 },
   { id: "brand-bmw", label: "BMW", group: "brand", src: "/assets/brand/logos/logo-bmw.svg", defaultScale: 0.10 },
@@ -46,16 +46,16 @@ export const BRAND_DECALS: LibraryDecalItem[] = [
   { id: "brand-lotus", label: "Lotus", group: "brand", src: "/assets/brand/logos/logo-lotus.svg", defaultScale: 0.10 },
   { id: "brand-nissan", label: "Nissan", group: "brand", src: "/assets/brand/logos/logo-nissan.svg", defaultScale: 0.11 },
   { id: "brand-renault", label: "Renault", group: "brand", src: "/assets/brand/logos/logo-renault.svg", defaultScale: 0.10 },
-  { id: "brand-subaru", label: "Subaru", group: "brand", src: "/assets/brand/logos/logo-subaru.svg", defaultScale: 0.12 },
+  { id: "brand-subaru", label: "Subaru", group: "brand", src: "/assets/brand/logos/logo-subaru.webp", defaultScale: 0.12 },
   { id: "brand-vw", label: "Volkswagen", group: "brand", src: "/assets/brand/logos/logo-vw.svg", defaultScale: 0.10 },
   { id: "brand-williams", label: "Williams", group: "brand", src: "/assets/brand/logos/logo-williams.svg", defaultScale: 0.12 },
-  { id: "brand-radical", label: "Radical", group: "brand", src: "/assets/brand/logos/logo-radical.svg", defaultScale: 0.13 },
+  { id: "brand-radical", label: "Radical", group: "brand", src: "/assets/brand/logos/logo-radical.webp", defaultScale: 0.13 },
   { id: "brand-ruf", label: "RUF", group: "brand", src: "/assets/brand/logos/logo-ruf.svg", defaultScale: 0.11 },
   { id: "brand-caterham", label: "Caterham", group: "brand", src: "/assets/brand/logos/logo-caterham.svg", defaultScale: 0.12 },
   { id: "brand-pontiac", label: "Pontiac", group: "brand", src: "/assets/brand/logos/logo-pontiac.svg", defaultScale: 0.11 },
-  { id: "brand-buick", label: "Buick", group: "brand", src: "/assets/brand/logos/logo-buick.svg", defaultScale: 0.11 },
-  { id: "brand-holden", label: "Holden", group: "brand", src: "/assets/brand/logos/logo-holden.svg", defaultScale: 0.11 },
+  { id: "brand-buick", label: "Buick", group: "brand", src: "/assets/brand/logos/logo-buick.webp", defaultScale: 0.11 },
+  { id: "brand-holden", label: "Holden", group: "brand", src: "/assets/brand/logos/logo-holden.webp", defaultScale: 0.11 },
   { id: "brand-ram", label: "RAM", group: "brand", src: "/assets/brand/logos/logo-ram.svg", defaultScale: 0.11 },
-  { id: "brand-riley", label: "Riley", group: "brand", src: "/assets/brand/logos/logo-riley.svg", defaultScale: 0.12 },
+  { id: "brand-riley", label: "Riley", group: "brand", src: "/assets/brand/logos/logo-riley.webp", defaultScale: 0.12 },
   { id: "brand-skip", label: "Skip Barber", group: "brand", src: "/assets/brand/logos/logo-skip.svg", defaultScale: 0.12 },
 ];
