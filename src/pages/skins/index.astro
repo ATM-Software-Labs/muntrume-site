@@ -241,16 +241,21 @@ const canonical = "https://skins.muntru.me/";
 
           <div id="skGlOverlay" class="sk-gl-overlay sk-hidden">
             <div id="skGlNotice" class="sk-gl-notice">
-              Superficie curva de pruebas UV (carga un .OBJ para malla exacta del coche)
+              Visor 3D Three.js PBR en tiempo real (arrastra para orbitar · rueda para zoom)
             </div>
-            <div class="sk-row">
+            <div class="sk-row" style="flex-wrap:wrap;">
               <button type="button" class="sk-btn sk-btn-sm" data-gl-cam="front34">Frontal 3/4</button>
               <button type="button" class="sk-btn sk-btn-sm" data-gl-cam="side">Lateral</button>
               <button type="button" class="sk-btn sk-btn-sm" data-gl-cam="rear34">Trasera 3/4</button>
               <button type="button" class="sk-btn sk-btn-sm" data-gl-cam="top">Cenital</button>
+              <span style="width:1px;height:18px;background:rgba(255,255,255,0.14);margin:0 2px;"></span>
+              <button type="button" class="sk-btn sk-btn-sm is-active" data-gl-light="noon">Mediodía</button>
+              <button type="button" class="sk-btn sk-btn-sm" data-gl-light="sunset">Atardecer</button>
+              <button type="button" class="sk-btn sk-btn-sm" data-gl-light="overcast">Nublado / Boxes</button>
+              <span style="width:1px;height:18px;background:rgba(255,255,255,0.14);margin:0 2px;"></span>
               <label class="sk-btn sk-btn-sm" style="cursor:pointer;">
-                Cargar .OBJ
-                <input id="skObjInput" type="file" accept=".obj" class="sk-hidden" />
+                Cargar .GLB / .GLTF / .OBJ
+                <input id="skObjInput" type="file" accept=".glb,.gltf,.obj" class="sk-hidden" />
               </label>
               <button type="button" id="skGlResetMesh" class="sk-btn sk-btn-sm">Reset</button>
             </div>

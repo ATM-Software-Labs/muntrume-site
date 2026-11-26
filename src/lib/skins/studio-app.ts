@@ -19,7 +19,7 @@ import {
   sanitizeCustomerId,
 } from "./exporter";
 import { buildDefaultPhotoGuide, contrastRatio } from "./photo-guide";
-import { WebGLPreviewEngine } from "./preview-3d";
+import { WebGLPreviewEngine, mapCategoryStringToBody, type LightingPreset } from "./preview-3d";
 import { analyzeTemplateZones, loadTemplateFile, type LoadedTemplate } from "./template-analyzer";
 import {
   SkinsApiError,
@@ -195,6 +195,7 @@ export function initSkinsStudio(): void {
         notesEl.textContent = `Carpeta iRacing: paint/${uv.iracing_folder}/ · Estado UV: ${uv.uv_status === "extracted" ? "Plantilla vectorial calibrada ✓" : "Base"}`;
       }
       renderZoneList();
+      glEngine.setCategory(mapCategoryStringToBody(car.category));
       glEngine.updateZones(state.zones);
       scheduleRender();
       setStatus(`Plantilla UV cargada (${uv.car_name})`, "ok");
@@ -346,10 +347,19 @@ export function initSkinsStudio(): void {
             partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
             forExport: true,
           });
-          glEngine.updateTexture(offscreenTexture, state.spec.metallic, state.spec.roughness);
-          const meshStatus = glEngine.getMeshStatus();
+          const offscreenSpec = document.createElement("canvas");
+          offscreenSpec.width = 256;
+          offscreenSpec.height = 256;
+          renderSpecMapToCanvas(offscreenSpec, state, 256);
+          glEngine.updateTexture(
+            offscreenTexture,
+            state.spec.metallic,
+            state.spec.roughness,
+            offscreenSpec,
+            state.spec.clearcoat,
+          );
           const notice = byId<HTMLElement>("skGlNotice");
-          if (notice) notice.textContent = meshStatus.label;
+          if (notice) notice.textContent = glEngine.getMeshLabel();
         }
       } catch (err) {
         setStatus(err instanceof Error ? err.message : "Error al renderizar lienzo", "err");
@@ -925,23 +935,38 @@ export function initSkinsStudio(): void {
     scheduleRender();
   });
 
-  // 3D camera presets & OBJ loader
+  // 3D camera presets, lighting presets & local .GLB/.GLTF/.OBJ loader
   document.querySelectorAll<HTMLButtonElement>("[data-gl-cam]").forEach((btn) => {
     btn.addEventListener("click", () => {
       glEngine.setCameraPreset(btn.dataset.glCam as "front34" | "side" | "rear34" | "top");
+    });
+  });
+  document.querySelectorAll<HTMLButtonElement>("[data-gl-light]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const preset = (btn.dataset.glLight || "noon") as LightingPreset;
+      glEngine.setLightingPreset(preset);
+      document.querySelectorAll<HTMLButtonElement>("[data-gl-light]").forEach((b) =>
+        b.classList.toggle("is-active", b === btn),
+      );
     });
   });
   byId<HTMLInputElement>("skObjInput")?.addEventListener("change", async (e) => {
     const file = (e.target as HTMLInputElement).files?.[0];
     if (!file) return;
     try {
-      const text = await file.text();
-      glEngine.loadObjMesh(text, file.name);
+      const lower = file.name.toLowerCase();
+      if (lower.endsWith(".glb") || lower.endsWith(".gltf")) {
+        await glEngine.loadGltfFile(file);
+      } else {
+        const text = await file.text();
+        glEngine.loadObjMesh(text, file.name);
+      }
       viewMode = "3d";
       updateViewModeUI();
-      setStatus(`Malla 3D cargada: ${file.name}`, "ok");
+      scheduleRender();
+      setStatus(`Modelo 3D local cargado: ${file.name} (solo en tu navegador)`, "ok");
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : "Error cargando archivo .OBJ", "err");
+      setStatus(err instanceof Error ? err.message : "Error cargando modelo 3D (.GLB / .GLTF / .OBJ)", "err");
     }
   });
   byId<HTMLButtonElement>("skGlResetMesh")?.addEventListener("click", () => {
@@ -1050,6 +1075,7 @@ export function initSkinsStudio(): void {
       viewMode = "uv";
       updateViewModeUI();
       renderZoneList();
+      glEngine.setCategory(mapCategoryStringToBody(car.category));
       glEngine.updateZones(state.zones);
       scheduleRender();
       setStatus(`Plantilla real de iRacing cargada (${analysis.width}×${analysis.height} ${analysis.format})`, "ok");
