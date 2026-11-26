@@ -1,0 +1,18 @@
+name = "muntrume-ai"
+main = "index.ts"
+compatibility_date = "2026-11-20"
+
+# Despliegue: npx wrangler deploy --config workers/ai/ai.wrangler.toml
+# El sitio responde sin este worker: /api/ai cae al motor local.
+
+[ai]
+binding = "AI"
+
+# KV opcional para el límite compartido entre aislados.
+# [[kv_namespaces]]
+# binding = "AI_RATE_LIMIT"
+# id = ""
+
+# Secretos opcionales. Crear con `wrangler secret put`, sin escribir el valor aquí.
+# GROQ_API_KEY
+# OPENROUTER_API_KEY

@@ -1,1331 +1,276 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { MUNTRUME_KB } from '../data/muntrume-kb';
 
-const pageTitle = "Muntrume AI · Open Source Sim Racing Engineering Studio";
-const pageDescription = "Muntrume AI Studio (100% Open Source · MIT) on ai.muntru.me: iRacing setup engineer with live artifacts (HTML, SVG, Mermaid, Slides, CSV), vision OCR, and team models.";
-
-const aiJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  name: "Muntrume AI",
-  alternateName: "Muntrume AI Studio",
-  applicationCategory: "DeveloperApplication",
-  operatingSystem: "Web",
-  url: "https://ai.muntru.me/",
-  softwareVersion: "1.0",
-  isAccessibleForFree: true,
-  license: "https://opensource.org/licenses/MIT",
-  description: pageDescription,
-  documentation: "https://docs.muntru.me/",
-  creator: {
-    "@type": "Organization",
-    name: "Muntrume Motorsport",
-    url: "https://muntru.me/",
-  },
-  featureList: [
-    "Ingeniero de setups iRacing y estrategia de resistencia",
-    "Estudio de Artefactos interactivos en vivo (HTML, SVG, Mermaid, Slides 16:9, CSV, DOC/PDF)",
-    "Publicación permanente de artefactos en ai.muntru.me/a/<slug>",
-    "Visión por imagen para telemetría y capturas de Garage 61",
-    "Motores Muntrume 1.0 Lite, Pro y Ultra Max 100 % Open Source (MIT)",
-  ],
-};
+const pageTitle = "Muntrume AI · Pro Light Ultra Max";
+const pageDescription = "Asistente open source de Muntrume Motorsport con motores Lite, Pro y Ultra Max, Ollama local y calculadoras de combustible para iRacing. Sin muros de pago.";
+const repo = "https://github.com/ATM-Software-Labs/muntrume-site";
 ---
 
-<Layout title={pageTitle} description={pageDescription} canonical="https://ai.muntru.me/" hideFooter>
-  <script type="application/ld+json" set:html={JSON.stringify(aiJsonLd)} />
-  <div class="ai-shell" id="aiWorkspace">
-    <script is:inline>
-      if (window.innerWidth <= 900) {
-        document.getElementById("aiWorkspace")?.classList.add("is-side-collapsed");
-      }
-    </script>
-    <!-- TEAM SECURITY GATE (Blocks models & menus for unauthenticated external visitors; Docs remain 100% public) -->
-    <div id="aiTeamGate" class="ai-team-gate" hidden role="region" aria-label="Acceso restringido al equipo Muntrume Motorsport">
-      <div class="ai-team-gate__card">
-        <div class="ai-team-gate__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-        </div>
-        <span class="ai-team-gate__badge">ZERO-TRUST · SOLO EQUIPO MUNTRUME</span>
-        <h2>Acceso protegido a Muntrume AI Studio</h2>
-        <p>
-          Los motores de inferencia (<strong>Muntrume 1.0 Lite, Pro y Ultra Max</strong>), las skills de ingeniería, los proyectos y el estudio de artefactos están reservados a miembros verificados de <strong>Muntrume Motorsport</strong>.
-        </p>
-        <p class="ai-team-gate__sub">
-          Si eres visitante externo, desarrollador o buscador, puedes consultar toda la documentación técnica, arquitectura y especificaciones OpenAPI de forma abierta.
-        </p>
-        <div class="ai-team-gate__actions">
-          <button type="button" id="aiGateLoginBtn" class="ai-btn-accent">Iniciar sesión de equipo</button>
-          <button type="button" id="aiGateCloseBtn" class="ai-gate-docs-btn">Seguir con Muntrume 1.0 Open (gratis)</button>
-        </div>
-        <div class="ai-team-gate__links">
-          <a href="https://docs.muntru.me/">Documentación</a>
-          <span>·</span>
-          <a href="/llms.txt">llms.txt</a>
-          <span>·</span>
-          <a href="/ai-knowledge.json">ai-knowledge.json</a>
-          <span>·</span>
-          <a href="/ai-openapi.json">OpenAPI 3.1</a>
-          <span>·</span>
-          <a href={MUNTRUME_KB.team.githubUrl} target="_blank" rel="noopener noreferrer">GitHub (MIT)</a>
-        </div>
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/ai/" hideNav hideFooter>
+  <script is:inline>
+    (function () {
+      try {
+        var theme = localStorage.getItem("muntrume-ai-theme");
+        if (theme !== "light" && theme !== "dark") theme = "dark";
+        document.documentElement.setAttribute("data-ai-theme", theme);
+      } catch (e) {}
+    })();
+  </script>
+  <div class="ai-app" data-theme="dark">
+    <button type="button" id="aiScrim" class="ai-scrim" hidden aria-label="Cerrar historial"></button>
+    <aside id="aiSide" class="ai-side" aria-label="Conversaciones">
+      <div class="ai-side__bar">
+        <p>Conversaciones</p>
+        <button type="button" id="aiSideClose" class="ai-icon" aria-label="Cerrar historial">×</button>
       </div>
-    </div>
-
-    <!-- LEFT SIDEBAR (100 % REAL OPEN-SOURCE TOOLS, ZERO EMOJIS) -->
-    <aside id="aiSide" class="ai-side" aria-label="Navegación de Muntrume AI">
-      <div class="ai-side__head">
-        <a href="/" class="ai-brand">
-          <span class="ai-brand__mark" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-          </span>
-          <span>Muntrume AI</span>
-        </a>
-        <button type="button" id="aiSideClose" class="ai-ico-btn" aria-label="Ocultar barra lateral" title="Ocultar barra lateral">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg>
-        </button>
-      </div>
-
-      <nav class="ai-side__nav" aria-label="Herramientas">
-        <button type="button" id="aiNewChatBtn" class="ai-side-btn ai-side-btn--primary">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-          <span>Nuevo chat</span>
-          <kbd class="ai-kbd-pill">Ctrl K</kbd>
-        </button>
-        <button type="button" id="aiSearchBtn" class="ai-side-btn">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-          <span>Buscar</span>
-        </button>
-        <div id="aiSearchWrap" class="ai-search-wrap" hidden>
-          <input type="search" id="aiSearchInput" placeholder="Filtrar conversaciones…" aria-label="Buscar conversaciones" />
-        </div>
-        <button type="button" id="aiProjectsBtn" class="ai-side-btn">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          <span>Proyectos</span>
-        </button>
-        <button type="button" id="aiArtifactsBtn" class="ai-side-btn">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-          <span>Artefactos</span>
-        </button>
-        <button type="button" id="aiCodeModeBtn" class="ai-side-btn">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-          <span>Code</span>
-          <span class="ai-side-pill">Live</span>
-        </button>
-        <button type="button" id="aiCalcBtn" class="ai-side-btn">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>
-          <span>Calculadoras</span>
-        </button>
-        <button type="button" id="aiPersonalizeBtn" class="ai-side-btn">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09c-.66 0-1.25.4-1.51 1z"/></svg>
-          <span>Personalización</span>
-        </button>
+      <button type="button" id="aiNew" class="ai-new">Nueva conversación</button>
+      <div id="aiChatList" class="ai-list" role="list"></div>
+      <nav class="ai-side__links" aria-label="Sitio">
+        <a href="/">Inicio</a>
+        <a href="/contact/">Contacto</a>
+        <a href="/overlay/">Overlay</a>
+        <a href="/garage/">Setup Vault</a>
+        <a href="/wallpapers/">Wallpapers</a>
       </nav>
-
-      <div class="ai-side__label">Conversaciones</div>
-      <div id="aiChatList" class="ai-chat-list"></div>
-
-      <div class="ai-side__foot">
-        <a href="https://docs.muntru.me/" class="ai-mit-link" style="margin-bottom:6px">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          <span>Documentación &amp; API</span>
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:auto"><path d="M7 17L17 7M7 7h10v10"/></svg>
-        </a>
-        <a href={MUNTRUME_KB.team.githubUrl} target="_blank" rel="noopener noreferrer" class="ai-mit-link">
-          <span class="ai-dot"></span>
-          <span>100 % Open Source · MIT</span>
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:auto"><path d="M7 17L17 7M7 7h10v10"/></svg>
-        </a>
-      </div>
     </aside>
 
-    <!-- MAIN CHAT STAGE -->
-    <main class="ai-stage" id="aiStage">
-      <div class="ai-stage-glow" aria-hidden="true"></div>
-
-      <div class="ai-topbar">
-        <div class="ai-topbar__left">
-          <button type="button" id="aiSideToggle" class="ai-ico-btn" aria-label="Mostrar u ocultar barra lateral" title="Menú lateral">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg>
-          </button>
-          <span class="ai-top-pill">
-            <span class="ai-dot"></span>
-            <span id="aiTopLabel">ai.muntru.me</span>
-          </span>
-        </div>
-
-        <div class="ai-topbar__right">
-          <button type="button" id="aiExportChatBtn" class="ai-pace-btn" title="Exportar conversación activa en Markdown (.md)">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            <span>Exportar .md</span>
-          </button>
-          <button type="button" id="aiPaceBtn" class="ai-pace-btn" title="Cambiar velocidad de lectura en vivo">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 14l4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
-            <span id="aiPaceLabel">Ritmo: Lectura</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Messages Feed -->
-      <div id="aiFeed" class="ai-feed" hidden></div>
-
-      <!-- Scroll to bottom floating pill -->
-      <button type="button" id="aiScrollDownBtn" class="ai-scroll-down" hidden aria-label="Bajar al final">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
-        <span>Seguir lectura</span>
-      </button>
-
-      <!-- Centered Welcome + Pro Composer -->
-      <div class="ai-composer-wrap">
-        <div id="aiEmptyState" class="ai-empty">
-          <div class="ai-empty__badge">
-            <span class="ai-dot"></span>
-            <span>Muntrume AI Studio · Open Source</span>
-          </div>
-          <div class="ai-empty__title">
-            <span class="ai-emblem-ring" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" class="ai-emblem"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            </span>
-            <h1 id="aiGreeting">¿En qué trabajamos hoy?</h1>
-          </div>
-          <p class="ai-empty__sub">Ingeniería de setups iRacing, estrategia de stints, código interactivo, tablas, documentos y presentaciones.</p>
-        </div>
-
-        <!-- Live Pacing Status Bar (visible while typing) -->
-        <div id="aiStreamBar" class="ai-stream-bar" hidden>
-          <span class="ai-stream-bar__dot"></span>
-          <span id="aiStreamBarText">Redactando a ritmo de lectura…</span>
-          <button type="button" id="aiSkipAnimBtn" class="ai-stream-bar__skip">Mostrar todo</button>
-        </div>
-
-        <form id="aiComposerForm" class="ai-composer" autocomplete="off">
-          <div id="aiContextPills" class="ai-ctx-bar" hidden></div>
-
-          <textarea
-            id="aiInput"
-            rows="2"
-            placeholder="Escribe una consulta, pega una captura (Ctrl+V) o adjunta un archivo…"
-            aria-label="Mensaje para Muntrume AI"
-          ></textarea>
-
-          <input type="file" id="aiFileInput" class="hidden" accept="image/png,image/jpeg,image/webp,.txt,.md,.csv,.json,.js,.ts,.py,.html,.css,.sto,.xml,.yml,.yaml" />
-
-          <div class="ai-composer__bar">
-            <div class="ai-composer__left">
-              <!-- Clean Simplified "+" Tools Menu (Compact, Zero Scrollbar) -->
-              <div class="ai-pop-anchor">
-                <button type="button" id="aiPlusBtn" class="ai-plus-btn" aria-label="Herramientas y adjuntos" title="Adjuntar y herramientas">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-                </button>
-                <div id="aiPlusMenu" class="ai-popover ai-popover--compact" hidden>
-                  <button type="button" id="aiActUpload" class="ai-pop-item">
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-                    <span class="ai-pop-txt">Archivo o imagen</span>
-                    <kbd class="ai-pop-kbd">Ctrl+U</kbd>
-                  </button>
-                  <button type="button" id="aiActGithub" class="ai-pop-item">
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-                    <span class="ai-pop-txt">Importar GitHub</span>
-                  </button>
-                  <button type="button" id="aiActProject" class="ai-pop-item">
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                    <span class="ai-pop-txt">Cambiar proyecto</span>
-                  </button>
-                  <div class="ai-pop-sep"></div>
-                  <div class="ai-pop-label">Modo rápido</div>
-                  <div class="ai-pop-grid">
-                    <button type="button" class="ai-pop-chip" data-select-skill="setup">Setups iRacing</button>
-                    <button type="button" class="ai-pop-chip" data-select-skill="strategy">Estrategia</button>
-                    <button type="button" class="ai-pop-chip" data-select-skill="code">Artefacto Live</button>
-                    <button type="button" class="ai-pop-chip" data-select-skill="slides">Slides / Docs</button>
-                  </div>
-                  <div class="ai-pop-sep"></div>
-                  <div class="ai-pop-toggles">
-                    <button type="button" id="aiActWebToggle" class="ai-pop-toggle is-on">
-                      <span class="ai-pop-toggle__dot"></span>
-                      <span>Web en vivo</span>
-                    </button>
-                    <button type="button" id="aiActMemToggle" class="ai-pop-toggle is-on">
-                      <span class="ai-pop-toggle__dot"></span>
-                      <span>Memoria</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="ai-composer__right">
-              <!-- Optimized 3-Tier Open Source Model Selector -->
-              <div class="ai-pop-anchor">
-                <button type="button" id="aiModelBtn" class="ai-model-btn" title="Cambiar motor Muntrume">
-                  <span id="aiModelBtnLabel">Muntrume 1.0 Pro</span>
-                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-                <div id="aiModelMenu" class="ai-popover ai-popover--right" hidden>
-                  <button type="button" class="ai-model-opt" data-select-tier="open">
-                    <strong>Muntrume 1.0 Open <small style="opacity:.75;font-weight:600">· GRATIS</small></strong>
-                    <span>Abierto para todos los visitantes · Consultas generales (0 €)</span>
-                  </button>
-                  <button type="button" class="ai-model-opt" data-select-tier="lite" data-team-only="1">
-                    <strong>Muntrume 1.0 Lite <small class="ai-lock-tag">· Solo equipo</small></strong>
-                    <span>Ultrarrápido · Resúmenes y cálculos al instante</span>
-                  </button>
-                  <button type="button" class="ai-model-opt is-active" data-select-tier="pro" data-team-only="1">
-                    <strong>Muntrume 1.0 Pro <small class="ai-lock-tag">· Solo equipo</small></strong>
-                    <span>Óptimo · Setups iRacing, artefactos HTML y código</span>
-                  </button>
-                  <button type="button" class="ai-model-opt" data-select-tier="ultra_max" data-team-only="1">
-                    <strong>Muntrume 1.0 Ultra Max <small class="ai-lock-tag">· Solo equipo</small></strong>
-                    <span>Razonamiento profundo paso a paso · Análisis complejo</span>
-                  </button>
-                </div>
-              </div>
-
-              <button type="button" id="aiEffortBtn" class="ai-effort-btn" title="Nivel de detalle">Medio</button>
-              <button type="submit" id="aiSendBtn" class="ai-send-btn" data-state="send" aria-label="Enviar">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-              </button>
-            </div>
-          </div>
-        </form>
-
-        <!-- Clean 2x2 Editorial Starter Cards (0 emojis) -->
-        <div class="ai-starters-grid">
-          <button type="button" class="ai-starter-card" data-starter-skill="setup" data-starter-prompt="Tengo subviraje en entrada de curva lenta y sobreviraje saliendo en Ferrari 296 GT3 en Spa. Dame diagnóstico con tabla de clics exactos y notas de telemetría.">
-            <span class="ai-starter-card__ico" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-            </span>
-            <span class="ai-starter-card__body">
-              <strong>Ingeniería de Setups</strong>
-              <span>Diagnóstico GT3, tabla de clics y telemetría</span>
-            </span>
-          </button>
-          <button type="button" class="ai-starter-card" data-starter-skill="strategy" data-starter-prompt="Calcula estrategia completa de combustible y paradas en tabla para una carrera de resistencia de 6 horas en GT3 (tanque 100 L, consumo 2.95 L/vuelta, vuelta de 2:17).">
-            <span class="ai-starter-card__ico" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            </span>
-            <span class="ai-starter-card__body">
-              <strong>Estrategia y Stints</strong>
-              <span>Plan de combustible, ventanas y neumáticos</span>
-            </span>
-          </button>
-          <button type="button" class="ai-starter-card" data-starter-skill="code" data-starter-prompt="Crea un artefacto HTML interactivo de calculadora de combustible y stints para iRacing con modo oscuro limpio y resultados en tiempo real.">
-            <span class="ai-starter-card__ico" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-            </span>
-            <span class="ai-starter-card__body">
-              <strong>Código y Artefacto Live</strong>
-              <span>Apps HTML, diagramas SVG y tablas CSV</span>
-            </span>
-          </button>
-          <button type="button" class="ai-starter-card" data-starter-skill="slides" data-starter-prompt="Prepara una presentación ejecutiva de 5 diapositivas en bloque slides sobre Muntrume Motorsport, su ecosistema MMT Sync y la temporada IMSA 2026 S4.">
-            <span class="ai-starter-card__ico" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            </span>
-            <span class="ai-starter-card__body">
-              <strong>Presentación y Docs</strong>
-              <span>Slides 16:9 navegables, Word (.doc) y PDF</span>
-            </span>
-          </button>
-        </div>
-      </div>
-    </main>
-
-    <!-- SPLIT-SCREEN ARTIFACTS & EXPORT STUDIO -->
-    <aside id="aiArtifactPane" class="ai-art-pane" hidden aria-label="Estudio de Artefactos">
-      <div class="ai-art-head">
-        <div style="min-width:0;flex:1;display:flex;align-items:center;gap:8px">
-          <span id="aiArtBadge" class="ai-art-badge">HTML</span>
-          <input type="text" id="aiArtTitleInput" class="ai-art-title-input" value="Artefacto" maxlength="90" aria-label="Título del artefacto" />
-        </div>
-        <div class="ai-art-tabs">
-          <button type="button" id="aiArtTabPreview" class="is-active">Vista previa</button>
-          <button type="button" id="aiArtTabCode">Editar código</button>
-        </div>
-        <button type="button" id="aiArtClose" class="ai-ico-btn" aria-label="Cerrar panel">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <div class="ai-main">
+      <header class="ai-top">
+        <button type="button" id="aiSideOpen" class="ai-icon" aria-expanded="false" aria-controls="aiSide" aria-label="Abrir historial">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
         </button>
-      </div>
-      <div class="ai-art-export-bar">
-        <button type="button" id="aiArtPublishBtn" class="ai-mini-btn ai-mini-btn--accent">Publicar en ai.muntru.me</button>
-        <button type="button" id="aiArtAskAiBtn" class="ai-mini-btn">Mejorar con IA</button>
-        <button type="button" id="aiArtReload" class="ai-mini-btn" title="Reiniciar vista previa">Recargar</button>
-        <button type="button" id="aiArtNewTab" class="ai-mini-btn" title="Abrir vista previa en una pestaña nueva">Pestaña nueva</button>
-        <div class="ai-art-vp" role="group" aria-label="Tamaño de vista previa">
-          <button type="button" class="ai-mini-btn is-on" data-art-vp="desktop" title="Vista escritorio (100%)">PC</button>
-          <button type="button" class="ai-mini-btn" data-art-vp="tablet" title="Vista tablet (768px)">Tab</button>
-          <button type="button" class="ai-mini-btn" data-art-vp="mobile" title="Vista móvil (390px)">Móvil</button>
-        </div>
-        <button type="button" id="aiArtFullscreen" class="ai-mini-btn" title="Ampliar a pantalla completa">Ampliar</button>
-        <button type="button" id="aiArtExportDoc" class="ai-mini-btn">DOC</button>
-        <button type="button" id="aiArtExportPdf" class="ai-mini-btn">PDF</button>
-        <button type="button" id="aiArtExportSlides" class="ai-mini-btn">Slides</button>
-        <button type="button" id="aiArtExportMd" class="ai-mini-btn">MD</button>
-        <button type="button" id="aiArtDownload" class="ai-mini-btn">Descargar</button>
-        <button type="button" id="aiArtCopy" class="ai-mini-btn">Copiar</button>
-      </div>
-      <div id="aiArtPublishedBar" class="ai-art-pub-bar" hidden>
-        <span class="ai-dot"></span>
-        <a id="aiArtPubLink" href="#" target="_blank" rel="noopener noreferrer" class="ai-art-pub-url"></a>
-        <button type="button" id="aiArtPubCopy" class="ai-mini-btn">Copiar URL</button>
-        <button type="button" id="aiArtPubVis" class="ai-mini-btn">Público</button>
-      </div>
-      <div id="aiArtFrameWrap" class="ai-art-frame-wrap">
-        <iframe id="aiArtFrame" class="ai-art-frame" sandbox="allow-scripts allow-forms allow-downloads" title="Vista previa del artefacto"></iframe>
-      </div>
-      <div id="aiArtCodeWrap" class="ai-art-code-wrap" hidden>
-        <textarea id="aiArtEditor" class="ai-art-editor" spellcheck="false" aria-label="Editor de código del artefacto"></textarea>
-      </div>
-    </aside>
-  </div>
-
-  <!-- MODAL: CALCULADORAS DE INGENIERÍA IRACING -->
-  <div id="aiCalcModal" class="ai-modal" hidden role="dialog" aria-modal="true">
-    <div class="ai-modal__card" style="width:min(620px,100%)">
-      <div class="ai-modal__head">
-        <h2>Calculadoras de Ingeniería iRacing</h2>
-        <button type="button" class="ai-ico-btn" data-close-ai-modal aria-label="Cerrar">×</button>
-      </div>
-      <div class="ai-art-tabs" style="width:fit-content">
-        <button type="button" id="calcTabFuel" class="is-active">Combustible y Stints</button>
-        <button type="button" id="calcTabBalance">Diagnóstico Setup</button>
-      </div>
-
-      <div id="calcPanelFuel" class="ai-modal-form">
-        <div class="ai-calc-grid">
-          <div>
-            <label for="calcRaceMins">Duración carrera (min)</label>
-            <input type="number" id="calcRaceMins" value="45" min="5" max="1440" />
-          </div>
-          <div>
-            <label for="calcLapTime">Tiempo de vuelta (m:ss)</label>
-            <input type="text" id="calcLapTime" value="2:17.5" placeholder="2:17.5" />
-          </div>
-          <div>
-            <label for="calcFuelLap">Consumo (L / vuelta)</label>
-            <input type="number" id="calcFuelLap" value="2.95" step="0.05" min="0.2" max="20" />
-          </div>
-          <div>
-            <label for="calcTankSize">Depósito máximo (L)</label>
-            <input type="number" id="calcTankSize" value="100" step="1" min="10" max="200" />
-          </div>
-        </div>
-        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--ai-muted)">
-          <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="calcFormLap" checked style="width:auto" /> +1 vuelta formación</label>
-          <label style="display:inline-flex;align-items:center;gap:6px">Margen extra (vueltas): <input type="number" id="calcMarginLaps" value="1" min="0" max="5" step="0.5" style="width:64px;padding:4px 7px" /></label>
-        </div>
-        <div id="calcFuelResult" class="ai-calc-out"></div>
-        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
-          <button type="button" class="ai-mini-btn" data-close-ai-modal>Cerrar</button>
-          <button type="button" id="calcSendFuelToAi" class="ai-btn-accent">Analizar estrategia con Muntrume AI</button>
-        </div>
-      </div>
-
-      <div id="calcPanelBalance" class="ai-modal-form" hidden>
-        <div class="ai-calc-grid">
-          <div>
-            <label for="calcCarCat">Categoría / Coche</label>
-            <select id="calcCarCat" class="ai-select">
-              <option value="GT3">GT3 (Ferrari 296, Porsche 992, BMW M4…)</option>
-              <option value="GTP">GTP / Hypercar (499P, 963, Valkyrie…)</option>
-              <option value="Porsche Cup">Porsche 911 GT3 Cup (992)</option>
-              <option value="GT4">GT4 / TCR</option>
+        <h1>Muntrume AI</h1>
+        <div class="ai-selectors">
+          <label>Modo
+            <select id="aiMode" aria-label="Modo">
+              <option value="team">Equipo &amp; iRacing</option>
+              <option value="oss">Open Source General</option>
             </select>
-          </div>
-          <div>
-            <label for="calcSymptom">Síntoma principal en pista</label>
-            <select id="calcSymptom" class="ai-select">
-              <option value="entry_understeer">Subviraje en entrada (frenada / turn-in)</option>
-              <option value="mid_understeer">Subviraje en vértice (mitad de curva)</option>
-              <option value="exit_oversteer">Sobreviraje en salida (aceleración)</option>
-              <option value="entry_oversteer">Sobreviraje en frenada / entrada</option>
-              <option value="brake_lock">Bloqueo temprano de ruedas al frenar</option>
-              <option value="rear_wear">Sobrecalentamiento / degradación trasera</option>
+          </label>
+          <label>Potencia
+            <select id="aiTier" aria-label="Potencia">
+              <option value="lite">Lite</option>
+              <option value="pro">Pro</option>
+              <option value="ultra">Ultra Max</option>
+              <option value="local">Local</option>
             </select>
+          </label>
+        </div>
+        <p id="aiStatus" class="ai-status">Lite · listo</p>
+        <button type="button" id="aiTheme" class="ai-theme" aria-pressed="false">Dark Pro</button>
+        <a class="ai-oss" href={repo} target="_blank" rel="noopener noreferrer">100 % Open Source · MIT</a>
+      </header>
+
+      <div id="aiLocalBox" class="ai-local" hidden>
+        <label>Modelo Ollama
+          <select id="aiOllamaModel" aria-label="Modelo de Ollama"></select>
+        </label>
+        <p id="aiOllamaHint" class="ai-hint" role="status" hidden></p>
+      </div>
+
+      <div id="aiStage" class="ai-stage">
+        <div id="aiEmpty" class="ai-empty">
+          <p class="ai-kicker">Pro Light Ultra Max</p>
+          <h2>Pregunta al equipo o calcula un stint</h2>
+          <p>Lite, Pro y Ultra Max usan modelos open source. Local habla solo con Ollama en este navegador. Si el motor externo no responde, el cálculo sale de la base verificada.</p>
+          <div class="ai-chips" role="group" aria-label="Preguntas rápidas">
+            <button type="button" data-chip="¿Quiénes son los pilotos de Muntrume y cómo contacto con el equipo, administración, prensa y legal?" data-mode="team">Equipo/Contacto</button>
+            <button type="button" data-chip="¿Qué es MMT Sync Overlay y dónde está en la web?" data-mode="team">MMT Sync Overlay</button>
+            <button type="button" data-chip="Estrategia de combustible GT3: 2,8 L por vuelta, vuelta de 1:45, carrera de 45 minutos, margen de 1,5 vueltas. Calcula litros del stint, vueltas posibles y ventana de parada." data-mode="team">Estrategia/Combustible GT3</button>
+            <button type="button" data-chip="Explícame el ecosistema open source de Muntrume: overlay, Setup Vault y wallpapers." data-mode="oss">Asistente Open Source</button>
           </div>
         </div>
-        <div id="calcBalanceResult" class="ai-calc-out"></div>
-        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
-          <button type="button" class="ai-mini-btn" data-close-ai-modal>Cerrar</button>
-          <button type="button" id="calcSendBalanceToAi" class="ai-btn-accent">Pedir clics exactos a Muntrume 1.0 Pro</button>
-        </div>
+        <div id="aiLog" class="ai-log" role="log" aria-busy="false" hidden></div>
       </div>
-    </div>
-  </div>
 
-  <!-- MODAL: GITHUB IMPORT -->
-  <div id="aiGithubModal" class="ai-modal" hidden role="dialog" aria-modal="true">
-    <div class="ai-modal__card">
-      <div class="ai-modal__head">
-        <h2>Importar contexto desde GitHub</h2>
-        <button type="button" class="ai-ico-btn" data-close-ai-modal aria-label="Cerrar">×</button>
-      </div>
-      <form id="aiGithubForm" class="ai-modal-form">
-        <label for="aiGithubUrlInput">URL de repositorio o archivo público en GitHub</label>
-        <input type="url" id="aiGithubUrlInput" required placeholder="https://github.com/ATM-Software-Labs/muntrume-site" />
-        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
-          <button type="button" class="ai-mini-btn" data-close-ai-modal>Cancelar</button>
-          <button type="submit" class="ai-btn-accent">Adjuntar al chat</button>
+      <form id="aiForm" class="ai-composer" autocomplete="off">
+        <p id="aiLive" class="sr-only" aria-live="polite"></p>
+        <p id="aiNotice" class="ai-hint" role="status" hidden></p>
+        <div class="ai-composer__box">
+          <label class="sr-only" for="aiInput">Mensaje</label>
+          <textarea id="aiInput" rows="1" maxlength="4000" placeholder="Escribe una pregunta…"></textarea>
+          <button type="submit" id="aiSend" aria-label="Enviar">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          </button>
         </div>
       </form>
     </div>
   </div>
-
-  <!-- MODAL: PROYECTOS -->
-  <div id="aiProjectsModal" class="ai-modal" hidden role="dialog" aria-modal="true">
-    <div class="ai-modal__card">
-      <div class="ai-modal__head">
-        <h2>Proyectos</h2>
-        <button type="button" class="ai-ico-btn" data-close-ai-modal aria-label="Cerrar">×</button>
-      </div>
-      <div id="aiProjectsList" class="ai-proj-list"></div>
-      <form id="aiNewProjectForm" class="ai-modal-form">
-        <input type="text" id="aiNewProjName" required placeholder="Nombre del nuevo proyecto…" />
-        <textarea id="aiNewProjPrompt" rows="2" placeholder="Instrucciones fijas para este proyecto (opcional)…"></textarea>
-        <button type="submit" class="ai-btn-accent">Crear y activar proyecto</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL: ARTEFACTOS (NUBE POR PERFIL + PLANTILLAS ÚTILES + LOCALES) -->
-  <div id="aiArtifactsModal" class="ai-modal" hidden role="dialog" aria-modal="true">
-    <div class="ai-modal__card" style="width:min(650px,100%)">
-      <div class="ai-modal__head">
-        <h2>Artefactos y Apps en ai.muntru.me</h2>
-        <button type="button" class="ai-ico-btn" data-close-ai-modal aria-label="Cerrar">×</button>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-        <div class="ai-art-tabs" style="width:fit-content">
-          <button type="button" id="artTabCloud" class="is-active">Mi perfil (Nube)</button>
-          <button type="button" id="artTabTemplates">Plantillas útiles (8)</button>
-          <button type="button" id="artTabLocal">Locales</button>
-        </div>
-        <button type="button" id="aiArtNewBlankBtn" class="ai-mini-btn ai-mini-btn--accent">+ Crear en blanco</button>
-      </div>
-      <div id="aiArtifactsProfileBar" class="ai-prof-banner" hidden></div>
-      <div id="aiArtifactsGallery" class="ai-proj-list"></div>
-    </div>
-  </div>
-
-  <!-- MODAL: INICIO DE SESIÓN RÁPIDO EN AI.MUNTRU.ME -->
-  <div id="aiLoginModal" class="ai-modal" hidden role="dialog" aria-modal="true">
-    <div class="ai-modal__card" style="width:min(440px,100%)">
-      <div class="ai-modal__head">
-        <h2>Conectar perfil Muntrume</h2>
-        <button type="button" class="ai-ico-btn" data-close-ai-modal aria-label="Cerrar">×</button>
-      </div>
-      <p style="margin:0;font-size:13px;color:var(--ai-muted);line-height:1.5">
-        Inicia sesión con tu cuenta de piloto para guardar y publicar artefactos con URL propia en <code>ai.muntru.me/a/…</code> bajo tu perfil.
-      </p>
-      <form id="aiLoginForm" class="ai-modal-form">
-        <label for="aiLoginEmail">Correo electrónico</label>
-        <input type="email" id="aiLoginEmail" required placeholder="tu@muntru.me" autocomplete="email" />
-        <label for="aiLoginPass">Contraseña</label>
-        <input type="password" id="aiLoginPass" required placeholder="Tu contraseña del Vault" autocomplete="current-password" />
-        <div id="aiLoginErr" style="font-size:12.5px;color:#ef4444" hidden></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
-          <button type="button" id="aiPasskeyLoginBtn" class="ai-mini-btn">Entrar con Passkey</button>
-          <div style="display:flex;gap:8px">
-            <button type="button" class="ai-mini-btn" data-close-ai-modal>Cancelar</button>
-            <button type="submit" id="aiLoginSubmit" class="ai-btn-accent">Entrar y guardar</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL: PERSONALIZACIÓN Y MEMORIA -->
-  <div id="aiPersonalizeModal" class="ai-modal" hidden role="dialog" aria-modal="true">
-    <div class="ai-modal__card">
-      <div class="ai-modal__head">
-        <h2>Personalización y Memoria</h2>
-        <button type="button" class="ai-ico-btn" data-close-ai-modal aria-label="Cerrar">×</button>
-      </div>
-      <form id="aiPersonalizeForm" class="ai-modal-form">
-        <label for="aiPaceSelect">Velocidad de escritura y animación en vivo</label>
-        <select id="aiPaceSelect" class="ai-select">
-          <option value="calm">Lectura pausada (recomendado para leer mientras escribe)</option>
-          <option value="normal">Normal equilibrada</option>
-          <option value="fast">Rápida</option>
-        </select>
-        <label for="aiCustomInstrInput">Instrucciones personalizadas</label>
-        <textarea id="aiCustomInstrInput" rows="3" placeholder="Ej. Sé directo, usa tablas para setups y responde siempre en español…"></textarea>
-        <label for="aiMemoryInput">Memoria persistente (hechos que recordará entre chats)</label>
-        <textarea id="aiMemoryInput" rows="3" placeholder="Ej. Piloto GT3 en iRacing, Ferrari 296 GT3…"></textarea>
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap">
-          <button type="button" id="aiClearHistoryBtn" class="ai-mini-btn" style="color:#ef4444;border-color:rgba(239,68,68,.35)">Borrar historial local</button>
-          <div style="display:flex;gap:8px">
-            <button type="button" class="ai-mini-btn" data-close-ai-modal>Cancelar</button>
-            <button type="submit" class="ai-btn-accent">Guardar preferencias</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <style is:global>
-    /* Synced 100 % with the global header theme toggle (html.light / html[data-theme="light"]) */
-    /* Defined on :root so .ai-shell, ALL .ai-modal dialogs, and #aiToast always receive every token */
-    :root {
-      --ai-bg: #0f1114;
-      --ai-side: #0a0c0e;
-      --ai-surface: #171a1f;
-      --ai-surface-2: #22262e;
-      --ai-code-bg: #0c0e12;
-      --ai-code-bar: #14171d;
-      --ai-line: rgba(255, 255, 255, 0.10);
-      --ai-line-strong: rgba(255, 255, 255, 0.18);
-      --ai-text: #f3f5f8;
-      --ai-text-soft: #cfd5df;
-      --ai-muted: #8b94a3;
-      --ai-accent: #10b981;
-      --ai-accent-soft: rgba(16, 185, 129, 0.14);
-      --ai-accent-ink: #04130d;
-      --ai-scheme: dark;
-    }
-    html.light,
-    html[data-theme="light"] {
-      --ai-bg: #f8f9fb;
-      --ai-side: #f1f3f6;
-      --ai-surface: #ffffff;
-      --ai-surface-2: #e9edf3;
-      --ai-code-bg: #11141a;
-      --ai-code-bar: #1a1f28;
-      --ai-line: rgba(15, 23, 42, 0.11);
-      --ai-line-strong: rgba(15, 23, 42, 0.20);
-      --ai-text: #0f172a;
-      --ai-text-soft: #334155;
-      --ai-muted: #64748b;
-      --ai-accent: #059669;
-      --ai-accent-soft: rgba(5, 150, 105, 0.11);
-      --ai-accent-ink: #ffffff;
-      --ai-scheme: light;
-    }
-    .ai-shell {
-      display: grid;
-      grid-template-columns: 260px minmax(0, 1fr);
-      height: calc(100dvh - 56px);
-      background: var(--ai-bg);
-      color: var(--ai-text);
-      font-family: var(--r-sans, system-ui, -apple-system, sans-serif);
-      overflow: hidden;
-      color-scheme: var(--ai-scheme);
-      transition: grid-template-columns 0.22s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    .ai-shell.is-side-collapsed { grid-template-columns: 0px minmax(0, 1fr); }
-    .ai-shell.has-artifact { grid-template-columns: 216px minmax(380px, 1fr) minmax(420px, 47%); }
-    .ai-shell.is-side-collapsed.has-artifact { grid-template-columns: 0px minmax(380px, 1fr) minmax(420px, 50%); }
-    .ai-shell.has-artifact .ai-starters-grid { grid-template-columns: 1fr; }
-    @media (max-width: 1280px) {
-      .ai-shell.has-artifact { grid-template-columns: 0px minmax(340px, 1fr) minmax(400px, 50%); }
-      .ai-shell.has-artifact .ai-side { padding: 0; border-right: 0; }
-    }
-
-    /* Sidebar */
-    .ai-side {
-      background: var(--ai-side); border-right: 1px solid var(--ai-line);
-      display: flex; flex-direction: column; padding: 12px 10px; gap: 6px;
-      overflow: hidden; min-width: 0;
-    }
-    .ai-shell.is-side-collapsed .ai-side { padding: 0; border-right: 0; }
-    .ai-side__head { display: flex; align-items: center; justify-content: space-between; padding: 2px 6px 8px; }
-    .ai-brand { display: inline-flex; align-items: center; gap: 9px; color: var(--ai-text); text-decoration: none; font: 700 15px/1 var(--r-sans, system-ui, sans-serif); letter-spacing: -0.02em; }
-    .ai-brand__mark {
-      width: 28px; height: 28px; border-radius: 9px;
-      background: var(--ai-accent-soft); border: 1px solid color-mix(in srgb, var(--ai-accent) 32%, transparent);
-      color: var(--ai-accent); display: grid; place-items: center; flex-shrink: 0;
-    }
-    .ai-side__nav { display: flex; flex-direction: column; gap: 2px; }
-    .ai-side-btn {
-      width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 10px;
-      border-radius: 9px; border: 1px solid transparent; background: transparent; color: var(--ai-muted);
-      font: 500 13.5px/1.2 var(--r-sans, system-ui, sans-serif); text-align: left; cursor: pointer;
-      transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
-    }
-    .ai-side-btn:hover { background: var(--ai-surface); color: var(--ai-text); }
-    .ai-side-btn--primary {
-      background: var(--ai-surface); color: var(--ai-text); font-weight: 600; margin-bottom: 5px;
-      border-color: var(--ai-line); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-    .ai-side-btn--primary:hover { border-color: color-mix(in srgb, var(--ai-accent) 45%, var(--ai-line)); }
-    .ai-kbd-pill, .ai-side-pill {
-      margin-left: auto; font: 600 10px/1 var(--r-mono); padding: 3px 6px;
-      border-radius: 5px; background: var(--ai-surface-2); color: var(--ai-muted);
-    }
-    .ai-side-pill { color: var(--ai-accent); background: var(--ai-accent-soft); }
-    .ai-search-wrap input {
-      width: 100%; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--ai-line);
-      background: var(--ai-surface); color: var(--ai-text); font-size: 12.5px; margin: 4px 0; outline: none;
-    }
-    .ai-search-wrap input:focus { border-color: var(--ai-accent); }
-    .ai-side__label { font: 600 10.5px/1.2 var(--r-mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ai-muted); padding: 12px 10px 4px; }
-    .ai-chat-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
-    .ai-chat-empty { padding: 10px; font-size: 12px; color: var(--ai-muted); }
-    .ai-chat-item { display: flex; align-items: center; border-radius: 8px; transition: background 0.12s ease; }
-    .ai-chat-item:hover, .ai-chat-item.is-active { background: var(--ai-surface); }
-    .ai-chat-item.is-active { box-shadow: inset 2px 0 0 var(--ai-accent); }
-    .ai-chat-item__btn {
-      flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ai-text);
-      padding: 7px 10px; font-size: 13px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
-    }
-    .ai-chat-item__del { border: 0; background: transparent; color: var(--ai-muted); padding: 4px 8px; cursor: pointer; opacity: 0; transition: opacity 0.14s ease, color 0.14s ease; }
-    .ai-chat-item:hover .ai-chat-item__del { opacity: 1; }
-    .ai-chat-item__del:hover { color: #ef4444; }
-    .ai-side__foot { border-top: 1px solid var(--ai-line); padding-top: 8px; }
-    .ai-mit-link { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 8px; font-size: 12px; color: var(--ai-muted); text-decoration: none; transition: background 0.14s ease, color 0.14s ease; }
-    .ai-mit-link:hover { background: var(--ai-surface); color: var(--ai-text); }
-    .ai-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ai-accent); flex-shrink: 0; }
-
-    /* Main Stage */
-    .ai-stage { display: flex; flex-direction: column; min-width: 0; height: 100%; overflow: hidden; position: relative; }
-    .ai-stage-glow {
-      position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
-      width: min(760px, 90%); height: 340px; pointer-events: none; z-index: 0;
-      background: radial-gradient(ellipse at center, color-mix(in srgb, var(--ai-accent) 11%, transparent) 0%, transparent 70%);
-      transition: opacity 0.35s ease;
-    }
-    .ai-stage.is-chatting .ai-stage-glow { opacity: 0.32; }
-    .ai-topbar {
-      display: flex; align-items: center; justify-content: space-between; gap: 10px;
-      padding: 10px 18px; flex-shrink: 0; position: relative; z-index: 2;
-      border-bottom: 1px solid transparent;
-    }
-    .ai-stage.is-chatting .ai-topbar { border-bottom-color: var(--ai-line); background: color-mix(in srgb, var(--ai-bg) 88%, transparent); backdrop-filter: blur(8px); }
-    .ai-topbar__left, .ai-topbar__right { display: flex; align-items: center; gap: 8px; min-width: 0; }
-    .ai-top-pill {
-      display: inline-flex; align-items: center; gap: 7px;
-      font: 600 11.5px/1 var(--r-mono); padding: 6px 11px; border-radius: 999px;
-      background: var(--ai-surface); border: 1px solid var(--ai-line); color: var(--ai-muted);
-      max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .ai-pace-btn {
-      display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;
-      padding: 6px 11px; border-radius: 999px; border: 1px solid var(--ai-line);
-      background: var(--ai-surface); color: var(--ai-muted);
-      font: 600 11.5px/1 var(--r-sans, system-ui, sans-serif); cursor: pointer;
-      transition: border-color 0.15s ease, color 0.15s ease;
-    }
-    .ai-pace-btn:hover { border-color: var(--ai-accent); color: var(--ai-text); }
-    .ai-pace-btn svg { color: var(--ai-accent); }
-    .ai-ico-btn {
-      width: 32px; height: 32px; border-radius: 8px; border: 0; background: transparent;
-      color: var(--ai-muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
-      transition: background 0.14s ease, color 0.14s ease;
-    }
-    .ai-ico-btn:hover { background: var(--ai-surface); color: var(--ai-text); }
-
-    .ai-local-bar {
-      display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px;
-      padding: 8px 16px; background: var(--ai-surface); border-bottom: 1px solid var(--ai-line); font-size: 12px; color: var(--ai-accent);
-      position: relative; z-index: 2;
-    }
-    .ai-local-bar input { padding: 5px 9px; border-radius: 7px; border: 1px solid var(--ai-line); background: var(--ai-bg); color: var(--ai-text); font: 500 12px var(--r-mono); }
-
-    /* Centered Welcome vs Active Chat */
-    .ai-composer-wrap {
-      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 18px 20px 36px; gap: 20px; width: 100%; max-width: 780px; margin: 0 auto;
-      position: relative; z-index: 2;
-    }
-    .ai-stage.is-chatting .ai-composer-wrap { flex: 0 0 auto; padding: 8px 20px 16px; gap: 8px; }
-    .ai-stage.is-chatting .ai-starters-grid { display: none; }
-    .ai-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; animation: aiMsgIn 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
-    .ai-empty__badge {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 5px 12px; border-radius: 999px;
-      background: var(--ai-surface); border: 1px solid var(--ai-line);
-      font: 600 11px/1 var(--r-mono); letter-spacing: 0.04em; color: var(--ai-muted);
-    }
-    .ai-empty__title { display: flex; align-items: center; justify-content: center; gap: 12px; }
-    .ai-emblem-ring {
-      width: 40px; height: 40px; border-radius: 13px; flex-shrink: 0;
-      background: var(--ai-accent-soft); border: 1px solid color-mix(in srgb, var(--ai-accent) 36%, transparent);
-      display: grid; place-items: center; box-shadow: 0 0 28px color-mix(in srgb, var(--ai-accent) 22%, transparent);
-    }
-    .ai-emblem { color: var(--ai-accent); flex-shrink: 0; }
-    .ai-empty h1 {
-      margin: 0;
-      font: 700 clamp(25px, 3.2vw, 36px)/1.16 var(--r-sans, system-ui, sans-serif) !important;
-      text-transform: none !important;
-      letter-spacing: -0.03em !important;
-      color: var(--ai-text);
-    }
-    .ai-empty__sub { margin: 0; max-width: 560px; font-size: 14px; line-height: 1.55; color: var(--ai-muted); }
-
-    /* Live Streaming Pacing Bar */
-    .ai-stream-bar {
-      width: 100%; display: flex; align-items: center; gap: 9px;
-      padding: 6px 12px; border-radius: 999px;
-      background: var(--ai-surface); border: 1px solid color-mix(in srgb, var(--ai-accent) 35%, var(--ai-line));
-      font-size: 12px; color: var(--ai-muted);
-      animation: aiMsgIn 0.2s ease;
-    }
-    .ai-stream-bar[hidden] { display: none !important; }
-    .ai-stream-bar__dot {
-      width: 7px; height: 7px; border-radius: 50%; background: var(--ai-accent);
-      animation: aiPulseRing 1.4s infinite ease-in-out; flex-shrink: 0;
-    }
-    .ai-stream-bar__skip {
-      margin-left: auto; border: 1px solid var(--ai-line); background: var(--ai-surface-2);
-      color: var(--ai-text); border-radius: 999px; padding: 3px 10px;
-      font: 600 11px/1.2 var(--r-sans, system-ui, sans-serif); cursor: pointer;
-    }
-    .ai-stream-bar__skip:hover { border-color: var(--ai-accent); color: var(--ai-accent); }
-
-    /* Scroll down pill */
-    .ai-scroll-down {
-      position: absolute; left: 50%; bottom: 136px; transform: translateX(-50%); z-index: 15;
-      display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px;
-      background: var(--ai-surface); color: var(--ai-text); border: 1px solid var(--ai-line-strong);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28); font: 600 12px/1 var(--r-sans, system-ui, sans-serif);
-      cursor: pointer; animation: aiMsgIn 0.18s ease;
-    }
-    .ai-scroll-down:hover { border-color: var(--ai-accent); color: var(--ai-accent); }
-    .ai-scroll-down[hidden] { display: none !important; }
-
-    /* Composer Card */
-    .ai-composer {
-      width: 100%; background: var(--ai-surface); border: 1px solid var(--ai-line);
-      border-radius: 20px; padding: 13px 15px 11px; display: flex; flex-direction: column; gap: 8px;
-      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.14);
-      transition: border-color 0.18s ease, box-shadow 0.18s ease;
-    }
-    .ai-composer:focus-within {
-      border-color: color-mix(in srgb, var(--ai-accent) 55%, var(--ai-line));
-      box-shadow: 0 12px 38px rgba(0, 0, 0, 0.18), 0 0 0 3px color-mix(in srgb, var(--ai-accent) 12%, transparent);
-    }
-    .ai-ctx-bar { display: flex; flex-wrap: wrap; gap: 6px; }
-    .ai-ctx-pill {
-      display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px;
-      background: var(--ai-surface-2); border: 1px solid var(--ai-line); font-size: 11.5px; color: var(--ai-text);
-    }
-    .ai-ctx-pill--accent { background: var(--ai-accent-soft); border-color: color-mix(in srgb, var(--ai-accent) 40%, transparent); color: var(--ai-accent); }
-    .ai-ctx-pill button { border: 0; background: transparent; color: inherit; cursor: pointer; font-weight: 700; padding: 0 2px; }
-
-    .ai-composer textarea {
-      width: 100%; border: 0; background: transparent; color: var(--ai-text);
-      font: 400 15px/1.55 var(--r-sans, system-ui, sans-serif); resize: none; outline: none; max-height: 220px;
-    }
-    .ai-composer textarea::placeholder { color: var(--ai-muted); }
-    .ai-composer__bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-top: 2px; }
-    .ai-composer__left, .ai-composer__right { display: flex; align-items: center; gap: 6px; }
-
-    .ai-plus-btn {
-      width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--ai-line);
-      background: var(--ai-surface-2); color: var(--ai-text);
-      display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
-      transition: border-color 0.14s ease, color 0.14s ease, transform 0.14s ease;
-    }
-    .ai-plus-btn:hover { border-color: var(--ai-accent); color: var(--ai-accent); }
-
-    .ai-model-btn, .ai-effort-btn {
-      border: 1px solid transparent; background: transparent; color: var(--ai-muted); padding: 6px 10px;
-      border-radius: 9px; font: 600 12.5px/1 var(--r-sans, system-ui, sans-serif); cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
-      white-space: nowrap; flex-shrink: 0;
-      transition: background 0.14s ease, color 0.14s ease;
-    }
-    .ai-model-btn:hover, .ai-effort-btn:hover { background: var(--ai-surface-2); color: var(--ai-text); }
-    .ai-send-btn {
-      width: 35px; height: 35px; border-radius: 10px; border: 0;
-      background: var(--ai-accent); color: var(--ai-accent-ink);
-      display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
-      transition: transform 0.14s ease, opacity 0.14s ease;
-    }
-    .ai-send-btn:hover { transform: translateY(-1px); }
-    .ai-send-btn[data-state="stop"] { background: #ef4444; color: #fff; }
-
-    /* Popover Menus */
-    .ai-pop-anchor { position: relative; }
-    .ai-popover {
-      position: absolute; top: calc(100% + 8px); left: 0; z-index: 45;
-      min-width: 268px; max-height: 360px; overflow-y: auto; padding: 6px; border-radius: 14px;
-      background: var(--ai-surface); border: 1px solid var(--ai-line-strong);
-      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.34); display: flex; flex-direction: column; gap: 2px;
-      animation: aiPopIn 0.14s ease;
-    }
-    .ai-stage.is-chatting .ai-popover { top: auto; bottom: calc(100% + 8px); }
-    .ai-popover--right { left: auto; right: 0; min-width: 282px; }
-    .ai-popover[hidden] { display: none !important; }
-    .ai-pop-item {
-      width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 10px;
-      padding: 8px 10px; border: 0; border-radius: 8px; background: transparent; color: var(--ai-text);
-      font-size: 13px; text-align: left; cursor: pointer;
-    }
-    .ai-pop-item svg { flex-shrink: 0; color: var(--ai-muted); }
-    .ai-pop-item:hover { background: var(--ai-surface-2); }
-    .ai-pop-item:hover svg { color: var(--ai-text); }
-    .ai-pop-txt { flex: 1; text-align: left; white-space: nowrap; }
-    .ai-pop-kbd { margin-left: auto; font: 600 10.5px/1 var(--r-mono); color: var(--ai-muted); }
-    .ai-pop-sep { height: 1px; background: var(--ai-line); margin: 4px 6px; }
-    .ai-popover--compact { min-width: 264px; max-height: none; overflow: visible; padding: 7px; gap: 3px; }
-    .ai-pop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; padding: 2px 4px; }
-    .ai-pop-chip {
-      border: 1px solid var(--ai-line); background: var(--ai-bg); color: var(--ai-text-soft);
-      border-radius: 8px; padding: 6px 8px; font: 600 11.5px/1.2 var(--r-sans, system-ui, sans-serif);
-      text-align: center; cursor: pointer; transition: border-color 0.14s ease, color 0.14s ease, background 0.14s ease;
-    }
-    .ai-pop-chip:hover { border-color: var(--ai-accent); color: var(--ai-text); }
-    .ai-pop-chip.is-active { background: var(--ai-accent-soft); border-color: var(--ai-accent); color: var(--ai-accent); }
-    .ai-pop-toggles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; padding: 2px 4px; }
-    .ai-pop-toggle {
-      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 6px 8px; border-radius: 8px; border: 1px solid var(--ai-line);
-      background: var(--ai-bg); color: var(--ai-muted); font: 600 11.5px/1.2 var(--r-sans, system-ui, sans-serif);
-      cursor: pointer; transition: border-color 0.14s ease, color 0.14s ease, background 0.14s ease;
-    }
-    .ai-pop-toggle__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ai-muted); opacity: 0.45; }
-    .ai-pop-toggle.is-on { border-color: color-mix(in srgb, var(--ai-accent) 55%, transparent); background: var(--ai-accent-soft); color: var(--ai-accent); }
-    .ai-pop-toggle.is-on .ai-pop-toggle__dot { background: var(--ai-accent); opacity: 1; }
-    .ai-pop-label { font: 700 10px/1 var(--r-mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ai-muted); padding: 4px 8px; }
-    .ai-check-mark { margin-left: auto; color: transparent; font-weight: 800; font-size: 13px; }
-    .ai-check-mark.is-on { color: var(--ai-accent); }
-    .ai-model-opt {
-      width: 100%; display: flex; flex-direction: column; gap: 2px; padding: 9px 11px;
-      border: 0; border-radius: 9px; background: transparent; color: var(--ai-text); text-align: left; cursor: pointer;
-    }
-    .ai-model-opt strong { font-size: 13px; }
-    .ai-model-opt span { font-size: 11.5px; color: var(--ai-muted); }
-    .ai-model-opt:hover, .ai-model-opt.is-active { background: var(--ai-surface-2); }
-    .ai-model-opt.is-active strong { color: var(--ai-accent); }
-
-    /* 2x2 Starter Cards */
-    .ai-starters-grid {
-      width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;
-    }
-    .ai-starter-card {
-      display: flex; align-items: flex-start; gap: 11px; padding: 12px 14px;
-      border-radius: 14px; border: 1px solid var(--ai-line); background: var(--ai-surface);
-      text-align: left; cursor: pointer; transition: border-color 0.16s ease, transform 0.16s ease, background 0.16s ease;
-    }
-    .ai-starter-card:hover {
-      border-color: color-mix(in srgb, var(--ai-accent) 55%, var(--ai-line));
-      transform: translateY(-1px);
-    }
-    .ai-starter-card__ico {
-      width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
-      background: var(--ai-accent-soft); color: var(--ai-accent);
-      display: grid; place-items: center; margin-top: 1px;
-    }
-    .ai-starter-card__body { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-    .ai-starter-card__body strong { font-size: 13px; font-weight: 600; color: var(--ai-text); }
-    .ai-starter-card__body span { font-size: 12px; line-height: 1.4; color: var(--ai-muted); }
-
-    /* Chat Feed */
-    .ai-feed {
-      flex: 1; overflow-y: auto; padding: 20px 22px 28px;
-      display: flex; flex-direction: column; gap: 24px;
-      width: 100%; max-width: 820px; margin: 0 auto;
-      position: relative; z-index: 1;
-      scroll-behavior: smooth;
-    }
-    .ai-msg { display: flex; gap: 13px; animation: aiMsgIn 0.24s cubic-bezier(0.22, 1, 0.36, 1); }
-    .ai-msg--user { justify-content: flex-end; }
-    .ai-bubble--user {
-      max-width: 78%; padding: 12px 16px; border-radius: 18px; border-top-right-radius: 5px;
-      background: var(--ai-surface-2); border: 1px solid var(--ai-line);
-      color: var(--ai-text); font-size: 14.5px; line-height: 1.58;
-    }
-    .ai-msg-img { max-width: 260px; max-height: 180px; border-radius: 10px; margin-bottom: 8px; display: block; border: 1px solid var(--ai-line); }
-    .ai-msg-att { font: 600 11.5px var(--r-mono); color: var(--ai-accent); margin-bottom: 6px; }
-    .ai-bot-avatar {
-      width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
-      background: var(--ai-accent-soft); border: 1px solid color-mix(in srgb, var(--ai-accent) 28%, transparent);
-      color: var(--ai-accent); display: grid; place-items: center; margin-top: 1px;
-    }
-    .ai-msg--streaming .ai-bot-avatar { animation: aiAvatarPulse 1.8s infinite ease-in-out; }
-    .ai-bot-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
-    .ai-bot-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; font-size: 12px; color: var(--ai-muted); }
-    .ai-bot-meta strong { color: var(--ai-text); font-weight: 600; }
-    .ai-meta-tag { font: 600 10.5px var(--r-mono); padding: 2px 8px; border-radius: 999px; background: var(--ai-surface); border: 1px solid var(--ai-line); color: var(--ai-accent); }
-
-    /* Reasoning Accordion */
-    .ai-think {
-      border: 1px solid var(--ai-line); border-left: 3px solid var(--ai-accent);
-      border-radius: 11px; background: var(--ai-surface); padding: 9px 13px; font-size: 12.5px;
-    }
-    .ai-think summary {
-      cursor: pointer; color: var(--ai-muted); font-weight: 600;
-      display: flex; align-items: center; gap: 8px; list-style: none;
-    }
-    .ai-think summary::-webkit-details-marker { display: none; }
-    .ai-think__pulse {
-      width: 7px; height: 7px; border-radius: 50%; background: var(--ai-accent);
-      animation: aiPulseRing 1.3s infinite ease-in-out; flex-shrink: 0;
-    }
-    .ai-think pre {
-      margin: 9px 0 0; padding-top: 8px; border-top: 1px solid var(--ai-line);
-      white-space: pre-wrap; color: var(--ai-muted); font: 400 12px/1.58 var(--r-mono);
-      max-height: 260px; overflow-y: auto;
-    }
-
-    /* Rich Editorial Markdown Typography */
-    .ai-md { font-size: 15px; line-height: 1.72; color: var(--ai-text); word-wrap: break-word; }
-    .ai-md > :first-child { margin-top: 0 !important; }
-    .ai-md > :last-child { margin-bottom: 0 !important; }
-    .ai-md h1 {
-      margin: 18px 0 10px; font-size: 21px; line-height: 1.28; font-weight: 700;
-      letter-spacing: -0.02em; color: var(--ai-text); text-transform: none !important;
-    }
-    .ai-md h2 {
-      margin: 20px 0 9px; padding-bottom: 6px; border-bottom: 1px solid var(--ai-line);
-      font-size: 17.5px; line-height: 1.32; font-weight: 700; letter-spacing: -0.015em;
-      color: var(--ai-text); text-transform: none !important;
-    }
-    .ai-md h3 {
-      margin: 16px 0 7px; font-size: 15.5px; line-height: 1.36; font-weight: 700;
-      color: var(--ai-text); text-transform: none !important;
-    }
-    .ai-md h4 {
-      margin: 14px 0 5px; font: 700 12px/1.3 var(--r-mono); letter-spacing: 0.05em;
-      text-transform: uppercase !important; color: var(--ai-accent);
-    }
-    .ai-md p { margin: 9px 0; color: var(--ai-text-soft); }
-    .ai-md strong { color: var(--ai-text); font-weight: 650; }
-    .ai-md em { font-style: italic; }
-    .ai-md del { color: var(--ai-muted); text-decoration: line-through; }
-    .ai-md a { color: var(--ai-accent); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--ai-accent) 45%, transparent); }
-    .ai-md a:hover { text-decoration-color: var(--ai-accent); }
-    .ai-md hr { border: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--ai-line-strong), transparent); margin: 18px 0; }
-    .ai-md ul, .ai-md ol { padding-left: 22px; margin: 9px 0; color: var(--ai-text-soft); }
-    .ai-md li { margin: 4px 0; }
-    .ai-md li > ul, .ai-md li > ol { margin: 4px 0; }
-    .ai-md img.ai-md-img { max-width: 100%; border-radius: 12px; border: 1px solid var(--ai-line); margin: 10px 0; display: block; }
-
-    /* Task Checklists */
-    .ai-md ul.ai-task-list { list-style: none; padding-left: 4px; }
-    .ai-task-item { display: flex; align-items: flex-start; gap: 9px; margin: 6px 0; }
-    .ai-task-box {
-      width: 16px; height: 16px; margin-top: 4px; border-radius: 4px; flex-shrink: 0;
-      border: 1.5px solid var(--ai-line-strong); display: grid; place-items: center; color: transparent;
-    }
-    .ai-task-item.is-done .ai-task-box { background: var(--ai-accent); border-color: var(--ai-accent); color: var(--ai-accent-ink); }
-    .ai-task-item.is-done > span:last-child { color: var(--ai-muted); text-decoration: line-through; }
-
-    /* Inline code & Math */
-    .ai-md code {
-      font-family: var(--r-mono, ui-monospace, monospace); font-size: 12.5px;
-      background: var(--ai-surface-2); border: 1px solid var(--ai-line);
-      padding: 1.5px 6px; border-radius: 6px; color: var(--ai-accent);
-    }
-    .ai-math-inline {
-      font-family: "Cambria Math", Georgia, serif; font-style: italic; font-size: 15.5px;
-      padding: 1px 5px; border-radius: 5px; background: var(--ai-surface); color: var(--ai-text);
-    }
-    .ai-math-block {
-      margin: 12px 0; padding: 14px 18px; border-radius: 12px;
-      background: var(--ai-surface); border: 1px solid var(--ai-line);
-      font-family: "Cambria Math", Georgia, serif; font-size: 16.5px; text-align: center;
-      color: var(--ai-text); overflow-x: auto;
-    }
-
-    /* Blockquotes & Admonition Callouts */
-    .ai-md blockquote {
-      margin: 12px 0; padding: 10px 15px; border-left: 3px solid var(--ai-accent);
-      background: var(--ai-surface); border-radius: 0 11px 11px 0;
-      color: var(--ai-text-soft);
-    }
-    .ai-md blockquote p { margin: 4px 0; }
-    .ai-callout {
-      margin: 12px 0; padding: 11px 15px; border-radius: 12px;
-      border: 1px solid var(--ai-line); border-left: 3px solid var(--ai-accent);
-      background: var(--ai-surface);
-    }
-    .ai-callout__head {
-      display: flex; align-items: center; gap: 7px; margin-bottom: 5px;
-      font: 700 11px/1 var(--r-mono); letter-spacing: 0.06em; text-transform: uppercase;
-      color: var(--ai-accent);
-    }
-    .ai-callout__body { font-size: 14px; line-height: 1.6; color: var(--ai-text-soft); }
-    .ai-callout__body p { margin: 4px 0; }
-    .ai-callout--note { border-left-color: #3b82f6; }
-    .ai-callout--note .ai-callout__head { color: #3b82f6; }
-    .ai-callout--tip { border-left-color: #10b981; }
-    .ai-callout--tip .ai-callout__head { color: #10b981; }
-    .ai-callout--important { border-left-color: #8b5cf6; }
-    .ai-callout--important .ai-callout__head { color: #8b5cf6; }
-    .ai-callout--warning { border-left-color: #f59e0b; }
-    .ai-callout--warning .ai-callout__head { color: #f59e0b; }
-    .ai-callout--caution { border-left-color: #ef4444; }
-    .ai-callout--caution .ai-callout__head { color: #ef4444; }
-
-    /* Tables */
-    .ai-table-card {
-      margin: 14px 0; border: 1px solid var(--ai-line); border-radius: 13px;
-      background: var(--ai-surface); overflow: hidden;
-    }
-    .ai-table-card__bar {
-      display: flex; align-items: center; justify-content: space-between; gap: 8px;
-      padding: 6px 12px; border-bottom: 1px solid var(--ai-line); background: var(--ai-side);
-      font: 600 10.5px/1 var(--r-mono); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ai-muted);
-    }
-    .ai-table-wrap { overflow-x: auto; }
-    .ai-md-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-    .ai-md-table th, .ai-md-table td { padding: 9px 13px; border-bottom: 1px solid var(--ai-line); vertical-align: top; }
-    .ai-md-table tbody tr:last-child td { border-bottom: 0; }
-    .ai-md-table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--ai-surface-2) 38%, transparent); }
-    .ai-md-table tbody tr:hover { background: color-mix(in srgb, var(--ai-accent) 7%, transparent); }
-    .ai-md-table th {
-      background: var(--ai-surface); color: var(--ai-text);
-      font: 700 11.5px/1.3 var(--r-mono); text-transform: uppercase; letter-spacing: 0.04em;
-      white-space: nowrap;
-    }
-
-    /* Code Cards & Lightweight Syntax Highlight */
-    .ai-code-card {
-      border: 1px solid var(--ai-line-strong); border-radius: 13px; overflow: hidden;
-      margin: 14px 0; background: var(--ai-code-bg);
-    }
-    .ai-code-card__bar {
-      display: flex; align-items: center; justify-content: space-between; gap: 8px;
-      padding: 7px 12px; background: var(--ai-code-bar);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      font: 600 11px/1 var(--r-mono); color: #9ca3af;
-    }
-    .ai-code-card__lang { display: inline-flex; align-items: center; gap: 8px; }
-    .ai-code-card__meta { color: #6b7280; font-weight: 500; }
-    .ai-code-card__btns { display: flex; gap: 6px; }
-    .ai-code-card pre {
-      margin: 0; padding: 13px 15px; overflow-x: auto;
-      font: 400 12.8px/1.58 var(--r-mono, ui-monospace, monospace); color: #e5e7eb;
-    }
-    .ai-code-card code { background: transparent; border: 0; padding: 0; color: inherit; font-size: inherit; }
-    .ai-code-card .ai-mini-btn { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.14); color: #d1d5db; }
-    .ai-code-card .ai-mini-btn:hover { border-color: #10b981; color: #fff; }
-    .ai-code-card .ai-mini-btn--accent { background: rgba(16,185,129,0.18); border-color: rgba(16,185,129,0.45); color: #34d399; }
-    .tok-kw { color: #c084fc; font-weight: 500; }
-    .tok-str { color: #86efac; }
-    .tok-num { color: #fbbf24; }
-    .tok-com { color: #6b7280; font-style: italic; }
-    .tok-key { color: #7dd3fc; }
-    .tok-tag { color: #f472b6; }
-    .tok-fn { color: #60a5fa; }
-
-    /* Live Streaming Cursor & Thinking Indicators */
-    .ai-caret {
-      display: inline-block; width: 2.5px; height: 1.08em; margin-left: 3px;
-      vertical-align: -0.16em; border-radius: 2px; background: var(--ai-accent);
-      animation: aiCaretBlink 0.9s infinite ease-in-out;
-    }
-    .ai-thinking-dots {
-      display: inline-flex; align-items: center; gap: 8px; padding: 8px 13px;
-      border-radius: 11px; background: var(--ai-surface); border: 1px solid var(--ai-line);
-      color: var(--ai-muted); font-size: 13px;
-    }
-    .ai-thinking-dots span {
-      width: 6px; height: 6px; border-radius: 50%; background: var(--ai-accent);
-      animation: aidot 1.15s infinite ease-in-out;
-    }
-    .ai-thinking-dots span:nth-child(2) { animation-delay: 0.16s; }
-    .ai-thinking-dots span:nth-child(3) { animation-delay: 0.32s; }
-
-    .ai-msg-actions { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 2px; }
-    .ai-act-btn, .ai-mini-btn {
-      padding: 5px 10px; border-radius: 8px; border: 1px solid var(--ai-line);
-      background: var(--ai-surface); color: var(--ai-muted); font-size: 11.5px; font-weight: 600; cursor: pointer;
-      transition: border-color 0.14s ease, color 0.14s ease, background 0.14s ease;
-    }
-    .ai-act-btn:hover, .ai-mini-btn:hover { border-color: var(--ai-accent); color: var(--ai-text); }
-    .ai-mini-btn--accent { background: var(--ai-accent-soft); border-color: color-mix(in srgb, var(--ai-accent) 48%, transparent); color: var(--ai-accent); }
-
-    @keyframes aiMsgIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes aiPopIn { from { opacity: 0; transform: translateY(4px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-    @keyframes aidot { 0%,80%,100% { opacity: 0.25; transform: scale(0.78); } 40% { opacity: 1; transform: scale(1.18); } }
-    @keyframes aiCaretBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.15; } }
-    @keyframes aiPulseRing { 0%,100% { opacity: 0.45; transform: scale(0.88); } 50% { opacity: 1; transform: scale(1.18); } }
-    @keyframes aiAvatarPulse { 0%,100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ai-accent) 26%, transparent); } 50% { box-shadow: 0 0 0 6px transparent; } }
-
-    /* Split-Screen Artifacts Studio */
-    .ai-art-pane {
-      border-left: 1px solid var(--ai-line); background: var(--ai-side);
-      display: flex; flex-direction: column; height: 100%; overflow: hidden;
-    }
-    .ai-art-pane[hidden] { display: none !important; }
-    .ai-art-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--ai-line); }
-    .ai-art-badge { font: 700 10px var(--r-mono); padding: 3px 8px; border-radius: 999px; background: var(--ai-accent-soft); color: var(--ai-accent); }
-    .ai-art-title-input {
-      flex: 1; min-width: 0; border: 1px solid transparent; border-radius: 7px;
-      background: transparent; color: var(--ai-text); font: 600 13.5px/1.2 var(--r-sans, system-ui, sans-serif);
-      padding: 4px 7px; outline: none;
-    }
-    .ai-art-title-input:hover, .ai-art-title-input:focus { background: var(--ai-surface); border-color: var(--ai-line-strong); }
-    .ai-art-pub-bar {
-      display: flex; align-items: center; gap: 8px; padding: 7px 14px;
-      background: var(--ai-accent-soft); border-bottom: 1px solid color-mix(in srgb, var(--ai-accent) 32%, var(--ai-line));
-      font-size: 12px;
-    }
-    .ai-art-pub-bar[hidden] { display: none !important; }
-    .ai-art-pub-url {
-      flex: 1; min-width: 0; font: 600 11.5px var(--r-mono); color: var(--ai-accent);
-      text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .ai-art-pub-url:hover { text-decoration: underline; }
-    .ai-art-tabs { display: inline-flex; gap: 4px; background: var(--ai-surface); padding: 2px; border-radius: 8px; border: 1px solid var(--ai-line); }
-    .ai-art-tabs button { border: 0; background: transparent; color: var(--ai-muted); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
-    .ai-art-tabs button.is-active { background: var(--ai-surface-2); color: var(--ai-text); }
-    .ai-art-export-bar { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 14px; border-bottom: 1px solid var(--ai-line); background: var(--ai-surface); }
-    .ai-team-gate {
-      position: fixed; inset: 56px 0 0 0; z-index: 120;
-      display: grid; place-items: center; padding: 24px;
-      background: color-mix(in srgb, var(--ai-bg) 88%, transparent);
-      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-    }
-    .ai-team-gate[hidden] { display: none !important; }
-    .ai-team-gate__card {
-      width: min(520px, 100%); background: var(--ai-surface);
-      border: 1px solid var(--ai-line-strong, var(--ai-line)); border-radius: 22px;
-      padding: 32px 30px; text-align: center;
-      box-shadow: 0 28px 80px -24px rgba(0, 0, 0, 0.55);
-    }
-    .ai-team-gate__icon {
-      width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 14px;
-      display: grid; place-items: center;
-      background: var(--ai-accent-soft); color: var(--ai-accent);
-      border: 1px solid color-mix(in srgb, var(--ai-accent) 32%, transparent);
-    }
-    .ai-team-gate__badge {
-      display: inline-block; font: 700 10.5px/1 var(--r-mono, ui-monospace, monospace);
-      letter-spacing: .1em; color: var(--ai-accent);
-      padding: 5px 11px; border-radius: 999px;
-      background: var(--ai-accent-soft); margin-bottom: 12px;
-    }
-    .ai-team-gate__card h2 { margin: 0 0 10px; font-size: 22px; letter-spacing: -.02em; color: var(--ai-text); }
-    .ai-team-gate__card p { margin: 0 0 10px; font-size: 14.5px; line-height: 1.6; color: var(--ai-muted); }
-    .ai-team-gate__card strong { color: var(--ai-text); }
-    .ai-team-gate__sub { font-size: 13.5px !important; margin-bottom: 20px !important; }
-    .ai-team-gate__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 18px; }
-    .ai-gate-docs-btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      padding: 9px 16px; border-radius: 10px; font-size: 13.5px; font-weight: 600;
-      text-decoration: none; color: var(--ai-text);
-      border: 1px solid var(--ai-line); background: var(--ai-bg);
-      transition: border-color .18s ease, color .18s ease;
-    }
-    .ai-gate-docs-btn:hover { border-color: var(--ai-accent); color: var(--ai-accent); }
-    .ai-team-gate__links {
-      display: flex; justify-content: center; flex-wrap: wrap; gap: 8px;
-      padding-top: 14px; border-top: 1px solid var(--ai-line);
-      font: 600 12px/1 var(--r-mono, ui-monospace, monospace); color: var(--ai-muted);
-    }
-    .ai-team-gate__links a { color: var(--ai-muted); text-decoration: none; }
-    .ai-team-gate__links a:hover { color: var(--ai-accent); }
-
-    .ai-art-pane.is-fullscreen { position: fixed; inset: 0; z-index: 140; border-left: 0; }
-    .ai-art-vp { display: inline-flex; gap: 3px; }
-    .ai-art-vp .ai-mini-btn.is-on { border-color: var(--ai-accent); color: var(--ai-accent); background: var(--ai-accent-soft); }
-    .ai-art-frame-wrap { flex: 1; display: flex; justify-content: center; overflow: auto; background: #0b0d11; min-height: 0; }
-    .ai-art-frame-wrap[hidden] { display: none !important; }
-    .ai-art-frame { flex: 1; width: 100%; height: 100%; border: 0; background: #fff; transition: max-width .2s ease; }
-    .ai-art-frame.vp-tablet { max-width: 768px; border-left: 1px solid var(--ai-line); border-right: 1px solid var(--ai-line); }
-    .ai-art-frame.vp-mobile { max-width: 390px; border-left: 1px solid var(--ai-line); border-right: 1px solid var(--ai-line); }
-    .ai-art-code-wrap { flex: 1; display: flex; overflow: hidden; background: var(--ai-code-bg); }
-    .ai-art-code-wrap[hidden] { display: none !important; }
-    .ai-art-editor {
-      flex: 1; width: 100%; height: 100%; border: 0; outline: none; resize: none;
-      padding: 16px; background: var(--ai-code-bg); color: #e5e7eb;
-      font: 400 12.8px/1.58 var(--r-mono, ui-monospace, monospace); tab-size: 2;
-    }
-    .ai-prof-banner {
-      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
-      padding: 10px 13px; border-radius: 12px; background: var(--ai-bg); border: 1px solid var(--ai-line);
-      font-size: 12.5px; color: var(--ai-muted);
-    }
-    .ai-prof-banner a { color: var(--ai-accent); text-decoration: none; font: 600 11.5px var(--r-mono); }
-    .ai-prof-banner a:hover { text-decoration: underline; }
-
-    /* Modals */
-    .ai-modal {
-      position: fixed; inset: 0; z-index: 150;
-      background: rgba(5, 7, 10, 0.72); backdrop-filter: blur(6px);
-      display: grid; place-items: center; padding: 20px;
-      color: var(--ai-text); color-scheme: var(--ai-scheme);
-      font-family: var(--r-sans, system-ui, -apple-system, sans-serif);
-    }
-    .ai-modal[hidden] { display: none !important; }
-    .ai-modal__card {
-      width: min(580px, 100%); max-height: 86vh; overflow-y: auto;
-      background: var(--ai-surface); color: var(--ai-text); border: 1px solid var(--ai-line-strong);
-      border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 15px;
-      box-shadow: 0 24px 68px rgba(0, 0, 0, 0.55);
-      animation: aiPopIn 0.16s ease;
-    }
-    .ai-modal__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 4px; border-bottom: 1px solid var(--ai-line); }
-    .ai-modal__head h2 { margin: 0; font-size: 17px; font-weight: 700; color: var(--ai-text); text-transform: none !important; letter-spacing: -0.015em !important; }
-    .ai-modal .ai-art-tabs { background: var(--ai-bg); border: 1px solid var(--ai-line-strong); padding: 3px; border-radius: 10px; }
-    .ai-modal .ai-art-tabs button { padding: 6px 12px; border-radius: 7px; font-size: 12.5px; color: var(--ai-muted); transition: background 0.14s ease, color 0.14s ease; }
-    .ai-modal .ai-art-tabs button.is-active { background: var(--ai-surface-2); color: var(--ai-text); box-shadow: 0 1px 4px rgba(0,0,0,0.18); }
-    .ai-proj-list { display: flex; flex-direction: column; gap: 9px; }
-    .ai-proj-card {
-      display: flex; align-items: center; gap: 14px; padding: 13px 15px; border-radius: 13px;
-      background: var(--ai-bg); border: 1px solid var(--ai-line-strong);
-      transition: border-color 0.14s ease;
-    }
-    .ai-proj-card:hover { border-color: color-mix(in srgb, var(--ai-accent) 45%, var(--ai-line-strong)); }
-    .ai-proj-card.is-active { border-color: var(--ai-accent); background: color-mix(in srgb, var(--ai-accent) 6%, var(--ai-bg)); }
-    .ai-proj-card strong { display: block; font-size: 13.5px; font-weight: 650; color: var(--ai-text); }
-    .ai-proj-card p { margin: 3px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--ai-muted); }
-    .ai-modal-form { display: flex; flex-direction: column; gap: 10px; }
-    .ai-modal-form label { display: block; font-size: 12px; font-weight: 600; color: var(--ai-muted); margin-bottom: 4px; }
-    .ai-modal-form input, .ai-modal-form textarea, .ai-select {
-      width: 100%; padding: 9px 12px; border-radius: 10px;
-      border: 1px solid var(--ai-line-strong);
-      background: var(--ai-bg); color: var(--ai-text); font-size: 13.5px; line-height: 1.45;
-      outline: none; transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-    .ai-modal-form input:focus, .ai-modal-form textarea:focus, .ai-select:focus {
-      border-color: var(--ai-accent);
-      box-shadow: 0 0 0 3px var(--ai-accent-soft);
-    }
-    .ai-modal-form input::placeholder, .ai-modal-form textarea::placeholder { color: var(--ai-muted); }
-    .ai-select option { background: var(--ai-surface); color: var(--ai-text); }
-    .ai-calc-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-    .ai-calc-out {
-      padding: 14px; border-radius: 13px; background: var(--ai-bg);
-      border: 1px solid color-mix(in srgb, var(--ai-accent) 42%, var(--ai-line-strong));
-      font-size: 13px; line-height: 1.55; color: var(--ai-text);
-    }
-    .ai-calc-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }
-    .ai-calc-kpi { padding: 10px 11px; border-radius: 10px; background: var(--ai-surface); border: 1px solid var(--ai-line-strong); }
-    .ai-calc-kpi span { display: block; font: 600 10px/1.2 var(--r-mono); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ai-muted); }
-    .ai-calc-kpi strong { display: block; margin-top: 4px; font: 700 15.5px/1.2 var(--r-mono); color: var(--ai-accent); }
-    .ai-btn-accent {
-      padding: 9px 18px; border-radius: 999px; border: 0;
-      background: var(--ai-accent); color: var(--ai-accent-ink); font-weight: 700; font-size: 13px;
-      cursor: pointer; transition: opacity 0.14s ease, transform 0.14s ease;
-    }
-    .ai-btn-accent:hover { opacity: 0.92; transform: translateY(-1px); }
-    .ai-btn-accent:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
-    .ai-modal .ai-mini-btn {
-      padding: 7px 12px; border-radius: 9px; border: 1px solid var(--ai-line-strong);
-      background: var(--ai-surface-2); color: var(--ai-text); font-size: 12px; font-weight: 600; cursor: pointer;
-    }
-    .ai-modal .ai-mini-btn:hover { border-color: var(--ai-accent); color: var(--ai-accent); }
-    .ai-modal .ai-mini-btn--accent {
-      background: var(--ai-accent-soft); border-color: color-mix(in srgb, var(--ai-accent) 55%, transparent); color: var(--ai-accent);
-    }
-    .ai-toast {
-      position: fixed; right: 20px; bottom: 20px; z-index: 120;
-      padding: 10px 15px; border-radius: 11px;
-      background: var(--ai-surface); color: var(--ai-text);
-      border: 1px solid var(--ai-accent);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.42);
-      font: 600 12.5px/1.2 var(--r-sans, system-ui, sans-serif);
-      opacity: 0; transform: translateY(8px); pointer-events: none;
-      transition: opacity 0.18s ease, transform 0.18s ease;
-    }
-    .ai-toast.is-show { opacity: 1; transform: translateY(0); }
-
-    @media (max-width: 960px) {
-      .ai-shell { grid-template-columns: 0px minmax(0, 1fr); }
-      .ai-shell:not(.is-side-collapsed) .ai-side { position: fixed; left: 0; top: 56px; bottom: 0; width: 260px; z-index: 70; box-shadow: 12px 0 36px rgba(0,0,0,.45); }
-      .ai-shell.has-artifact { grid-template-columns: 0px minmax(0, 1fr); }
-      .ai-art-pane { position: fixed; inset: 56px 0 0 0; z-index: 80; }
-    }
-    @media (max-width: 640px) {
-      .ai-starters-grid { grid-template-columns: 1fr; }
-      .ai-calc-grid, .ai-calc-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-  </style>
-
-  <script is:inline src="/assets/js/ai-studio.js?v=t392"></script>
+  <noscript><p class="ai-noscript">Activa JavaScript para usar Muntrume AI.</p></noscript>
 </Layout>
+
+<script is:inline src="/assets/js/ai-chat.js?v=pro2" defer></script>
+
+<style is:global>
+  html[data-ai-theme="light"] .ai-app,
+  .ai-app[data-theme="light"] {
+    --ai-bg: #f4f7f6;
+    --ai-surface: #ffffff;
+    --ai-surface-2: #e7eeeb;
+    --ai-text: #10211c;
+    --ai-muted: #3d4f49;
+    --ai-line: #c5d5ce;
+    --ai-accent: #047857;
+    --ai-accent-ink: #f4fffb;
+    --ai-chip: #e8f6f1;
+    --ai-code: #10211c;
+    --ai-code-bg: #eef3f1;
+    --ai-user: #d1fae5;
+  }
+  .ai-app {
+    --ai-bg: #090b0f;
+    --ai-surface: #11161c;
+    --ai-surface-2: #1a2129;
+    --ai-text: #e8eef2;
+    --ai-muted: #b7c2ce;
+    --ai-line: #24303a;
+    --ai-accent: #10b981;
+    --ai-accent-ink: #06281c;
+    --ai-chip: #10241c;
+    --ai-code: #d7efe4;
+    --ai-code-bg: #0d1411;
+    --ai-user: #12352a;
+    color: var(--ai-text);
+    background: var(--ai-bg);
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+  }
+  body:has(.ai-app) {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+  }
+  body:has(.ai-app) #main-content {
+    height: 100dvh;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .ai-scrim { position: absolute; inset: 0; z-index: 4; border: 0; background: rgba(0,0,0,.45); }
+  .ai-side {
+    width: min(260px, 86vw);
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+    background: var(--ai-surface);
+    border-right: 1px solid var(--ai-line);
+    padding: 10px;
+  }
+  .ai-side__bar, .ai-top, .ai-msg__bar, .ai-local { display: flex; align-items: center; gap: 8px; }
+  .ai-side__bar { justify-content: space-between; }
+  .ai-side__bar p, .ai-kicker, .ai-status, .ai-oss { margin: 0; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+  .ai-new, .ai-icon, .ai-theme, .ai-chips button, .ai-copy, .ai-codecopy, .ai-row__icon, .ai-send, #aiSend {
+    border: 1px solid var(--ai-line);
+    background: var(--ai-surface-2);
+    color: var(--ai-text);
+    border-radius: 8px;
+    min-height: 36px;
+    cursor: pointer;
+  }
+  .ai-new { width: 100%; font-weight: 700; }
+  .ai-icon { width: 36px; display: grid; place-items: center; padding: 0; }
+  .ai-list { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 4px; }
+  .ai-row { display: grid; grid-template-columns: 1fr auto auto; gap: 4px; align-items: center; }
+  .ai-row__open, .ai-row__icon { min-height: 34px; border: 0; background: transparent; color: var(--ai-muted); text-align: left; border-radius: 8px; cursor: pointer; }
+  .ai-row__open { padding: 0 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ai-row__open[aria-current="true"] { background: var(--ai-chip); color: var(--ai-accent); font-weight: 700; }
+  .ai-row__icon { font-size: 11px; padding: 0 6px; }
+  .ai-rename { width: 100%; min-height: 34px; border-radius: 8px; border: 1px solid var(--ai-accent); background: var(--ai-bg); color: var(--ai-text); padding: 0 8px; }
+  .ai-side__links { display: flex; flex-wrap: wrap; gap: 8px 12px; font-size: 12px; }
+  .ai-side__links a { color: var(--ai-muted); }
+  .ai-main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+  .ai-top { flex-wrap: wrap; padding: 8px 10px; border-bottom: 1px solid var(--ai-line); background: var(--ai-surface); }
+  .ai-top h1 { margin: 0; font-size: 16px; }
+  .ai-selectors { display: flex; gap: 8px; flex: 1 1 280px; min-width: 0; }
+  .ai-selectors label, .ai-local label { display: grid; gap: 2px; font-size: 11px; color: var(--ai-muted); flex: 1; min-width: 0; }
+  .ai-selectors select, .ai-local select, .ai-composer textarea {
+    width: 100%;
+    max-width: 100%;
+    border: 1px solid var(--ai-line);
+    background: var(--ai-bg);
+    color: var(--ai-text);
+    border-radius: 8px;
+    min-height: 36px;
+    font: inherit;
+  }
+  .ai-status { color: var(--ai-muted); }
+  .ai-theme { padding: 0 10px; font-weight: 700; }
+  .ai-oss {
+    color: var(--ai-accent-ink);
+    background: var(--ai-accent);
+    text-decoration: none;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-weight: 800;
+  }
+  .ai-local { padding: 8px 10px; border-bottom: 1px solid var(--ai-line); }
+  .ai-hint { margin: 0; color: var(--ai-muted); font-size: 13px; line-height: 1.4; }
+  .ai-stage { flex: 1; min-height: 0; overflow: auto; padding: 16px 14px 8px; }
+  .ai-empty { max-width: 760px; margin: 0 auto; display: grid; gap: 10px; }
+  .ai-empty h2 { margin: 0; font-size: clamp(26px, 4vw, 40px); line-height: 1.05; }
+  .ai-empty p { margin: 0; color: var(--ai-muted); }
+  .ai-kicker { color: var(--ai-accent); font-weight: 800; }
+  .ai-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ai-chips button { padding: 8px 12px; background: var(--ai-chip); color: var(--ai-text); font-weight: 700; }
+  .ai-log { display: flex; flex-direction: column; gap: 12px; max-width: 860px; margin: 0 auto; }
+  .ai-msg { border: 1px solid var(--ai-line); border-radius: 12px; padding: 10px 12px; background: var(--ai-surface); }
+  .ai-msg--user { background: var(--ai-user); margin-left: 12%; }
+  .ai-msg--user p { margin: 0; white-space: pre-wrap; }
+  .ai-msg--bot { margin-right: 4%; }
+  .ai-msg__bar { justify-content: space-between; margin-bottom: 6px; color: var(--ai-muted); font-size: 12px; }
+  .ai-copy, .ai-codecopy { min-height: 28px; padding: 0 8px; font-size: 12px; }
+  .ai-think { margin: 0 0 8px; border: 1px solid var(--ai-line); border-radius: 8px; background: var(--ai-bg); }
+  .ai-think summary { cursor: pointer; padding: 8px 10px; color: var(--ai-accent); font-weight: 700; }
+  .ai-think-body { padding: 0 10px 10px; white-space: pre-wrap; color: var(--ai-muted); font-size: 13px; }
+  .ai-md { display: grid; gap: 8px; }
+  .ai-md :where(h1,h2,h3,p,ul,ol,pre) { margin: 0; }
+  .ai-md :where(h2,h3) { font-size: 16px; }
+  .ai-md a { color: var(--ai-accent); }
+  .ai-md ul, .ai-md ol { padding-left: 18px; }
+  .ai-table { overflow: auto; max-width: 100%; }
+  .ai-md table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  .ai-md th, .ai-md td { border: 1px solid var(--ai-line); padding: 6px 8px; text-align: left; }
+  .ai-code { position: relative; }
+  .ai-codecopy { position: absolute; top: 6px; right: 6px; }
+  .ai-md pre { overflow: auto; background: var(--ai-code-bg); color: var(--ai-code); border-radius: 8px; padding: 28px 10px 10px; font-size: 13px; }
+  .ai-md code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .tok-k { color: #34d399; }
+  .tok-s { color: #fbbf24; }
+  .tok-n { color: #93c5fd; }
+  .tok-c { color: #94a3b8; }
+  .ai-app[data-theme="light"] .tok-k { color: #047857; }
+  .ai-app[data-theme="light"] .tok-s { color: #b45309; }
+  .ai-app[data-theme="light"] .tok-n { color: #1d4ed8; }
+  .ai-caret { display: inline-block; width: 7px; height: 1em; background: var(--ai-accent); margin-left: 2px; vertical-align: text-bottom; }
+  .ai-composer { padding: 8px 10px 12px; border-top: 1px solid var(--ai-line); background: var(--ai-surface); display: grid; gap: 6px; }
+  .ai-composer__box { display: flex; gap: 8px; align-items: flex-end; }
+  .ai-composer textarea { resize: none; padding: 8px 10px; max-height: 140px; }
+  #aiSend { width: 40px; background: var(--ai-accent); color: var(--ai-accent-ink); border-color: transparent; display: grid; place-items: center; }
+  #aiSend.is-stop { width: auto; padding: 0 8px; background: transparent; color: var(--ai-text); border-color: var(--ai-line); }
+  #aiSend.is-stop svg { display: none; }
+  #aiSend.is-stop::before { content: "Stop"; font-size: 11px; font-weight: 800; }
+  .ai-app :focus-visible { outline: 2px solid var(--ai-accent); outline-offset: 2px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .ai-noscript { padding: 16px; }
+  @media (max-width: 959px) {
+    .ai-side { position: absolute; z-index: 5; inset: 0 auto 0 0; transform: translateX(-105%); transition: transform .18s ease; }
+    .ai-app.is-side-open .ai-side { transform: none; }
+    .ai-msg--user { margin-left: 0; }
+    .ai-msg--bot { margin-right: 0; }
+  }
+  @media (max-width: 420px) {
+    .ai-top h1 { font-size: 15px; }
+    .ai-oss { letter-spacing: 0; }
+    .ai-row { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ai-side { transition: none; }
+    .ai-caret { display: none; }
+  }
+</style>
