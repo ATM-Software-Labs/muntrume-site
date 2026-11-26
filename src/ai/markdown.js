@@ -49,6 +49,22 @@ export function stabilizeMarkdown(src) {
   return text;
 }
 
+const CODE_KEYWORDS = /\b(const|let|var|function|return|if|else|elif|for|while|class|import|export|from|async|await|def|fn|pub|struct|enum|impl|use|type|interface|public|private|static|void|int|string|bool|true|false|null|None|self|match|package|new|try|catch)\b/g;
+
+function highlightCode(text) {
+  const stash = [];
+  const hold = (html) => {
+    const id = stash.push(html) - 1;
+    return `\u0000${id}\u0000`;
+  };
+  let html = escapeHtml(text);
+  html = html.replace(/(&quot;[\s\S]*?&quot;|&#39;[\s\S]*?&#39;)/g, (match) => hold(`<span class="tok-s">${match}</span>`));
+  html = html.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, (match) => hold(`<span class="tok-c">${match}</span>`));
+  html = html.replace(/\b\d+(?:\.\d+)?\b/g, (match) => hold(`<span class="tok-n">${match}</span>`));
+  html = html.replace(CODE_KEYWORDS, (match) => hold(`<span class="tok-k">${match}</span>`));
+  return html.replace(/\u0000(\d+)\u0000/g, (_, id) => stash[Number(id)] || "");
+}
+
 function decorate(root, labels) {
   root.querySelectorAll("a[href]").forEach((link) => {
     const href = link.getAttribute("href") || "";
@@ -69,6 +85,11 @@ function decorate(root, labels) {
     wrap.setAttribute("aria-label", labels.table || "Tabla");
     table.parentNode.insertBefore(wrap, table);
     wrap.appendChild(table);
+  });
+  root.querySelectorAll("pre.ai-pre code").forEach((code) => {
+    if (!code.childElementCount && code.textContent && code.textContent.length < 20000) {
+      code.innerHTML = highlightCode(code.textContent);
+    }
   });
   root.querySelectorAll("pre.ai-pre").forEach((pre) => {
     const wrap = document.createElement("div");
