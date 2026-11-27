@@ -15,7 +15,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { ZoneKey, ZoneRect } from "./types";
 import modelsManifest from "../../data/models-manifest.json";
@@ -39,7 +38,7 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
   numberPlateRight: { x: 0.78, y: 0.47, w: 0.12, h: 0.12 },
 };
 
-const MODELS_CDN_BASE = "https://muntru.me/assets/models";
+const MODELS_CDN_BASE = "/assets/models";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: `${MODELS_CDN_BASE}/fordmustanggt3.glb`,
@@ -761,12 +760,6 @@ export class WebGLPreviewEngine {
       throw new Error("Visor Three.js no inicializado.");
     }
     const loader = new GLTFLoader();
-    try {
-      await MeshoptDecoder.ready;
-      loader.setMeshoptDecoder(MeshoptDecoder);
-    } catch (e) {
-      console.warn("[skins-3d] MeshoptDecoder init skipped:", e);
-    }
     const gltf = await new Promise<{ scene: THREE.Group }>((resolve, reject) => {
       loader.parse(buffer.slice(0), "", (res) => resolve(res as unknown as { scene: THREE.Group }), reject);
     });
