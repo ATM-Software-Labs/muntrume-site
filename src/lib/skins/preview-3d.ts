@@ -281,8 +281,11 @@ function applyIracingAutoFitUVs(
       lv = 1 - across;
     }
 
-    const u = Math.max(0.001, Math.min(0.999, zone.x + Math.max(0, Math.min(1, lu)) * zone.w));
-    const w = Math.max(0.001, Math.min(0.999, zone.y + Math.max(0, Math.min(1, lv)) * zone.h));
+    const inset = 0.04;
+    const clampedU = inset + Math.max(0, Math.min(1, lu)) * (1 - inset * 2);
+    const clampedV = inset + Math.max(0, Math.min(1, lv)) * (1 - inset * 2);
+    const u = Math.max(0.001, Math.min(0.999, zone.x + clampedU * zone.w));
+    const w = Math.max(0.001, Math.min(0.999, zone.y + clampedV * zone.h));
     uvArr[i * 2] = u;
     uvArr[i * 2 + 1] = w;
   }
@@ -874,6 +877,57 @@ export class WebGLPreviewEngine {
       return mat;
     };
 
+    const ensureSmoothValidNormals = (geo: THREE.BufferGeometry): void => {
+      const pos = geo.getAttribute("position");
+      if (!pos || pos.count < 3) return;
+      const norm = geo.getAttribute("normal");
+      let needsRecompute = !norm || norm.count !== pos.count;
+      if (!needsRecompute && norm) {
+        // Detect flat/degenerate dummy normals such as (0, 1, 0) on every vertex
+        const step = Math.max(1, Math.floor(norm.count / 64));
+        let allUp = true;
+        let zeroCount = 0;
+        let samples = 0;
+        for (let i = 0; i < norm.count; i += step) {
+          const nx = norm.getX(i);
+          const ny = norm.getY(i);
+          const nz = norm.getZ(i);
+          const lenSq = nx * nx + ny * ny + nz * nz;
+          if (lenSq < 0.01) zeroCount++;
+          if (Math.abs(nx) > 0.05 || Math.abs(nz) > 0.05 || Math.abs(ny - 1) > 0.05) {
+            allUp = false;
+          }
+          samples++;
+        }
+        if (allUp || zeroCount > samples * 0.25) needsRecompute = true;
+      }
+      if (needsRecompute) {
+        geo.deleteAttribute("normal");
+        geo.computeVertexNormals();
+      }
+      // Verify normals point outward (avoid inside-out black shading on AI meshes)
+      const nAttr = geo.getAttribute("normal");
+      if (nAttr && needsRecompute) {
+        geo.computeBoundingBox();
+        const c = new THREE.Vector3();
+        geo.boundingBox?.getCenter(c);
+        let dotSum = 0;
+        const step = Math.max(1, Math.floor(pos.count / 128));
+        for (let i = 0; i < pos.count; i += step) {
+          dotSum +=
+            (pos.getX(i) - c.x) * nAttr.getX(i) +
+            (pos.getY(i) - c.y) * nAttr.getY(i) +
+            (pos.getZ(i) - c.z) * nAttr.getZ(i);
+        }
+        if (dotSum < 0) {
+          for (let i = 0; i < nAttr.count; i++) {
+            nAttr.setXYZ(i, -nAttr.getX(i), -nAttr.getY(i), -nAttr.getZ(i));
+          }
+          nAttr.needsUpdate = true;
+        }
+      }
+    };
+
     let paintedCount = 0;
     let preservedCount = 0;
     root.traverse((obj) => {
@@ -881,6 +935,9 @@ export class WebGLPreviewEngine {
       if (shouldHideStockDecalMesh(obj, isBaseModel)) {
         obj.visible = false;
         return;
+      }
+      if (obj.geometry) {
+        ensureSmoothValidNormals(obj.geometry);
       }
       obj.castShadow = true;
       obj.receiveShadow = true;
