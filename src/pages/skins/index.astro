@@ -401,17 +401,10 @@ const canonical = "https://skins.muntru.me/";
 
           <div class="sk-psd-patterns" style="margin-top:4px;">
             <div class="sk-row" style="justify-content:space-between;align-items:center;">
-              <span style="font-size:10px;font-weight:800;color:#fcd34d;text-transform:uppercase;letter-spacing:0.06em;">Inspiración Real (WEC · IMSA · GTWC)</span>
-              <button type="button" id="skAutoRealLiveryBtn" class="sk-btn sk-btn-sm" style="font-size:10px;padding:3px 7px;border-color:rgba(250,204,21,0.45);color:#fcd34d;">Auto-Livery de este coche</button>
+              <span style="font-size:10px;font-weight:800;color:#fcd34d;text-transform:uppercase;letter-spacing:0.06em;">Liveries Reales e Históricas de este coche</span>
+              <button type="button" id="skAutoRealLiveryBtn" class="sk-btn sk-btn-sm" style="font-size:10px;padding:3px 7px;border-color:rgba(250,204,21,0.45);color:#fcd34d;" title="Cambia al siguiente diseño real/histórico de este coche">Siguiente real ↻</button>
             </div>
-            <div class="sk-pal-grid" style="margin-top:6px;" aria-label="Liveries inspirados en competición real">
-              <button type="button" class="sk-pal-chip" data-real-livery="#dc2626,#f8fafc,#0f172a,#f8fafc,solid-factory,gloss"><span class="sk-pal-dots"><i style="background:#dc2626"></i><i style="background:#f8fafc"></i></span>Penske WEC</button>
-              <button type="button" class="sk-pal-chip" data-real-livery="#b91c1c,#991b1b,#facc15,#ffffff,pearl-shift,gloss"><span class="sk-pal-dots"><i style="background:#b91c1c"></i><i style="background:#facc15"></i></span>AF Corse 499P</button>
-              <button type="button" class="sk-pal-chip" data-real-livery="#facc15,#16a34a,#090b0f,#ffffff,solid-factory,satin"><span class="sk-pal-dots"><i style="background:#facc15"></i><i style="background:#16a34a"></i></span>Manthey Grello</button>
-              <button type="button" class="sk-pal-chip" data-real-livery="#f8fafc,#0f172a,#2563eb,#ef4444,solid-factory,gloss"><span class="sk-pal-dots"><i style="background:#2563eb"></i><i style="background:#ef4444"></i></span>BMW M Works</button>
-              <button type="button" class="sk-pal-chip" data-real-livery="#38bdf8,#0ea5e9,#f97316,#090b0f,pearl-shift,gloss"><span class="sk-pal-dots"><i style="background:#38bdf8"></i><i style="background:#f97316"></i></span>Gulf Heritage</button>
-              <button type="button" class="sk-pal-chip" data-real-livery="#16a34a,#15803d,#f8fafc,#090b0f,solid-factory,satin"><span class="sk-pal-dots"><i style="background:#16a34a"></i><i style="background:#f8fafc"></i></span>AO Rexy GT3</button>
-            </div>
+            <div id="skCarRealLiveriesGrid" class="sk-pal-grid" style="margin-top:6px;" aria-label="Liveries reales e históricas para el coche seleccionado"></div>
           </div>
 
           <div class="sk-grid-2">

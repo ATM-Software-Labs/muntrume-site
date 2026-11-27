@@ -24,6 +24,7 @@ import {
   sanitizeCustomerId,
 } from "./exporter";
 import { buildDefaultPhotoGuide, contrastRatio } from "./photo-guide";
+import { getRealLiveriesForCar, type RealLiveryPreset } from "./real-liveries";
 import { WebGLPreviewEngine, mapCategoryStringToBody, type LightingPreset, type UvMappingMode } from "./preview-3d";
 import { deleteCarModel, loadCarModel, saveCarModel } from "../model-store";
 import { getLocalUvMap } from "./uv-maps-loader";
@@ -2789,67 +2790,54 @@ export function initSkinsStudio(): void {
     }
   });
 
-  // Auto-match real-world works livery palette/finish for ANY of the 128 iRacing cars
-  byId<HTMLButtonElement>("skAutoRealLiveryBtn")?.addEventListener("click", () => {
-    const car = getCarById(state.carId);
-    const key = `${car.id} ${car.brand} ${car.name}`.toLowerCase();
-    const WORKS_RULES: Array<[RegExp, string, string, string, string, string, PatternStyle, FinishType]> = [
-      [/ferrari|296|499p|488/, "AF Corse Works", "#b91c1c", "#7f1d1d", "#facc15", "#ffffff", "pearl-shift", "gloss"],
-      [/porsche|992|963|718|991/, "Porsche Penske / Manthey", "#f8fafc", "#dc2626", "#0f172a", "#facc15", "solid-factory", "gloss"],
-      [/bmw|m4|m8|m2|lmdh|hybridv8/, "BMW M Motorsport Works", "#f8fafc", "#0f172a", "#2563eb", "#ef4444", "solid-factory", "gloss"],
-      [/cadillac|vseries/, "Cadillac Whelen / Action Express", "#dc2626", "#090b0f", "#f8fafc", "#facc15", "pearl-shift", "gloss"],
-      [/acura|arx06|nsx/, "Wayne Taylor / Meyer Shank", "#0284c7", "#090b0f", "#38bdf8", "#ffffff", "pearl-shift", "gloss"],
-      [/mclaren|720s|570s|mp4/, "McLaren Papaya Works", "#ea580c", "#0f172a", "#38bdf8", "#ffffff", "solid-factory", "satin"],
-      [/aston|vantage|valkyrie/, "Aston Martin AMR Works", "#065f46", "#022c22", "#a3e635", "#ffffff", "pearl-shift", "gloss"],
-      [/mercedes|amg|w12|w13/, "Mercedes-AMG Petronas", "#475569", "#0f172a", "#00d2be", "#ffffff", "brushed-metal", "metallic"],
-      [/audi|r8|rs3/, "Audi Sport Customer Racing", "#e2e8f0", "#0f172a", "#dc2626", "#ffffff", "solid-factory", "satin"],
-      [/lamborghini|huracan/, "Iron Lynx / Squadra Corse", "#16a34a", "#090b0f", "#facc15", "#ffffff", "forged-carbon", "satin"],
-      [/corvette|chevy|camaro|silverado/, "Corvette Racing Works", "#facc15", "#090b0f", "#ef4444", "#ffffff", "solid-factory", "gloss"],
-      [/ford|mustang/, "Ford Multimatic Motorsport", "#1d4ed8", "#0f172a", "#38bdf8", "#ffffff", "pearl-shift", "gloss"],
-      [/hyundai|elantra|veloster/, "Hyundai Motorsport N", "#38bdf8", "#0f172a", "#ef4444", "#ffffff", "solid-factory", "gloss"],
-      [/honda|civic/, "Honda Racing HRC", "#f8fafc", "#dc2626", "#1d4ed8", "#0f172a", "solid-factory", "gloss"],
-      [/toyota|gr86|tundra/, "Toyota Gazoo Racing", "#f8fafc", "#090b0f", "#dc2626", "#ffffff", "solid-factory", "gloss"],
-      [/mazda|mx5/, "Mazda Motorsports", "#991b1b", "#090b0f", "#f8fafc", "#facc15", "pearl-shift", "gloss"],
-    ];
-    const match = WORKS_RULES.find(([re]) => re.test(key));
-    const [, label, primary, secondary, accent, detail, pat, fin] = match ?? [
-      /.*/,
-      "Muntrume Factory Works",
-      "#0f1722",
-      "#1a2c3a",
-      "#00e699",
-      "#f8fafc",
-      "pearl-shift" as PatternStyle,
-      "satin" as FinishType,
-    ];
-    state.palette.primary = primary;
-    state.palette.secondary = secondary;
-    state.palette.accent = accent;
-    state.palette.detail = detail;
-    state.pattern = pat;
-    state.spec = { finish: fin, ...finishDefaults(fin) };
+  // Dynamic per-car real-world & historic motorsport liveries (WEC · IMSA · GTWC · Le Mans · DTM · F1)
+  let realLiveryCycleIdx = 0;
+  function applyRealLiveryPreset(preset: RealLiveryPreset, carName: string): void {
+    state.palette.primary = preset.primary;
+    state.palette.secondary = preset.secondary;
+    state.palette.accent = preset.accent;
+    state.palette.detail = preset.detail;
+    state.pattern = preset.pattern;
+    state.spec = { finish: preset.finish, ...finishDefaults(preset.finish) };
+    state.name = `${preset.label} · ${carName} #${state.customNumber}`;
     syncControlsFromState();
     scheduleRender();
-    setStatus(`Auto-Livery aplicada para ${car.name}: ${label} (${fin})`, "ok");
-  });
+    setStatus(`Livery real aplicada (${carName}): ${preset.label} · ${preset.era}`, "ok");
+  }
 
-  // Real-world motorsport livery inspiration presets (WEC / IMSA / GTWC)
-  document.querySelectorAll<HTMLButtonElement>("[data-real-livery]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const parts = (btn.dataset.realLivery || "").split(",");
-      if (parts.length < 6) return;
-      const [primary, secondary, accent, detail, pat, fin] = parts;
-      state.palette.primary = primary;
-      state.palette.secondary = secondary;
-      state.palette.accent = accent;
-      state.palette.detail = detail;
-      state.pattern = pat as PatternStyle;
-      const finish = fin as FinishType;
-      state.spec = { finish, ...finishDefaults(finish) };
-      syncControlsFromState();
-      scheduleRender();
-      setStatus(`Livery real aplicada: ${btn.textContent?.trim() || "Motorsport"} (${finish})`, "ok");
+  function renderRealLiveriesForActiveCar(): void {
+    const grid = byId<HTMLElement>("skCarRealLiveriesGrid");
+    if (!grid) return;
+    const car = getCarById(state.carId);
+    const list = getRealLiveriesForCar(car.id, car.brand, car.name, car.category);
+    grid.innerHTML = list
+      .map(
+        (p, idx) =>
+          `<button type="button" class="sk-pal-chip" data-car-real-idx="${idx}" title="${escapeHtml(p.label)} (${escapeHtml(p.era)} · ${escapeHtml(p.finish)})"><span class="sk-pal-dots"><i style="background:${p.primary}"></i><i style="background:${p.accent}"></i></span>${escapeHtml(p.label)}</button>`,
+      )
+      .join("");
+    grid.querySelectorAll<HTMLButtonElement>("[data-car-real-idx]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = Number(btn.dataset.carRealIdx || 0);
+        const preset = list[idx];
+        if (!preset) return;
+        realLiveryCycleIdx = (idx + 1) % list.length;
+        applyRealLiveryPreset(preset, car.name);
+      });
     });
+  }
+
+  byId<HTMLButtonElement>("skAutoRealLiveryBtn")?.addEventListener("click", () => {
+    const car = getCarById(state.carId);
+    const list = getRealLiveriesForCar(car.id, car.brand, car.name, car.category);
+    const preset = list[realLiveryCycleIdx % list.length];
+    realLiveryCycleIdx = (realLiveryCycleIdx + 1) % list.length;
+    if (preset) applyRealLiveryPreset(preset, car.name);
+  });
+  renderRealLiveriesForActiveCar();
+  carSelect?.addEventListener("change", () => {
+    realLiveryCycleIdx = 0;
+    renderRealLiveriesForActiveCar();
   });
 
   // Direct Live Bridge to Documents\iRacing\paint\<car>\ for instant Ctrl+R 3D preview in iRacing
