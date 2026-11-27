@@ -120,7 +120,9 @@ export async function loginWithVaultCredentials(email: string, password: string)
     if (data.user && typeof data.user === "object") {
       localStorage.setItem("mrt_vault_user", JSON.stringify(data.user));
     }
+    (window as unknown as { __mmtSyncSsoCookie?: (t: string, u?: unknown) => void }).__mmtSyncSsoCookie?.(token, data.user);
     window.dispatchEvent(new Event("mm-auth-changed"));
+    window.dispatchEvent(new Event("storage"));
   } catch {
     // Ignore storage errors
   }
@@ -136,7 +138,9 @@ export function clearVaultSession(): void {
     localStorage.removeItem("mm_token");
     localStorage.removeItem("mrt_vault_user");
     sessionStorage.removeItem("mm_token");
+    (window as unknown as { __mmtClearSsoCookie?: () => void }).__mmtClearSsoCookie?.();
     window.dispatchEvent(new Event("mm-auth-changed"));
+    window.dispatchEvent(new Event("storage"));
   } catch {
     // Ignore storage errors
   }
