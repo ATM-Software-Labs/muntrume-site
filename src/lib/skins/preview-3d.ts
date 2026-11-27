@@ -39,7 +39,7 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const MODELS_CDN_BASE = "/assets/models";
-const MODEL_VER = "v=6";
+const MODEL_VER = "v=7";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
@@ -807,10 +807,34 @@ export class WebGLPreviewEngine {
     const finalBox = new THREE.Box3().setFromObject(root);
     this.sanitizeSceneGroup(root, finalBox);
 
-    // Apply live paint ONLY to exterior bodywork panels; refine blown-out base GLB rims/tires/glass into realistic motorsport PBR
-    const gunmetalRimMat = new THREE.MeshStandardMaterial({ color: "#2b323d", roughness: 0.28, metalness: 0.86, envMapIntensity: 1.2 });
-    const rubberTireMat = new THREE.MeshStandardMaterial({ color: "#15181d", roughness: 0.88, metalness: 0.06 });
-    const smokedGlassMat = new THREE.MeshPhysicalMaterial({ color: "#0b121c", roughness: 0.08, metalness: 0.12, transparent: true, opacity: 0.78, clearcoat: 1.0 });
+    // Apply live paint ONLY to exterior bodywork panels; refine untextured/blown-out rims/tires/glass/carbon into realistic motorsport PBR
+    const gunmetalRimMat = new THREE.MeshStandardMaterial({ color: "#282f3a", roughness: 0.26, metalness: 0.88, envMapIntensity: 1.25 });
+    const rubberTireMat = new THREE.MeshStandardMaterial({ color: "#14171c", roughness: 0.88, metalness: 0.05 });
+    const smokedGlassMat = new THREE.MeshPhysicalMaterial({ color: "#0b121c", roughness: 0.08, metalness: 0.12, transparent: true, opacity: 0.74, clearcoat: 1.0 });
+    const brakeSteelMat = new THREE.MeshStandardMaterial({ color: "#68727e", roughness: 0.34, metalness: 0.9 });
+    const darkCarbonMat = new THREE.MeshStandardMaterial({ color: "#161b22", roughness: 0.48, metalness: 0.22 });
+
+    const isMaterialUntexturedOrWhite = (m: THREE.Material | undefined): boolean => {
+      if (!m) return true;
+      const std = m as THREE.MeshStandardMaterial;
+      if (std.map) return false;
+      if (std.color) {
+        const lum = std.color.r * 0.299 + std.color.g * 0.587 + std.color.b * 0.114;
+        return lum > 0.65;
+      }
+      return true;
+    };
+
+    const refineNonBodyMaterial = (id: string, mat: THREE.Material): THREE.Material => {
+      if (/(tireside|tiretread|tire|tyre|rubber|slick|gt3phong1)/.test(id)) return rubberTireMat;
+      if (/(rim1|rim2|wheel|alloy|spoke|phong9)/.test(id)) return gunmetalRimMat;
+      if (/(glass|window|windshield|windscreen|visor|black_glass)/.test(id)) return smokedGlassMat;
+      if (/(rotor|disc|caliper|brake)/.test(id)) return brakeSteelMat;
+      if (isMaterialUntexturedOrWhite(mat) && /(carbon|chassis|interior|cockpit|cab|misc|grille|grill|diffuser|splitter)/.test(id)) {
+        return darkCarbonMat;
+      }
+      return mat;
+    };
 
     let paintedCount = 0;
     let preservedCount = 0;
@@ -822,16 +846,29 @@ export class WebGLPreviewEngine {
       }
       obj.castShadow = true;
       obj.receiveShadow = true;
+
+      // Handle multi-material meshes (e.g. Aston Martin [Mat_Body, Mat_Wheel, Mat_Glass]) per slot
+      if (Array.isArray(obj.material)) {
+        let slotPainted = false;
+        obj.material = obj.material.map((slotMat) => {
+          const slotName = (slotMat?.name || "").toLowerCase();
+          if (/(paint|carpaint|livery|body_color|bodypaint|meshesbody|mt_body|mat_body|mat_carrozzeria|bodymaterials|bodyy|vehicle_exterior_mm_ext|\bphong4\b|\bbody\b)/.test(slotName)) {
+            slotPainted = true;
+            return this.paintMaterial!;
+          }
+          return refineNonBodyMaterial(`${(obj.name || "").toLowerCase()} ${slotName}`, slotMat);
+        });
+        if (slotPainted) paintedCount++;
+        else preservedCount++;
+        return;
+      }
+
       if (isPaintableBodyMesh(obj)) {
         obj.material = this.paintMaterial!;
         paintedCount++;
       } else {
-        if (isBaseModel && filename === "gt3-base.glb") {
-          const id = `${(obj.name || "").toLowerCase()} ${getMeshMaterialNames(obj)}`;
-          if (/(rim1|rim2|wheel|alloy)/.test(id)) obj.material = gunmetalRimMat;
-          else if (/(tireside|tiretread|tire|tyre)/.test(id)) obj.material = rubberTireMat;
-          else if (/(glass|windshield)/.test(id)) obj.material = smokedGlassMat;
-        }
+        const id = `${(obj.name || "").toLowerCase()} ${getMeshMaterialNames(obj)}`;
+        obj.material = refineNonBodyMaterial(id, obj.material);
         preservedCount++;
       }
     });
