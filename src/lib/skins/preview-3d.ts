@@ -39,34 +39,36 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
   numberPlateRight: { x: 0.78, y: 0.47, w: 0.12, h: 0.12 },
 };
 
+const MODELS_CDN_BASE = "https://muntru.me/assets/models";
+
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
-  gt3: "/assets/models/fordmustanggt3.glb",
-  touring: "/assets/models/fordmustanggt3.glb",
-  gtp: "/assets/models/gt3-base.glb",
-  nascar: "/assets/models/fordmustanggt3.glb",
-  formula: "/assets/models/formula-base.glb",
+  gt3: `${MODELS_CDN_BASE}/fordmustanggt3.glb`,
+  touring: `${MODELS_CDN_BASE}/fordmustanggt3.glb`,
+  gtp: `${MODELS_CDN_BASE}/gt3-base.glb`,
+  nascar: `${MODELS_CDN_BASE}/fordmustanggt3.glb`,
+  formula: `${MODELS_CDN_BASE}/formula-base.glb`,
 };
 
 const CAR_SPECIFIC_GLB_PATHS: Record<string, string> = {
-  bmwm4gt3: "/assets/models/bmwm4gt3.glb",
-  bmw_m4_gt3: "/assets/models/bmwm4gt3.glb",
-  bmwm4gt4: "/assets/models/bmwm4gt3.glb",
-  bmw_m4_gt4: "/assets/models/bmwm4gt3.glb",
-  bmwm4g82gt4: "/assets/models/bmwm4gt3.glb",
-  bmwm4evogt4: "/assets/models/bmwm4gt3.glb",
-  bmw_m4_evo_gt4: "/assets/models/bmwm4gt3.glb",
-  porsche992rgt3: "/assets/models/porsche992rgt3.glb",
-  porsche_911_gt3_r_992: "/assets/models/porsche992rgt3.glb",
-  porsche992cup: "/assets/models/porsche992rgt3.glb",
-  porsche9922cup: "/assets/models/porsche992rgt3.glb",
-  porsche991rsr: "/assets/models/porsche992rgt3.glb",
-  porsche718gt4: "/assets/models/porsche992rgt3.glb",
-  lamborghinievogt3: "/assets/models/lamborghinievogt3.glb",
-  lamborghini_huracan_gt3_evo: "/assets/models/lamborghinievogt3.glb",
-  fordmustanggt3: "/assets/models/fordmustanggt3.glb",
-  ford_mustang_gt3: "/assets/models/fordmustanggt3.glb",
-  fordmustanggt4: "/assets/models/fordmustanggt3.glb",
-  ford_mustang_gt4: "/assets/models/fordmustanggt3.glb",
+  bmwm4gt3: `${MODELS_CDN_BASE}/bmwm4gt3.glb`,
+  bmw_m4_gt3: `${MODELS_CDN_BASE}/bmwm4gt3.glb`,
+  bmwm4gt4: `${MODELS_CDN_BASE}/bmwm4gt3.glb`,
+  bmw_m4_gt4: `${MODELS_CDN_BASE}/bmwm4gt3.glb`,
+  bmwm4g82gt4: `${MODELS_CDN_BASE}/bmwm4gt3.glb`,
+  bmwm4evogt4: `${MODELS_CDN_BASE}/bmwm4gt3.glb`,
+  bmw_m4_evo_gt4: `${MODELS_CDN_BASE}/bmwm4gt3.glb`,
+  porsche992rgt3: `${MODELS_CDN_BASE}/porsche992rgt3.glb`,
+  porsche_911_gt3_r_992: `${MODELS_CDN_BASE}/porsche992rgt3.glb`,
+  porsche992cup: `${MODELS_CDN_BASE}/porsche992rgt3.glb`,
+  porsche9922cup: `${MODELS_CDN_BASE}/porsche992rgt3.glb`,
+  porsche991rsr: `${MODELS_CDN_BASE}/porsche992rgt3.glb`,
+  porsche718gt4: `${MODELS_CDN_BASE}/porsche992rgt3.glb`,
+  lamborghinievogt3: `${MODELS_CDN_BASE}/lamborghinievogt3.glb`,
+  lamborghini_huracan_gt3_evo: `${MODELS_CDN_BASE}/lamborghinievogt3.glb`,
+  fordmustanggt3: `${MODELS_CDN_BASE}/fordmustanggt3.glb`,
+  ford_mustang_gt3: `${MODELS_CDN_BASE}/fordmustanggt3.glb`,
+  fordmustanggt4: `${MODELS_CDN_BASE}/fordmustanggt3.glb`,
+  ford_mustang_gt4: `${MODELS_CDN_BASE}/fordmustanggt3.glb`,
 };
 
 export function mapCategoryStringToBody(category?: string): CarBodyCategory {
@@ -478,7 +480,7 @@ export class WebGLPreviewEngine {
           slugKey && manifestModels[slugKey] ? manifestModels[slugKey] : "",
           CAR_SPECIFIC_GLB_PATHS[slugKey] || "",
           CATEGORY_BASE_GLB_PATHS[category],
-          category === "formula" ? "/assets/models/formula-base.glb" : "/assets/models/gt3-base.glb",
+          category === "formula" ? `${MODELS_CDN_BASE}/formula-base.glb` : `${MODELS_CDN_BASE}/gt3-base.glb`,
         ].filter(Boolean),
       ),
     );
