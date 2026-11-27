@@ -255,5 +255,134 @@
       "series_blocks": "/assets/skins/kits/toyotagr86/series_blocks.webp",
       "car_mandatory": "/assets/skins/kits/toyotagr86/car_mandatory.webp"
     }
+  },
+  "mclaren570sgt4": {
+    "sourceSlug": "mclaren_570s_gt4",
+    "layers": {
+      "wireframe": "/assets/skins/kits/mclaren570sgt4/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/mclaren570sgt4/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/mclaren570sgt4/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/mclaren570sgt4/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/mclaren570sgt4/car_mandatory.webp"
+    }
+  },
+  "fordmustanggt4": {
+    "sourceSlug": "ford_mustang_gt4",
+    "layers": {
+      "wireframe": "/assets/skins/kits/fordmustanggt4/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/fordmustanggt4/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/fordmustanggt4/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/fordmustanggt4/car_mandatory.webp"
+    }
+  },
+  "ferrari296challenge": {
+    "sourceSlug": "ferrari_296_challenge",
+    "layers": {
+      "wireframe": "/assets/skins/kits/ferrari296challenge/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/ferrari296challenge/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/ferrari296challenge/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/ferrari296challenge/car_mandatory.webp"
+    }
+  },
+  "amvalkyriegtp": {
+    "sourceSlug": "aston_martin_valkyrie_gtp",
+    "layers": {
+      "wireframe": "/assets/skins/kits/amvalkyriegtp/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/amvalkyriegtp/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/amvalkyriegtp/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/amvalkyriegtp/car_mandatory.webp"
+    }
+  },
+  "audirs3lmsgen2": {
+    "sourceSlug": "audi_rs3_lms_gen_2",
+    "layers": {
+      "wireframe": "/assets/skins/kits/audirs3lmsgen2/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/audirs3lmsgen2/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/audirs3lmsgen2/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/audirs3lmsgen2/car_mandatory.webp"
+    }
+  },
+  "hondacivictyper": {
+    "sourceSlug": "honda_civic_type_r",
+    "layers": {
+      "wireframe": "/assets/skins/kits/hondacivictyper/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/hondacivictyper/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/hondacivictyper/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/hondacivictyper/car_mandatory.webp"
+    }
+  },
+  "bmwm2csr": {
+    "sourceSlug": "bmw_m2_cs_racing",
+    "layers": {
+      "wireframe": "/assets/skins/kits/bmwm2csr/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/bmwm2csr/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/bmwm2csr/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/bmwm2csr/car_mandatory.webp"
+    }
+  },
+  "bmwm2g87": {
+    "sourceSlug": "bmw_m2_racing_g87",
+    "layers": {
+      "wireframe": "/assets/skins/kits/bmwm2g87/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/bmwm2g87/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/bmwm2g87/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/bmwm2g87/car_mandatory.webp"
+    }
+  },
+  "raygr22": {
+    "sourceSlug": "ray_ff1600",
+    "layers": {
+      "wireframe": "/assets/skins/kits/raygr22/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/raygr22/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/raygr22/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/raygr22/car_mandatory.webp"
+    }
+  },
+  "formulavee": {
+    "sourceSlug": "formula_vee",
+    "layers": {
+      "wireframe": "/assets/skins/kits/formulavee/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/formulavee/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/formulavee/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/formulavee/car_mandatory.webp"
+    }
+  },
+  "c8rvettegte": {
+    "sourceSlug": "chevrolet_corvette_c8r_gte",
+    "layers": {
+      "wireframe": "/assets/skins/kits/c8rvettegte/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/c8rvettegte/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/c8rvettegte/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/c8rvettegte/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/c8rvettegte/car_mandatory.webp"
+    }
+  },
+  "porsche991rsr": {
+    "sourceSlug": "porsche_911_rsr",
+    "layers": {
+      "wireframe": "/assets/skins/kits/porsche991rsr/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/porsche991rsr/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/porsche991rsr/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/porsche991rsr/series_blocks.webp"
+    }
+  },
+  "bmwm8gte": {
+    "sourceSlug": "bmw_m8_gte",
+    "layers": {
+      "wireframe": "/assets/skins/kits/bmwm8gte/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/bmwm8gte/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/bmwm8gte/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/bmwm8gte/series_blocks.webp"
+    }
+  },
+  "ferrari488gte": {
+    "sourceSlug": "ferrari_488_gte",
+    "layers": {
+      "wireframe": "/assets/skins/kits/ferrari488gte/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/ferrari488gte/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/ferrari488gte/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/ferrari488gte/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/ferrari488gte/car_mandatory.webp"
+    }
   }
 }

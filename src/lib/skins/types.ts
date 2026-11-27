@@ -67,6 +67,12 @@ export type PatternStyle =
   | "apex-shards"
   | "speed-gradient"
   | "grid-circuit"
+  | "martini-heritage"
+  | "gulf-classic"
+  | "jps-pinstripe"
+  | "dazzle-test"
+  | "chevron-works"
+  | "endurance-split"
   | "freeform"
   // Legacy aliases kept for backwards compatibility with saved presets
   | "endurance"

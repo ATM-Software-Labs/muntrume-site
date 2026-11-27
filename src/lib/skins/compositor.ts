@@ -734,6 +734,118 @@ function drawPatternCore(
       }
     }
     ctx.globalAlpha = 1;
+  } else if (pattern === "martini-heritage") {
+    // Franjas clásicas Martini / Heritage de competición
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    const cy = size * 0.5;
+    const band = (offset: number, h: number, col: string) => {
+      ctx.fillStyle = col;
+      ctx.fillRect(0, cy + offset * size, size, h * size);
+    };
+    band(-0.11, 0.042, secColor);
+    band(-0.062, 0.026, palette.detail);
+    band(-0.032, 0.064, palette.accent);
+    band(0.036, 0.026, palette.detail);
+    band(0.068, 0.042, secColor);
+  } else if (pattern === "gulf-classic") {
+    // Banda central clásica Le Mans / Gulf con filete fino
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    const bw = size * 0.24;
+    const bx = (size - bw) / 2;
+    ctx.fillStyle = palette.detail;
+    ctx.fillRect(bx - size * 0.012, 0, bw + size * 0.024, size);
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(bx, 0, bw, size);
+    ctx.fillStyle = secColor;
+    ctx.fillRect(0, size * 0.78, size, size * 0.22);
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(0, size * 0.765, size, size * 0.015);
+  } else if (pattern === "jps-pinstripe") {
+    // Estilo JPS / Doble filete dorado de alta precisión
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    ctx.strokeStyle = palette.accent;
+    const pad = size * 0.035;
+    ctx.lineWidth = Math.max(3, size * 0.008);
+    ctx.strokeRect(pad, pad, size - pad * 2, size - pad * 2);
+    ctx.lineWidth = Math.max(2, size * 0.004);
+    ctx.strokeRect(pad * 1.7, pad * 1.7, size - pad * 3.4, size - pad * 3.4);
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(0, size * 0.492, size, size * 0.006);
+    ctx.fillRect(0, size * 0.506, size, size * 0.006);
+  } else if (pattern === "dazzle-test") {
+    // Camuflaje Dazzle de test invernal F1 / GT3
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    ctx.save();
+    ctx.translate(size * 0.5, size * 0.5);
+    ctx.rotate(-0.42);
+    const stripeW = Math.max(14, size * 0.024);
+    for (let i = -size; i < size; i += stripeW * 2.1) {
+      ctx.fillStyle = i % 2 === 0 ? secColor : palette.detail;
+      ctx.globalAlpha = 0.85;
+      ctx.fillRect(i, -size, stripeW * 0.9, size * 2);
+    }
+    ctx.rotate(0.84);
+    for (let i = -size; i < size; i += stripeW * 4.5) {
+      ctx.fillStyle = palette.accent;
+      ctx.globalAlpha = 0.42;
+      ctx.fillRect(i, -size, stripeW * 0.5, size * 2);
+    }
+    ctx.restore();
+  } else if (pattern === "chevron-works") {
+    // Chevrons angulados de equipo oficial de fábrica
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    const drawChev = (xOff: number, w: number, col: string, alpha = 1) => {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.moveTo(size * xOff, 0);
+      ctx.lineTo(size * (xOff + w), 0);
+      ctx.lineTo(size * (xOff + w + 0.16), size * 0.5);
+      ctx.lineTo(size * (xOff + w), size);
+      ctx.lineTo(size * xOff, size);
+      ctx.lineTo(size * (xOff + 0.16), size * 0.5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    };
+    drawChev(0.14, 0.14, secColor, 0.92);
+    drawChev(0.32, 0.08, palette.accent, 0.95);
+    drawChev(0.44, 0.04, palette.detail, 0.85);
+    drawChev(0.68, 0.12, secColor, 0.78);
+  } else if (pattern === "endurance-split") {
+    // Corte diagonal Endurance 24H (WEC / IMSA Pro)
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = secColor;
+    ctx.beginPath();
+    ctx.moveTo(size * 0.42, 0);
+    ctx.lineTo(size, 0);
+    ctx.lineTo(size, size);
+    ctx.lineTo(size * 0.24, size);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = palette.accent;
+    ctx.beginPath();
+    ctx.moveTo(size * 0.39, 0);
+    ctx.lineTo(size * 0.44, 0);
+    ctx.lineTo(size * 0.26, size);
+    ctx.lineTo(size * 0.21, size);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = palette.detail;
+    ctx.beginPath();
+    ctx.moveTo(size * 0.46, 0);
+    ctx.lineTo(size * 0.478, 0);
+    ctx.lineTo(size * 0.298, size);
+    ctx.lineTo(size * 0.28, size);
+    ctx.closePath();
+    ctx.fill();
   }
 
   if (carbonBase && pattern !== "carbon-exposed") {

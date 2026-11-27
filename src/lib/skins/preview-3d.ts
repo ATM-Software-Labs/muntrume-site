@@ -39,7 +39,7 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const MODELS_CDN_BASE = "/assets/models";
-const MODEL_VER = "v=5";
+const MODEL_VER = "v=6";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
@@ -51,19 +51,16 @@ const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
 
 function resolveBrandSpecificGlb(slugKey: string): string {
   if (!slugKey) return "";
-  // Only REAL track/GT3/race car GLBs (zero street cars)
+  // 10 REAL race/GT3-kit GLBs (zero street cars, full carbon GT3 aero kits)
   if (/ferrari|296|488|499p/.test(slugKey)) return `${MODELS_CDN_BASE}/ferrari296gt3.glb?${MODEL_VER}`;
   if (/porsche|992|991|911|718|963|919/.test(slugKey)) return `${MODELS_CDN_BASE}/porsche992rgt3.glb?${MODEL_VER}`;
   if (/bmw|m4gt|m4evogt|m8gte|m2csr|m2g87|z4gt3/.test(slugKey)) return `${MODELS_CDN_BASE}/bmwm4gt3.glb?${MODEL_VER}`;
   if (/lamborghini|huracan/.test(slugKey)) return `${MODELS_CDN_BASE}/lamborghinievogt3.glb?${MODEL_VER}`;
-  // Mid-engine GT3 / track chassis (McLaren P1 GTR track car with GT wing)
-  if (/mclaren|720s|570s|mp4|audi|r8lms|corvette|chevyvette|c8r|z06|acura|nsx|ford_gt|fordgt/.test(slugKey)) {
-    return `${MODELS_CDN_BASE}/mclaren720sgt3.glb?${MODEL_VER}`;
-  }
-  // Front-engine GT3 chassis (Ford Mustang GT3 race car)
-  if (/mustang|mercedes|amg|aston|amvantage|dbr9/.test(slugKey)) {
-    return `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`;
-  }
+  if (/audi|r8lms|rs3lms/.test(slugKey)) return `${MODELS_CDN_BASE}/audir8lmsevo2gt3.glb?${MODEL_VER}`;
+  if (/corvette|chevyvette|c8r|c7dp|c6r|z06/.test(slugKey)) return `${MODELS_CDN_BASE}/corvettec8gt3.glb?${MODEL_VER}`;
+  if (/aston|amvantage|amvalkyrie|dbr9/.test(slugKey)) return `${MODELS_CDN_BASE}/amvantageevogt3.glb?${MODEL_VER}`;
+  if (/mclaren|720s|570s|mp4|acura|nsx|ford_gt|fordgt/.test(slugKey)) return `${MODELS_CDN_BASE}/mclaren720sgt3.glb?${MODEL_VER}`;
+  if (/mustang|mercedes|amg/.test(slugKey)) return `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`;
   if (/formula|dallara(?!p217)|indy|ir18|ir01|dw12|sf23|sfl|raygr|skipbarber|vee|lotus49|lotus79|tatuus|usf2000|pm18|fr500|starmazda/.test(slugKey)) {
     return `${MODELS_CDN_BASE}/formula-v2.glb?${MODEL_VER}`;
   }

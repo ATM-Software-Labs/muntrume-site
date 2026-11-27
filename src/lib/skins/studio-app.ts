@@ -698,6 +698,12 @@ export function initSkinsStudio(): void {
     { id: "apex-shards", label: "Apex Shards" },
     { id: "speed-gradient", label: "Aero Fade" },
     { id: "grid-circuit", label: "Circuito" },
+    { id: "martini-heritage", label: "Martini GT" },
+    { id: "gulf-classic", label: "Gulf Le Mans" },
+    { id: "jps-pinstripe", label: "JPS Gold" },
+    { id: "dazzle-test", label: "Dazzle Test" },
+    { id: "chevron-works", label: "Chevron Pro" },
+    { id: "endurance-split", label: "24H Split" },
   ];
 
   function renderPatternGallery(): void {
@@ -2264,18 +2270,26 @@ export function initSkinsStudio(): void {
           ? Math.max(0.06, Math.min(0.24, Math.max(realSlot.nw, realSlot.nh) * 0.8))
           : Math.max(
               0.08,
-              Math.min(0.32, Math.min(z.w, z.h) * (item.group === "brand" ? 0.48 : 0.65)),
+              Math.min(0.28, Math.min(z.w, z.h) * (item.group === "brand" ? 0.46 : 0.62)),
             );
+        const finalScale = autoScale || (item.defaultScale ?? 0.14);
+        const freeSpot = findFreeDecalSpot(autoX, autoY, finalScale, z);
+        const panelRotation =
+          targetZoneKey === "hood" || targetZoneKey === "roof" || targetZoneKey === "rearBumper"
+            ? 90
+            : targetZoneKey === "rightSide"
+              ? 180
+              : 0;
         const layer: DecalLayer = {
           id: `decal-lib-${Date.now()}`,
           name: item.label,
           kind: "custom",
           dataUrl: item.src,
           color: "#ffffff",
-          x: autoX,
-          y: autoY,
-          scale: autoScale || (item.defaultScale ?? 0.16),
-          rotation: 0,
+          x: freeSpot.x,
+          y: freeSpot.y,
+          scale: finalScale,
+          rotation: panelRotation,
           opacity: 1,
           mirrorX: autoMirror,
           zoneHint: targetZoneKey,
