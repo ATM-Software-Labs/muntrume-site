@@ -41,11 +41,11 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 const MODELS_CDN_BASE = "/assets/models";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
-  gt3: `${MODELS_CDN_BASE}/fordmustanggt3.glb`,
-  touring: `${MODELS_CDN_BASE}/fordmustanggt3.glb`,
-  gtp: `${MODELS_CDN_BASE}/gt3-base.glb`,
-  nascar: `${MODELS_CDN_BASE}/fordmustanggt3.glb`,
-  formula: `${MODELS_CDN_BASE}/formula-base.glb`,
+  gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
+  touring: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
+  gtp: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
+  nascar: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
+  formula: `${MODELS_CDN_BASE}/formula-v2.glb`,
 };
 
 const CAR_SPECIFIC_GLB_PATHS: Record<string, string> = {
@@ -64,10 +64,10 @@ const CAR_SPECIFIC_GLB_PATHS: Record<string, string> = {
   porsche718gt4: `${MODELS_CDN_BASE}/porsche992rgt3.glb`,
   lamborghinievogt3: `${MODELS_CDN_BASE}/lamborghinievogt3.glb`,
   lamborghini_huracan_gt3_evo: `${MODELS_CDN_BASE}/lamborghinievogt3.glb`,
-  fordmustanggt3: `${MODELS_CDN_BASE}/fordmustanggt3.glb`,
-  ford_mustang_gt3: `${MODELS_CDN_BASE}/fordmustanggt3.glb`,
-  fordmustanggt4: `${MODELS_CDN_BASE}/fordmustanggt3.glb`,
-  ford_mustang_gt4: `${MODELS_CDN_BASE}/fordmustanggt3.glb`,
+  fordmustanggt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
+  ford_mustang_gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
+  fordmustanggt4: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
+  ford_mustang_gt4: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
 };
 
 export function mapCategoryStringToBody(category?: string): CarBodyCategory {
@@ -479,7 +479,7 @@ export class WebGLPreviewEngine {
           slugKey && manifestModels[slugKey] ? manifestModels[slugKey] : "",
           CAR_SPECIFIC_GLB_PATHS[slugKey] || "",
           CATEGORY_BASE_GLB_PATHS[category],
-          category === "formula" ? `${MODELS_CDN_BASE}/formula-base.glb` : `${MODELS_CDN_BASE}/gt3-base.glb`,
+          category === "formula" ? `${MODELS_CDN_BASE}/formula-v2.glb` : `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
         ].filter(Boolean),
       ),
     );
