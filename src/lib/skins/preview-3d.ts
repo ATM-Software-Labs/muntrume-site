@@ -48,27 +48,18 @@ const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   formula: `${MODELS_CDN_BASE}/formula-v2.glb`,
 };
 
-const CAR_SPECIFIC_GLB_PATHS: Record<string, string> = {
-  bmwm4gt3: `${MODELS_CDN_BASE}/bmwm4gt3.glb`,
-  bmw_m4_gt3: `${MODELS_CDN_BASE}/bmwm4gt3.glb`,
-  bmwm4gt4: `${MODELS_CDN_BASE}/bmwm4gt3.glb`,
-  bmw_m4_gt4: `${MODELS_CDN_BASE}/bmwm4gt3.glb`,
-  bmwm4g82gt4: `${MODELS_CDN_BASE}/bmwm4gt3.glb`,
-  bmwm4evogt4: `${MODELS_CDN_BASE}/bmwm4gt3.glb`,
-  bmw_m4_evo_gt4: `${MODELS_CDN_BASE}/bmwm4gt3.glb`,
-  porsche992rgt3: `${MODELS_CDN_BASE}/porsche992rgt3.glb`,
-  porsche_911_gt3_r_992: `${MODELS_CDN_BASE}/porsche992rgt3.glb`,
-  porsche992cup: `${MODELS_CDN_BASE}/porsche992rgt3.glb`,
-  porsche9922cup: `${MODELS_CDN_BASE}/porsche992rgt3.glb`,
-  porsche991rsr: `${MODELS_CDN_BASE}/porsche992rgt3.glb`,
-  porsche718gt4: `${MODELS_CDN_BASE}/porsche992rgt3.glb`,
-  lamborghinievogt3: `${MODELS_CDN_BASE}/lamborghinievogt3.glb`,
-  lamborghini_huracan_gt3_evo: `${MODELS_CDN_BASE}/lamborghinievogt3.glb`,
-  fordmustanggt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
-  ford_mustang_gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
-  fordmustanggt4: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
-  ford_mustang_gt4: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
-};
+function resolveBrandSpecificGlb(slugKey: string): string {
+  if (!slugKey) return "";
+  if (/ferrari|296|488|499p/.test(slugKey)) return `${MODELS_CDN_BASE}/ferrari296gt3.glb`;
+  if (/porsche|992|991|911|718|963|919/.test(slugKey)) return `${MODELS_CDN_BASE}/porsche992rgt3.glb`;
+  if (/bmw|m4gt|m4evogt|m8gte|m2csr|m2g87|z4gt3/.test(slugKey)) return `${MODELS_CDN_BASE}/bmwm4gt3.glb`;
+  if (/lamborghini|huracan/.test(slugKey)) return `${MODELS_CDN_BASE}/lamborghinievogt3.glb`;
+  if (/formula|dallara(?!p217)|indy|ir18|ir01|dw12|sf23|sfl|raygr|skipbarber|vee|lotus49|lotus79|tatuus|usf2000|pm18|fr500|starmazda/.test(slugKey)) {
+    return `${MODELS_CDN_BASE}/formula-v2.glb`;
+  }
+  if (/mustang|fordgt/.test(slugKey)) return `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`;
+  return "";
+}
 
 export function mapCategoryStringToBody(category?: string): CarBodyCategory {
   const c = String(category || "").toLowerCase();
@@ -477,7 +468,7 @@ export class WebGLPreviewEngine {
       new Set(
         [
           slugKey && manifestModels[slugKey] ? manifestModels[slugKey] : "",
-          CAR_SPECIFIC_GLB_PATHS[slugKey] || "",
+          resolveBrandSpecificGlb(slugKey),
           CATEGORY_BASE_GLB_PATHS[category],
           category === "formula" ? `${MODELS_CDN_BASE}/formula-v2.glb` : `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
         ].filter(Boolean),

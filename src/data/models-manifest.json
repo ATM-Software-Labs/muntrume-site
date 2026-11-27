@@ -1,7 +1,10 @@
 {
   "base_url": "/assets/models",
-  "updated_at": "2026-11-27T10:32:00.000Z",
+  "updated_at": "2026-11-27T10:47:00.000Z",
   "models": {
+    "ferrari296gt3": "/assets/models/ferrari296gt3.glb",
+    "ferrari296challenge": "/assets/models/ferrari296gt3.glb",
+    "ferrari499p": "/assets/models/ferrari296gt3.glb",
     "bmwm4gt3": "/assets/models/bmwm4gt3.glb",
     "bmwm4gt4": "/assets/models/bmwm4gt3.glb",
     "bmwm4g82gt4": "/assets/models/bmwm4gt3.glb",
