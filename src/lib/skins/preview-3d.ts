@@ -39,31 +39,35 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const MODELS_CDN_BASE = "/assets/models";
-const MODEL_VER = "v=8";
+const MODEL_VER = "v=9";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
   touring: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
-  gtp: `${MODELS_CDN_BASE}/mclaren720sgt3.glb?${MODEL_VER}`,
+  gtp: `${MODELS_CDN_BASE}/gtp-prototype.glb?${MODEL_VER}`,
   nascar: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
   formula: `${MODELS_CDN_BASE}/formula-v2.glb?${MODEL_VER}`,
 };
 
 function resolveBrandSpecificGlb(slugKey: string): string {
   if (!slugKey) return "";
-  // 10 REAL race/GT3-kit GLBs (zero street cars, full carbon GT3 aero kits)
-  if (/ferrari|296|488|499p/.test(slugKey)) return `${MODELS_CDN_BASE}/ferrari296gt3.glb?${MODEL_VER}`;
-  if (/porsche|992|991|911|718|963|919/.test(slugKey)) return `${MODELS_CDN_BASE}/porsche992rgt3.glb?${MODEL_VER}`;
-  if (/bmw|m4gt|m4evogt|m8gte|m2csr|m2g87|z4gt3/.test(slugKey)) return `${MODELS_CDN_BASE}/bmwm4gt3.glb?${MODEL_VER}`;
-  if (/lamborghini|huracan/.test(slugKey)) return `${MODELS_CDN_BASE}/lamborghinievogt3.glb?${MODEL_VER}`;
-  if (/audi|r8lms|rs3lms/.test(slugKey)) return `${MODELS_CDN_BASE}/audir8lmsevo2gt3.glb?${MODEL_VER}`;
-  if (/corvette|chevyvette|c8r|c7dp|c6r|z06/.test(slugKey)) return `${MODELS_CDN_BASE}/corvettec8gt3.glb?${MODEL_VER}`;
-  if (/aston|amvantage|amvalkyrie|dbr9/.test(slugKey)) return `${MODELS_CDN_BASE}/amvantageevogt3.glb?${MODEL_VER}`;
-  if (/mclaren|720s|570s|mp4|acura|nsx|ford_gt|fordgt/.test(slugKey)) return `${MODELS_CDN_BASE}/mclaren720sgt3.glb?${MODEL_VER}`;
-  if (/mustang|mercedes|amg/.test(slugKey)) return `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`;
+  // 1. Prototypes (GTP / Hypercar / LMP2 / LMP3) ALWAYS load the real Hypercar/GTP prototype first!
+  if (/gtp|lmdh|499p|963|919|vseries|arx06|valkyrie|p217|jsp320|lmp|hpdarx|audir18/.test(slugKey)) {
+    return `${MODELS_CDN_BASE}/gtp-prototype.glb?${MODEL_VER}`;
+  }
+  // 2. Open-wheel / Formula
   if (/formula|dallara(?!p217)|indy|ir18|ir01|dw12|sf23|sfl|raygr|skipbarber|vee|lotus49|lotus79|tatuus|usf2000|pm18|fr500|starmazda/.test(slugKey)) {
     return `${MODELS_CDN_BASE}/formula-v2.glb?${MODEL_VER}`;
   }
+  // 3. Brand-specific GT3 / GT4 / Cup race cars (zero street convertibles)
+  if (/ferrari|296|488/.test(slugKey)) return `${MODELS_CDN_BASE}/ferrari296gt3.glb?${MODEL_VER}`;
+  if (/porsche|992|991|911|718/.test(slugKey)) return `${MODELS_CDN_BASE}/porsche992rgt3.glb?${MODEL_VER}`;
+  if (/bmw|m4gt|m4evogt|m4g82|m8gte|m2csr|m2g87|z4gt3/.test(slugKey)) return `${MODELS_CDN_BASE}/bmwm4gt3.glb?${MODEL_VER}`;
+  if (/lamborghini|huracan/.test(slugKey)) return `${MODELS_CDN_BASE}/lamborghinievogt3.glb?${MODEL_VER}`;
+  if (/corvette|chevyvette|c8r|c6r|z06/.test(slugKey)) return `${MODELS_CDN_BASE}/corvettec8gt3.glb?${MODEL_VER}`;
+  if (/aston|amvantage|dbr9/.test(slugKey)) return `${MODELS_CDN_BASE}/amvantageevogt3.glb?${MODEL_VER}`;
+  if (/mclaren|720s|570s|mp4|audi|r8lms|acura|nsx|ford_gt|fordgt/.test(slugKey)) return `${MODELS_CDN_BASE}/mclaren720sgt3.glb?${MODEL_VER}`;
+  if (/mustang|mercedes|amg/.test(slugKey)) return `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`;
   return "";
 }
 
@@ -133,8 +137,8 @@ function isPaintableBodyMesh(mesh: THREE.Mesh): boolean {
   const matId = getMeshMaterialNames(mesh);
   const meshId = (mesh.name || "").toLowerCase();
 
-  // 1. Explicit positive match on material name first (handles Mustang GT3, F1, BMW M4 GT3, Porsche 992 GT3 RS "carpaint"/"bodyy", Lambo STO "mat_carrozzeria", Ferrari 488 GT3 "phong4", McLaren P1 GTR "vehicle_exterior_mm_ext")
-  if (/(paint|carpaint|livery|redbull_color|body_color|bodypaint|meshesbody|mt_body|mat_body|mat_carrozzeria|bodymaterials|bodyy|vehicle_exterior_mm_ext|\bphong4\b|mt_mirrorcover|\bbody\b)/.test(matId)) {
+  // 1. Explicit positive match on material name first (handles Mustang GT3, F1, BMW M4 GT3 "meshesbody"/"mesheswhite", Porsche 992 GT3 RS "carpaint"/"bodyy", Lambo STO "mat_carrozzeria", Ferrari 488 GT3 "phong4", McLaren P1 GTR "vehicle_exterior_mm_ext", Valkyrie GTP "ext_carpaint")
+  if (/(paint|carpaint|livery|redbull_color|body_color|bodypaint|meshesbody|mesheswhite|mt_body|mat_body|mat_carrozzeria|bodymaterials|bodyy|vehicle_exterior_mm_ext|\bphong4\b|mt_mirrorcover|\bbody\b)/.test(matId)) {
     return true;
   }
 
@@ -826,11 +830,11 @@ export class WebGLPreviewEngine {
     };
 
     const refineNonBodyMaterial = (id: string, mat: THREE.Material): THREE.Material => {
-      if (/(tireside|tiretread|tire|tyre|rubber|slick|gt3phong1)/.test(id)) return rubberTireMat;
-      if (/(rim1|rim2|wheel|alloy|spoke|phong9)/.test(id)) return gunmetalRimMat;
+      if (/(tireside|tiretread|tire|tyre|rubber|slick|gt3phong1|meshesff41|twixer_992_gt3rs_black)/.test(id)) return rubberTireMat;
+      if (/(rim1|rim2|wheel|alloy|spoke|phong9|meshesm8rim)/.test(id)) return gunmetalRimMat;
       if (/(glass|window|windshield|windscreen|visor|black_glass)/.test(id)) return smokedGlassMat;
       if (/(rotor|disc|caliper|brake)/.test(id)) return brakeSteelMat;
-      if (isMaterialUntexturedOrWhite(mat) && /(carbon|chassis|interior|cockpit|cab|misc|grille|grill|diffuser|splitter|intake|vent|badges|underbody|floor)/.test(id)) {
+      if (isMaterialUntexturedOrWhite(mat) && /(carbon|chassis|interior|cockpit|cab|misc|grille|grill|diffuser|splitter|intake|vent|badges|underbody|floor|material_0)/.test(id)) {
         return darkCarbonMat;
       }
       return mat;

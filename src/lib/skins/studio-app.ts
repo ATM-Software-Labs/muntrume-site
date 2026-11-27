@@ -146,6 +146,61 @@ export function initSkinsStudio(): void {
     });
   }
 
+  const CURATED_MODERN_ROSTER: Array<{
+    car_slug: string;
+    name: string;
+    brand: string;
+    category: string;
+    iracing_folder: string;
+    uv_status: string;
+  }> = [
+    // GT3 Actuales iRacing (11)
+    { car_slug: "porsche992rgt3", name: "Porsche 911 GT3 R (992)", brand: "Porsche", category: "GT3", iracing_folder: "porsche992rgt3", uv_status: "extracted" },
+    { car_slug: "ferrari296gt3", name: "Ferrari 296 GT3", brand: "Ferrari", category: "GT3", iracing_folder: "ferrari296gt3", uv_status: "extracted" },
+    { car_slug: "bmwm4gt3", name: "BMW M4 GT3 EVO", brand: "BMW", category: "GT3", iracing_folder: "bmwm4gt3", uv_status: "extracted" },
+    { car_slug: "mercedesamgevogt3", name: "Mercedes-AMG GT3 2020", brand: "Mercedes-AMG", category: "GT3", iracing_folder: "mercedesamgevogt3", uv_status: "extracted" },
+    { car_slug: "lamborghinievogt3", name: "Lamborghini Huracán GT3 EVO", brand: "Lamborghini", category: "GT3", iracing_folder: "lamborghinievogt3", uv_status: "extracted" },
+    { car_slug: "mclaren720sgt3", name: "McLaren 720S GT3 EVO", brand: "McLaren", category: "GT3", iracing_folder: "mclaren720sgt3", uv_status: "extracted" },
+    { car_slug: "fordmustanggt3", name: "Ford Mustang GT3", brand: "Ford", category: "GT3", iracing_folder: "fordmustanggt3", uv_status: "extracted" },
+    { car_slug: "chevyvettez06rgt3", name: "Chevrolet Corvette Z06 GT3.R", brand: "Chevrolet", category: "GT3", iracing_folder: "chevyvettez06rgt3", uv_status: "extracted" },
+    { car_slug: "audir8lmsevo2gt3", name: "Audi R8 LMS EVO II GT3", brand: "Audi", category: "GT3", iracing_folder: "audir8lmsevo2gt3", uv_status: "extracted" },
+    { car_slug: "amvantageevogt3", name: "Aston Martin Vantage GT3 EVO", brand: "Aston Martin", category: "GT3", iracing_folder: "amvantageevogt3", uv_status: "extracted" },
+    { car_slug: "acuransxevo22gt3", name: "Acura NSX GT3 EVO 22", brand: "Acura", category: "GT3", iracing_folder: "acuransxevo22gt3", uv_status: "extracted" },
+    // GTP / Hypercar Actuales iRacing (6)
+    { car_slug: "porsche963gtp", name: "Porsche 963 GTP", brand: "Porsche", category: "GTP / Hypercar", iracing_folder: "porsche963gtp", uv_status: "extracted" },
+    { car_slug: "ferrari499p", name: "Ferrari 499P", brand: "Ferrari", category: "GTP / Hypercar", iracing_folder: "ferrari499p", uv_status: "extracted" },
+    { car_slug: "bmwlmdh", name: "BMW M Hybrid V8", brand: "BMW", category: "GTP / Hypercar", iracing_folder: "bmwlmdh", uv_status: "extracted" },
+    { car_slug: "cadillacvseriesrgtp", name: "Cadillac V-Series.R GTP", brand: "Cadillac", category: "GTP / Hypercar", iracing_folder: "cadillacvseriesrgtp", uv_status: "extracted" },
+    { car_slug: "acuraarx06gtp", name: "Acura ARX-06 GTP", brand: "Acura", category: "GTP / Hypercar", iracing_folder: "acuraarx06gtp", uv_status: "extracted" },
+    { car_slug: "amvalkyriegtp", name: "Aston Martin Valkyrie GTP", brand: "Aston Martin", category: "GTP / Hypercar", iracing_folder: "amvalkyriegtp", uv_status: "extracted" },
+    // LMP2 / LMP3 (2)
+    { car_slug: "dallarap217", name: "Dallara P217 LMP2", brand: "Dallara", category: "LMP2 / LMP3", iracing_folder: "dallarap217", uv_status: "extracted" },
+    { car_slug: "ligierjsp320", name: "Ligier JS P320 LMP3", brand: "Ligier", category: "LMP2 / LMP3", iracing_folder: "ligierjsp320", uv_status: "extracted" },
+    // GT4 & Cup Actuales (8)
+    { car_slug: "porsche992cup", name: "Porsche 911 GT3 Cup (992)", brand: "Porsche", category: "GT4 & Cup", iracing_folder: "porsche992cup", uv_status: "extracted" },
+    { car_slug: "ferrari296challenge", name: "Ferrari 296 Challenge", brand: "Ferrari", category: "GT4 & Cup", iracing_folder: "ferrari296challenge", uv_status: "extracted" },
+    { car_slug: "bmwm4g82gt4", name: "BMW M4 G82 GT4 EVO", brand: "BMW", category: "GT4 & Cup", iracing_folder: "bmwm4g82gt4", uv_status: "extracted" },
+    { car_slug: "porsche718gt4", name: "Porsche 718 Cayman GT4", brand: "Porsche", category: "GT4 & Cup", iracing_folder: "porsche718gt4", uv_status: "extracted" },
+    { car_slug: "mercedesamggt4", name: "Mercedes-AMG GT4", brand: "Mercedes-AMG", category: "GT4 & Cup", iracing_folder: "mercedesamggt4", uv_status: "extracted" },
+    { car_slug: "amvantagegt4", name: "Aston Martin Vantage GT4", brand: "Aston Martin", category: "GT4 & Cup", iracing_folder: "amvantagegt4", uv_status: "extracted" },
+    { car_slug: "mclaren570sgt4", name: "McLaren 570S GT4", brand: "McLaren", category: "GT4 & Cup", iracing_folder: "mclaren570sgt4", uv_status: "extracted" },
+    { car_slug: "fordmustanggt4", name: "Ford Mustang GT4", brand: "Ford", category: "GT4 & Cup", iracing_folder: "fordmustanggt4", uv_status: "extracted" },
+    // Fórmula Actuales (6)
+    { car_slug: "formulair04", name: "FIA F4 (iR-04)", brand: "FIA", category: "Fórmula", iracing_folder: "formulair04", uv_status: "extracted" },
+    { car_slug: "superformulalights324", name: "Super Formula Lights 324", brand: "Dallara", category: "Fórmula", iracing_folder: "superformulalights324", uv_status: "extracted" },
+    { car_slug: "superformulasf23", name: "Super Formula SF23", brand: "Dallara", category: "Fórmula", iracing_folder: "superformulasf23", uv_status: "extracted" },
+    { car_slug: "dallaraf3", name: "Dallara F3", brand: "Dallara", category: "Fórmula", iracing_folder: "dallaraf3", uv_status: "extracted" },
+    { car_slug: "raygr22", name: "Ray FF1600", brand: "Ray", category: "Fórmula", iracing_folder: "raygr22", uv_status: "extracted" },
+    { car_slug: "formulavee", name: "Formula Vee", brand: "Formula Vee", category: "Fórmula", iracing_folder: "formulavee", uv_status: "extracted" },
+    // TCR & Producción Actuales (6)
+    { car_slug: "mx5", name: "Global Mazda MX-5 Cup", brand: "Mazda", category: "TCR & Producción", iracing_folder: "mx5", uv_status: "extracted" },
+    { car_slug: "toyotagr86", name: "Toyota GR86", brand: "Toyota", category: "TCR & Producción", iracing_folder: "toyotagr86", uv_status: "extracted" },
+    { car_slug: "bmwm2g87", name: "BMW M2 CS Racing (G87)", brand: "BMW", category: "TCR & Producción", iracing_folder: "bmwm2g87", uv_status: "extracted" },
+    { car_slug: "hyundaielantrantc", name: "Hyundai Elantra N TCR", brand: "Hyundai", category: "TCR & Producción", iracing_folder: "hyundaielantrantc", uv_status: "extracted" },
+    { car_slug: "audirs3lmsgen2", name: "Audi RS 3 LMS Gen 2 TCR", brand: "Audi", category: "TCR & Producción", iracing_folder: "audirs3lmsgen2", uv_status: "extracted" },
+    { car_slug: "hondacivictyper", name: "Honda Civic Type R TCR", brand: "Honda", category: "TCR & Producción", iracing_folder: "hondacivictyper", uv_status: "extracted" },
+  ];
+
   function populateCarSelectorFromWorker(): void {
     const sel = byId<HTMLSelectElement>("skCarSelect");
     if (!sel) return;
@@ -153,14 +208,10 @@ export function initSkinsStudio(): void {
       "GT3",
       "GTP / Hypercar",
       "LMP2 / LMP3",
-      "LMP2 / Prototipos",
       "GT4 & Cup",
       "Fórmula",
-      "NASCAR / Oval",
-      "Stock Cars & Oval",
       "TCR & Producción",
-      "Dirt / Rallycross",
-      "TCR / Turismo / Dirt",
+      "NASCAR / Oval",
       "Piloto (Casco y Mono)",
     ];
     const searchQ = (byId<HTMLInputElement>("skCarSearch")?.value || "").trim().toLowerCase();
@@ -168,37 +219,38 @@ export function initSkinsStudio(): void {
       string,
       { car_slug: string; name: string; brand: string; category: string; iracing_folder: string; uv_status: string }
     >();
-    for (const c of (carsIndexData?.cars || []) as Array<{
-      car_slug: string;
-      name: string;
-      brand?: string;
-      category?: string;
-      uv_status?: string;
-    }>) {
-      mergedMap.set(c.car_slug, {
-        car_slug: c.car_slug,
-        name: c.name,
-        brand: c.brand || "iRacing",
-        category: c.category || "TCR & Producción",
-        iracing_folder: c.car_slug,
-        uv_status: c.uv_status || "archetype",
-      });
+    // Always start with the clean, zero-duplicate curated roster of the 39 current most-used iRacing cars
+    for (const c of CURATED_MODERN_ROSTER) {
+      mergedMap.set(c.car_slug, c);
     }
-    for (const c of CAR_PROFILES) {
-      mergedMap.set(c.id, {
-        car_slug: c.id,
-        name: c.name,
-        brand: c.brand,
-        category: c.category,
-        iracing_folder: c.iracingFolder,
-        uv_status: mergedMap.get(c.id)?.uv_status || "baseline",
-      });
-    }
-    for (const w of workerCarsCatalog) {
-      mergedMap.set(w.car_slug, {
-        ...w,
-        category: w.category || "TCR & Producción",
-      });
+    // Only include legacy/extra cars from cars-index/worker when the user actively searches for them
+    if (searchQ.length >= 2) {
+      for (const c of (carsIndexData?.cars || []) as Array<{
+        car_slug: string;
+        name: string;
+        brand?: string;
+        category?: string;
+        uv_status?: string;
+      }>) {
+        if (!mergedMap.has(c.car_slug)) {
+          mergedMap.set(c.car_slug, {
+            car_slug: c.car_slug,
+            name: c.name,
+            brand: c.brand || "iRacing",
+            category: c.category || "TCR & Producción",
+            iracing_folder: c.car_slug,
+            uv_status: c.uv_status || "archetype",
+          });
+        }
+      }
+      for (const w of workerCarsCatalog) {
+        if (!mergedMap.has(w.car_slug)) {
+          mergedMap.set(w.car_slug, {
+            ...w,
+            category: w.category || "TCR & Producción",
+          });
+        }
+      }
     }
     const items = Array.from(mergedMap.values()).filter((item) => {
       if (!searchQ) return true;
