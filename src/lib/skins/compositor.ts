@@ -16,6 +16,8 @@ export interface CompositeOptions {
   partsOverlayCanvas?: HTMLCanvasElement | null;
   /** Optional official iRacing Car Pattern RGB layer from a locally loaded PSD */
   psdPatternCanvas?: HTMLCanvasElement | null;
+  /** Optional imported finished skin (.TGA/.PNG/.PSD) edited as the base paint layer */
+  importedSkinCanvas?: HTMLCanvasElement | null;
   restrictedPlates?: ReservedGuideBox[];
   seriesSlots?: ReservedGuideBox[];
   showTemplateOverlay?: boolean;
@@ -29,6 +31,63 @@ export interface CompositeOptions {
 }
 
 const imageCache = new Map<string, HTMLImageElement>();
+
+let activeImportedSkinCanvas: HTMLCanvasElement | null = null;
+let activeImportedSkinName = "";
+
+export function setImportedBaseSkin(canvas: HTMLCanvasElement | null, filename = ""): void {
+  activeImportedSkinCanvas = canvas;
+  activeImportedSkinName = canvas ? filename : "";
+}
+
+export function getImportedBaseSkin(): { canvas: HTMLCanvasElement | null; filename: string } {
+  return { canvas: activeImportedSkinCanvas, filename: activeImportedSkinName };
+}
+
+/**
+ * Samples the average paint color around the outer perimeter of a normalized UV box
+ * so the smart "Tapar logo" patch tool blends seamlessly with the surrounding bodywork.
+ */
+export function sampleSurroundingPaintColor(
+  u: number,
+  v: number,
+  w: number,
+  h: number,
+  fallback = "#111827",
+): string {
+  const src = activeImportedSkinCanvas;
+  if (!src || src.width < 4 || src.height < 4) return fallback;
+  const ctx = src.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return fallback;
+  const W = src.width;
+  const H = src.height;
+  const x0 = Math.max(0, Math.min(W - 1, Math.round((u - w * 0.55) * W)));
+  const x1 = Math.max(0, Math.min(W - 1, Math.round((u + w * 0.55) * W)));
+  const y0 = Math.max(0, Math.min(H - 1, Math.round((v - h * 0.55) * H)));
+  const y1 = Math.max(0, Math.min(H - 1, Math.round((v + h * 0.55) * H)));
+  let rSum = 0, gSum = 0, bSum = 0, count = 0;
+  const samplePt = (px: number, py: number) => {
+    const d = ctx.getImageData(px, py, 1, 1).data;
+    if (d[3] > 20) {
+      rSum += d[0];
+      gSum += d[1];
+      bSum += d[2];
+      count++;
+    }
+  };
+  for (let i = 0; i <= 6; i++) {
+    const t = i / 6;
+    const sx = Math.round(x0 + (x1 - x0) * t);
+    const sy = Math.round(y0 + (y1 - y0) * t);
+    samplePt(sx, y0);
+    samplePt(sx, y1);
+    samplePt(x0, sy);
+    samplePt(x1, sy);
+  }
+  if (!count) return fallback;
+  const toHex = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+  return `#${toHex(rSum / count)}${toHex(gSum / count)}${toHex(bSum / count)}`;
+}
 
 function loadRawImage(src: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
@@ -1009,7 +1068,18 @@ async function drawDecals(ctx: CanvasRenderingContext2D, state: SkinDesignState,
       ctx.rotate((pos.rot * Math.PI) / 180);
 
       let drawH = drawW * 0.35;
-      if (decal.kind === "shape") {
+      if (decal.kind === "patch") {
+        // Smart logo/text cover-up patch with soft feathered edges matching surrounding paint
+        drawH = (decal.patchH ?? decal.scale * 0.52) * size;
+        const rad = Math.min(drawW, drawH) * 0.16;
+        ctx.fillStyle = decal.color || "#111827";
+        ctx.shadowColor = decal.color || "#111827";
+        ctx.shadowBlur = Math.max(4, Math.min(drawW, drawH) * 0.12);
+        ctx.beginPath();
+        ctx.roundRect(-drawW / 2, -drawH / 2, drawW, drawH, rad);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      } else if (decal.kind === "shape") {
         ctx.fillStyle = decal.color || "#00e699";
         if (decal.shapeType === "circle") {
           drawH = drawW;
@@ -1266,7 +1336,18 @@ export async function renderSkinToCanvas(
 
   const effectiveNumberMode: NumberPlateMode = opts.numberModeOverride ?? state.numberMode ?? "sim-stamped";
   ctx.clearRect(0, 0, size, size);
-  drawPatternGeometry(ctx, state, size, opts.psdPatternCanvas);
+  const importedBase = opts.importedSkinCanvas ?? activeImportedSkinCanvas;
+  if (importedBase) {
+    ctx.save();
+    const flt = state.importedSkinFilter;
+    if (flt && (flt.hue !== 0 || flt.sat !== 100 || flt.bright !== 100)) {
+      ctx.filter = `hue-rotate(${flt.hue}deg) saturate(${flt.sat}%) brightness(${flt.bright}%)`;
+    }
+    ctx.drawImage(importedBase, 0, 0, size, size);
+    ctx.restore();
+  } else {
+    drawPatternGeometry(ctx, state, size, opts.psdPatternCanvas);
+  }
   drawZonePaintOverrides(ctx, state, size);
   drawBrushStrokes(ctx, state, size);
   drawDriverNumbers(ctx, state, size, effectiveNumberMode);

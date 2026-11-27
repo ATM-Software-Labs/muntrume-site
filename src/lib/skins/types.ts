@@ -119,11 +119,13 @@ export interface SpecConfig {
 export interface DecalLayer {
   id: string;
   name: string;
-  kind: "builtin" | "custom" | "text" | "shape";
+  kind: "builtin" | "custom" | "text" | "shape" | "patch";
   assetId?: string;
   dataUrl?: string;
   text?: string;
   shapeType?: "stripe" | "triangle" | "circle";
+  /** Optional explicit normalized height for smart cover-up patches */
+  patchH?: number;
   color: string;
   /** Normalized 0..1 position */
   x: number;
@@ -161,6 +163,7 @@ export interface SkinDesignState {
   numberMode?: NumberPlateMode;
   zones: Record<ZoneKey, ZoneRect>;
   zoneOverrides?: Partial<Record<ZoneKey, ZonePaintOverride>>;
+  importedSkinFilter?: { hue: number; sat: number; bright: number };
   decals: DecalLayer[];
   strokes?: BrushStroke[];
   updatedAt: string;

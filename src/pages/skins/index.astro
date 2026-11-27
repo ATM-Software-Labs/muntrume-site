@@ -133,6 +133,7 @@ const canonical = "https://skins.muntru.me/";
         <span class="sk-guide-step"><b>3</b> Descarga <strong>.PNG / .TGA</strong> o pulsa <strong>Enviar a iRacing</strong></span>
       </div>
       <div class="sk-row" style="gap:6px;">
+        <button type="button" id="skQuickImportSkinBtn" class="sk-btn sk-btn-sm" title="Sube una skin .TGA, .PNG o .PSD ya hecha para tapar/reemplazar logos y añadir decals IMSA">📂 Editar Skin (.TGA/.PNG)</button>
         <button type="button" id="skQuickAutoDesignBtn" class="sk-btn sk-btn-primary sk-btn-sm">✨ Auto-Diseño fácil</button>
         <button type="button" id="skQuickExportPngBtn" class="sk-btn sk-btn-sm">⬇ Descargar .PNG</button>
         <button type="button" id="skCloseGuideBtn" class="sk-btn sk-btn-sm" title="Ocultar barra de ayuda">✕</button>
@@ -180,6 +181,40 @@ const canonical = "https://skins.muntru.me/";
             Nombre del diseño
             <input id="skDesignName" type="text" class="sk-input" />
           </label>
+        </section>
+
+        <!-- Imported Skin Editor (.TGA / .PNG / .PSD) -->
+        <section class="sk-card" id="skImportedSkinCard">
+          <h2 class="sk-card-title">
+            <span>Editar Skin ya hecha</span>
+            <button type="button" id="skImpClearBtn" class="sk-btn sk-btn-sm sk-hidden" title="Quitar skin importada y volver al modo estudio">Quitar</button>
+          </h2>
+          <label class="sk-btn sk-btn-sm" style="width:100%;cursor:pointer;justify-content:center;border:1px dashed rgba(0,230,153,0.45);background:rgba(0,230,153,0.08);">
+            📂 Subir Skin (.TGA / .PNG / .PSD)
+            <input id="skImportSkinInput" type="file" accept=".tga,.png,.jpg,.jpeg,.webp,.psd" class="sk-hidden" />
+          </label>
+          <p id="skImportedSkinStatus" class="sk-help" style="margin:4px 0 0;">
+            Sube cualquier skin de Trading Paints o iRacing para tapar/reemplazar logos, cambiar letras y poner decals IMSA o de marca.
+          </p>
+          <div id="skImportedSkinTools" class="sk-hidden" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);">
+            <div class="sk-row" style="gap:5px;flex-wrap:wrap;">
+              <button type="button" id="skPatchModeBtn" class="sk-btn sk-btn-primary sk-btn-sm" style="flex:1;" title="Arrastra un recuadro sobre cualquier logo o texto viejo en el Mapa UV 2D para taparlo con el color del coche">🩹 Tapar logo / texto</button>
+              <button type="button" id="skImportReplaceTextBtn" class="sk-btn sk-btn-sm" title="Añade texto o web editable sobre el último parche o zona">+ Texto / Web</button>
+            </div>
+            <div class="sk-row" style="gap:5px;flex-wrap:wrap;">
+              <button type="button" id="skImportAddBrandBtn" class="sk-btn sk-btn-sm" style="flex:1;">+ Logos Marca</button>
+              <button type="button" id="skImportAddImsaBtn" class="sk-btn sk-btn-sm" style="flex:1;">+ Decals IMSA</button>
+              <button type="button" id="skImportAddSeriesBtn" class="sk-btn sk-btn-sm" style="flex:1;">+ Placas GT3</button>
+            </div>
+            <div class="sk-grid-2" style="gap:6px;">
+              <label class="sk-label" style="font-size:10.5px;">Tono (<span id="skImpHueVal">0°</span>)<input id="skImpHue" type="range" min="-180" max="180" value="0" /></label>
+              <label class="sk-label" style="font-size:10.5px;">Saturación (<span id="skImpSatVal">100%</span>)<input id="skImpSat" type="range" min="0" max="200" value="100" /></label>
+              <label class="sk-label" style="font-size:10.5px;">Brillo (<span id="skImpBrightVal">100%</span>)<input id="skImpBright" type="range" min="50" max="150" value="100" /></label>
+              <div style="display:flex;align-items:flex-end;">
+                <button type="button" id="skImpResetFilterBtn" class="sk-btn sk-btn-sm" style="width:100%;">Reset color</button>
+              </div>
+            </div>
+          </div>
         </section>
 
         <section class="sk-card">

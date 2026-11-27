@@ -8,7 +8,14 @@ import {
   getCarById,
   getDriverById,
 } from "./catalog";
-import { renderPatternThumbnail, renderSkinToCanvas, renderSpecMapToCanvas, type ReservedGuideBox } from "./compositor";
+import {
+  renderPatternThumbnail,
+  renderSkinToCanvas,
+  renderSpecMapToCanvas,
+  sampleSurroundingPaintColor,
+  setImportedBaseSkin,
+  type ReservedGuideBox,
+} from "./compositor";
 import { renderShowroomCarView, type ShowroomAngle } from "./car-showroom-view";
 import { BRAND_DECALS, SERIES_DECALS, TEAM_DECALS, type LibraryDecalItem } from "./decals-library";
 import { DEFAULT_STAMPS } from "./stamps-library";
@@ -1182,7 +1189,12 @@ export function initSkinsStudio(): void {
   let brushMirror = true;
   let activeStroke: { color: string; size: number; mirrorX: boolean; points: Array<{ x: number; y: number }> } | null = null;
 
-  let dragMode: "none" | "pan" | "zone-move" | "zone-resize" | "decal-move" | "decal-resize" | "brush" = "none";
+  let dragMode: "none" | "pan" | "zone-move" | "zone-resize" | "decal-move" | "decal-resize" | "brush" | "patch" = "none";
+  let patchMode = false;
+  let activePatchDecal: DecalLayer | null = null;
+  let patchStartU = 0;
+  let patchStartV = 0;
+  let lastPatchCenter: { x: number; y: number } | null = null;
   let dragStartX = 0;
   let dragStartY = 0;
   let origPanX = 0;
@@ -1204,6 +1216,32 @@ export function initSkinsStudio(): void {
     dragStartY = e.clientY;
     origPanX = uvPanX;
     origPanY = uvPanY;
+
+    // 0a. Smart Logo Cover-Up Patch mode (drag a box over an old logo/text to cover it with sampled paint color)
+    if (patchMode) {
+      patchStartU = u;
+      patchStartV = v;
+      const sampleColor = sampleSurroundingPaintColor(u, v, 0.05, 0.04, state.palette.primary);
+      activePatchDecal = {
+        id: `patch-${Date.now()}`,
+        name: "Parche tapa-logo",
+        kind: "patch",
+        color: sampleColor,
+        x: u,
+        y: v,
+        scale: 0.04,
+        patchH: 0.03,
+        rotation: 0,
+        opacity: 1,
+        mirrorX: false,
+      };
+      state.decals.push(activePatchDecal);
+      selectedDecalId = activePatchDecal.id;
+      dragMode = "patch";
+      uvCanvas.setPointerCapture(e.pointerId);
+      scheduleRender();
+      return;
+    }
 
     // 0. Freeform Brush mode
     if (brushMode) {
@@ -1313,7 +1351,18 @@ export function initSkinsStudio(): void {
     const du = (e.clientX - dragStartX) / rect.width;
     const dv = (e.clientY - dragStartY) / rect.height;
 
-    if (dragMode === "brush" && activeStroke) {
+    if (dragMode === "patch" && activePatchDecal) {
+      const { u, v } = canvasUvCoords(e);
+      const pw = Math.max(0.025, Math.abs(u - patchStartU));
+      const ph = Math.max(0.02, Math.abs(v - patchStartV));
+      activePatchDecal.x = (u + patchStartU) / 2;
+      activePatchDecal.y = (v + patchStartV) / 2;
+      activePatchDecal.scale = Math.min(0.85, pw);
+      activePatchDecal.patchH = Math.min(0.85, ph);
+      activePatchDecal.color = sampleSurroundingPaintColor(activePatchDecal.x, activePatchDecal.y, pw, ph, state.palette.primary);
+      lastPatchCenter = { x: activePatchDecal.x, y: activePatchDecal.y };
+      scheduleRender();
+    } else if (dragMode === "brush" && activeStroke) {
       const { u, v } = canvasUvCoords(e);
       activeStroke.points.push({ x: u, y: v });
       scheduleRender();
@@ -1353,7 +1402,7 @@ export function initSkinsStudio(): void {
     const hw = Math.max(0.028, scale * 0.38);
     const hh = Math.max(0.022, scale * 0.28);
     for (const other of state.decals) {
-      if (other.id === excludeId || other.scale >= 0.95) continue;
+      if (other.id === excludeId || other.scale >= 0.95 || other.kind === "patch") continue;
       const ohw = Math.max(0.028, other.scale * 0.38);
       const ohh = Math.max(0.022, other.scale * 0.28);
       if (Math.abs(x - other.x) < hw + ohw && Math.abs(y - other.y) < hh + ohh) return true;
@@ -1415,6 +1464,18 @@ export function initSkinsStudio(): void {
       renderDecalEditor();
     } else if (dragMode === "decal-resize") {
       renderDecalEditor();
+    } else if (dragMode === "patch" && activePatchDecal) {
+      activePatchDecal = null;
+      patchMode = false;
+      const pmBtn = byId<HTMLButtonElement>("skPatchModeBtn");
+      if (pmBtn) {
+        pmBtn.classList.remove("is-active");
+        pmBtn.textContent = "🩹 Tapar logo / texto";
+      }
+      uvCanvas.style.cursor = "";
+      renderDecalList();
+      renderDecalEditor();
+      setStatus("Parche tapa-logo creado · Ahora puedes colocar un logo o texto nuevo encima (o ajustar su color a la derecha)", "ok");
     }
     activeStroke = null;
     dragMode = "none";
@@ -2488,6 +2549,133 @@ export function initSkinsStudio(): void {
   byId<HTMLButtonElement>("skKitAddImsa")?.addEventListener("click", () => toggleOfficialUvLayer("imsa_decals", "Etiquetas IMSA"));
   byId<HTMLButtonElement>("skKitAddSeries")?.addEventListener("click", () => toggleOfficialUvLayer("series_blocks", "Placas GT3 / Dorsales"));
   byId<HTMLButtonElement>("skKitAddWire")?.addEventListener("click", () => toggleOfficialUvLayer("wireframe", "Cascarón UV Wireframe"));
+
+  // Imported Finished Skin Editor (.TGA / .PNG / .PSD) — edit existing skins, cover/replace logos & add IMSA/brand decals
+  const importSkinInput = byId<HTMLInputElement>("skImportSkinInput");
+  const importSkinStatus = byId<HTMLElement>("skImportedSkinStatus");
+  const importSkinTools = byId<HTMLElement>("skImportedSkinTools");
+  const importClearBtn = byId<HTMLButtonElement>("skImpClearBtn");
+  const patchModeBtn = byId<HTMLButtonElement>("skPatchModeBtn");
+
+  const setPatchMode = (active: boolean) => {
+    patchMode = active;
+    if (active) brushMode = false;
+    if (patchModeBtn) {
+      patchModeBtn.classList.toggle("is-active", active);
+      patchModeBtn.textContent = active ? "✓ Arrastra sobre el logo a tapar" : "🩹 Tapar logo / texto";
+    }
+    uvCanvas.style.cursor = active ? "crosshair" : "";
+    if (active) {
+      if (viewMode !== "uv") {
+        viewMode = "uv";
+        updateViewModeUI();
+      }
+      setStatus("Modo Tapar Logo activo: arrastra un recuadro sobre cualquier logo o texto viejo en el Mapa UV 2D", "ok");
+    }
+  };
+
+  byId<HTMLButtonElement>("skQuickImportSkinBtn")?.addEventListener("click", () => {
+    importSkinInput?.click();
+  });
+
+  importSkinInput?.addEventListener("change", async () => {
+    const file = importSkinInput.files?.[0];
+    if (!file) return;
+    setStatus(`Importando skin "${file.name}"...`, "neutral");
+    try {
+      const loaded = await loadTemplateFile(file);
+      setImportedBaseSkin(loaded.canvas, file.name);
+      state.importedSkinFilter = { hue: 0, sat: 100, bright: 100 };
+      if (importSkinStatus) {
+        importSkinStatus.textContent = `✓ Skin cargada: ${file.name} (${loaded.width}×${loaded.height}). Usa "Tapar logo", añade nuevos logos/textos o aplica decals IMSA/Marca.`;
+      }
+      importSkinTools?.classList.remove("sk-hidden");
+      importClearBtn?.classList.remove("sk-hidden");
+      const hueEl = byId<HTMLInputElement>("skImpHue");
+      const satEl = byId<HTMLInputElement>("skImpSat");
+      const briEl = byId<HTMLInputElement>("skImpBright");
+      if (hueEl) hueEl.value = "0";
+      if (satEl) satEl.value = "100";
+      if (briEl) briEl.value = "100";
+      const hv = byId<HTMLElement>("skImpHueVal"); if (hv) hv.textContent = "0°";
+      const sv = byId<HTMLElement>("skImpSatVal"); if (sv) sv.textContent = "100%";
+      const bv = byId<HTMLElement>("skImpBrightVal"); if (bv) bv.textContent = "100%";
+      scheduleRender();
+      setStatus(`Skin "${file.name}" lista para editar en 2D y 3D · Exporta en .TGA / .PNG cuando acabes`, "ok");
+    } catch (err) {
+      setStatus(`Error importando skin: ${err instanceof Error ? err.message : "formato no soportado"}`, "err");
+    } finally {
+      importSkinInput.value = "";
+    }
+  });
+
+  patchModeBtn?.addEventListener("click", () => setPatchMode(!patchMode));
+
+  byId<HTMLButtonElement>("skImportReplaceTextBtn")?.addEventListener("click", () => {
+    const raw = window.prompt("Texto, patrocinador o web a colocar sobre la skin:", "MUNTRU.ME");
+    if (!raw || !raw.trim()) return;
+    setPatchMode(false);
+    const z = state.zones[selectedZone || "hood"] || state.zones.hood;
+    const tx = lastPatchCenter ? lastPatchCenter.x : z.x + z.w * 0.5;
+    const ty = lastPatchCenter ? lastPatchCenter.y : z.y + z.h * 0.5;
+    const textLayer: DecalLayer = {
+      id: `imp-txt-${Date.now()}`,
+      name: raw.trim(),
+      kind: "text",
+      text: raw.trim(),
+      color: "#ffffff",
+      x: tx,
+      y: ty,
+      scale: 0.16,
+      rotation: 0,
+      opacity: 1,
+      mirrorX: false,
+      zoneHint: selectedZone || "hood",
+    };
+    state.decals.push(textLayer);
+    selectedDecalId = textLayer.id;
+    renderDecalList();
+    renderDecalEditor();
+    scheduleRender();
+    setStatus(`Texto "${raw.trim()}" añadido · Muévelo o gíralo en el Mapa UV 2D`, "ok");
+  });
+
+  byId<HTMLButtonElement>("skImportAddBrandBtn")?.addEventListener("click", () => toggleOfficialUvLayer("brand_decals", "Logos Marca iRacing"));
+  byId<HTMLButtonElement>("skImportAddImsaBtn")?.addEventListener("click", () => toggleOfficialUvLayer("imsa_decals", "Etiquetas IMSA"));
+  byId<HTMLButtonElement>("skImportAddSeriesBtn")?.addEventListener("click", () => toggleOfficialUvLayer("series_blocks", "Placas GT3 / Dorsales"));
+
+  const syncImportedFilter = () => {
+    const hue = Number(byId<HTMLInputElement>("skImpHue")?.value || 0);
+    const sat = Number(byId<HTMLInputElement>("skImpSat")?.value || 100);
+    const bright = Number(byId<HTMLInputElement>("skImpBright")?.value || 100);
+    state.importedSkinFilter = { hue, sat, bright };
+    const hv = byId<HTMLElement>("skImpHueVal"); if (hv) hv.textContent = `${hue}°`;
+    const sv = byId<HTMLElement>("skImpSatVal"); if (sv) sv.textContent = `${sat}%`;
+    const bv = byId<HTMLElement>("skImpBrightVal"); if (bv) bv.textContent = `${bright}%`;
+    scheduleRender();
+  };
+  byId<HTMLInputElement>("skImpHue")?.addEventListener("input", syncImportedFilter);
+  byId<HTMLInputElement>("skImpSat")?.addEventListener("input", syncImportedFilter);
+  byId<HTMLInputElement>("skImpBright")?.addEventListener("input", syncImportedFilter);
+  byId<HTMLButtonElement>("skImpResetFilterBtn")?.addEventListener("click", () => {
+    const h = byId<HTMLInputElement>("skImpHue"); if (h) h.value = "0";
+    const s = byId<HTMLInputElement>("skImpSat"); if (s) s.value = "100";
+    const b = byId<HTMLInputElement>("skImpBright"); if (b) b.value = "100";
+    syncImportedFilter();
+  });
+
+  importClearBtn?.addEventListener("click", () => {
+    setImportedBaseSkin(null);
+    setPatchMode(false);
+    state.importedSkinFilter = undefined;
+    importSkinTools?.classList.add("sk-hidden");
+    importClearBtn.classList.add("sk-hidden");
+    if (importSkinStatus) {
+      importSkinStatus.textContent = "Sube cualquier skin de Trading Paints o iRacing para tapar/reemplazar logos, cambiar letras y poner decals IMSA o de marca.";
+    }
+    scheduleRender();
+    setStatus("Skin importada quitada · Volviendo al modo de diseño de estudio", "ok");
+  });
 
   // Default Stamps Gallery (Trading Paints Paint Builder Pro style)
   const renderDefaultStamps = () => {
