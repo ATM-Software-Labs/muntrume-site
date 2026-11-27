@@ -34,10 +34,15 @@ const imageCache = new Map<string, HTMLImageElement>();
 
 let activeImportedSkinCanvas: HTMLCanvasElement | null = null;
 let activeImportedSkinName = "";
+let activeKitMandatoryCanvas: HTMLCanvasElement | null = null;
 
 export function setImportedBaseSkin(canvas: HTMLCanvasElement | null, filename = ""): void {
   activeImportedSkinCanvas = canvas;
   activeImportedSkinName = canvas ? filename : "";
+}
+
+export function setKitCarMandatoryCanvas(canvas: HTMLCanvasElement | null): void {
+  activeKitMandatoryCanvas = canvas;
 }
 
 export function getImportedBaseSkin(): { canvas: HTMLCanvasElement | null; filename: string } {
@@ -1335,6 +1340,8 @@ export async function renderSkinToCanvas(
   if (!ctx) throw new Error("No se pudo obtener contexto Canvas 2D.");
 
   const effectiveNumberMode: NumberPlateMode = opts.numberModeOverride ?? state.numberMode ?? "sim-stamped";
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
   ctx.clearRect(0, 0, size, size);
   const importedBase = opts.importedSkinCanvas ?? activeImportedSkinCanvas;
   if (importedBase) {
@@ -1353,10 +1360,13 @@ export async function renderSkinToCanvas(
   drawDriverNumbers(ctx, state, size, effectiveNumberMode);
   await drawDecals(ctx, state, size, opts.selectedDecalId, opts.forExport);
 
-  // Official iRacing Parts / Decals / Lights / Contingencies layer from local PSD (preserved on export!)
-  if (opts.partsOverlayCanvas) {
+  // Official iRacing Parts / Car_Mandatory layer (lights, grilles, vents, carbon trim — preserved on high-res PNG/TGA export!)
+  const mandatoryLayer = opts.partsOverlayCanvas ?? activeKitMandatoryCanvas;
+  if (mandatoryLayer) {
     ctx.save();
-    ctx.drawImage(opts.partsOverlayCanvas, 0, 0, size, size);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(mandatoryLayer, 0, 0, size, size);
     ctx.restore();
   }
 
