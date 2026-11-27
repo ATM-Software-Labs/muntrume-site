@@ -39,11 +39,11 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const MODELS_CDN_BASE = "/assets/models";
-const MODEL_VER = "v=10";
+const MODEL_VER = "v=11";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
-  touring: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
+  touring: `${MODELS_CDN_BASE}/hyundaielantrantc.glb?${MODEL_VER}`,
   gtp: `${MODELS_CDN_BASE}/gtp-prototype.glb?${MODEL_VER}`,
   nascar: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
   formula: `${MODELS_CDN_BASE}/formula-v2.glb?${MODEL_VER}`,
@@ -51,20 +51,32 @@ const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
 
 function resolveBrandSpecificGlb(slugKey: string): string {
   if (!slugKey) return "";
-  // 1. Dedicated GTP / Hypercar prototypes (ALL 6 current iRacing GTPs!)
+  // 1. Dedicated GTP / Hypercar & LMP2/LMP3 prototypes
   if (/499p/.test(slugKey)) return `${MODELS_CDN_BASE}/ferrari499p.glb?${MODEL_VER}`;
   if (/963|919/.test(slugKey)) return `${MODELS_CDN_BASE}/porsche963gtp.glb?${MODEL_VER}`;
   if (/cadillac|vseries/.test(slugKey)) return `${MODELS_CDN_BASE}/cadillacvseriesrgtp.glb?${MODEL_VER}`;
   if (/bmwlmdh|hybridv8|m_hybrid/.test(slugKey)) return `${MODELS_CDN_BASE}/bmwlmdh.glb?${MODEL_VER}`;
   if (/arx06|acuraarx/.test(slugKey)) return `${MODELS_CDN_BASE}/acuraarx06gtp.glb?${MODEL_VER}`;
-  if (/valkyrie|gtp|p217|jsp320|lmp|hpdarx|audir18/.test(slugKey)) {
+  if (/p217|jsp320|lmp|hpdarx/.test(slugKey)) return `${MODELS_CDN_BASE}/dallarap217.glb?${MODEL_VER}`;
+  if (/valkyrie|gtp|audir18/.test(slugKey)) {
     return `${MODELS_CDN_BASE}/gtp-prototype.glb?${MODEL_VER}`;
   }
-  // 2. Open-wheel / Formula
-  if (/formula|dallara(?!p217)|indy|ir18|ir01|dw12|sf23|sfl|raygr|skipbarber|vee|lotus49|lotus79|tatuus|usf2000|pm18|fr500|starmazda/.test(slugKey)) {
+  // 2. Dedicated Open-wheel / Formula models (F3, F4, Super Formula, FF1600, Vee, F1)
+  if (/dallaraf3|f312|f316/.test(slugKey)) return `${MODELS_CDN_BASE}/dallaraf3.glb?${MODEL_VER}`;
+  if (/formulair04|ir04|fiaf4/.test(slugKey)) return `${MODELS_CDN_BASE}/formulair04.glb?${MODEL_VER}`;
+  if (/superformula|sf23|sfl|lights324/.test(slugKey)) return `${MODELS_CDN_BASE}/superformulasf23.glb?${MODEL_VER}`;
+  if (/raygr|ff1600|skipbarber/.test(slugKey)) return `${MODELS_CDN_BASE}/raygr22.glb?${MODEL_VER}`;
+  if (/formulavee|\bvee\b/.test(slugKey)) return `${MODELS_CDN_BASE}/formulavee.glb?${MODEL_VER}`;
+  if (/formula|dallara(?!p217)|indy|ir18|ir01|dw12|lotus49|lotus79|tatuus|usf2000|pm18|fr500|starmazda/.test(slugKey)) {
     return `${MODELS_CDN_BASE}/formula-v2.glb?${MODEL_VER}`;
   }
-  // 3. Brand-specific GT3 / GT4 / Cup race cars
+  // 3. Dedicated TCR & Production Cup cars
+  if (/mx5|miata/.test(slugKey)) return `${MODELS_CDN_BASE}/mx5.glb?${MODEL_VER}`;
+  if (/gr86|toyotagr86/.test(slugKey)) return `${MODELS_CDN_BASE}/toyotagr86.glb?${MODEL_VER}`;
+  if (/elantra|rs3lms|civictyper|tcr|veloster/.test(slugKey)) return `${MODELS_CDN_BASE}/hyundaielantrantc.glb?${MODEL_VER}`;
+  // 4. Dedicated GT3 / GT4 / Cup race cars (ALL 11 current GT3s individually modeled!)
+  if (/audir8|r8lms/.test(slugKey)) return `${MODELS_CDN_BASE}/audir8lmsevo2gt3.glb?${MODEL_VER}`;
+  if (/acuransx|nsxevo|nsxgt3/.test(slugKey)) return `${MODELS_CDN_BASE}/acuransxevo22gt3.glb?${MODEL_VER}`;
   if (/mercedes|amg/.test(slugKey)) return `${MODELS_CDN_BASE}/mercedesamgevogt3.glb?${MODEL_VER}`;
   if (/ferrari|296|488/.test(slugKey)) return `${MODELS_CDN_BASE}/ferrari296gt3.glb?${MODEL_VER}`;
   if (/porsche|992|991|911|718/.test(slugKey)) return `${MODELS_CDN_BASE}/porsche992rgt3.glb?${MODEL_VER}`;
@@ -72,7 +84,7 @@ function resolveBrandSpecificGlb(slugKey: string): string {
   if (/lamborghini|huracan/.test(slugKey)) return `${MODELS_CDN_BASE}/lamborghinievogt3.glb?${MODEL_VER}`;
   if (/corvette|chevyvette|c8r|c6r|z06/.test(slugKey)) return `${MODELS_CDN_BASE}/corvettec8gt3.glb?${MODEL_VER}`;
   if (/aston|amvantage|dbr9/.test(slugKey)) return `${MODELS_CDN_BASE}/amvantageevogt3.glb?${MODEL_VER}`;
-  if (/mclaren|720s|570s|mp4|audi|r8lms|acura|nsx|ford_gt|fordgt/.test(slugKey)) return `${MODELS_CDN_BASE}/mclaren720sgt3.glb?${MODEL_VER}`;
+  if (/mclaren|720s|570s|mp4|ford_gt|fordgt/.test(slugKey)) return `${MODELS_CDN_BASE}/mclaren720sgt3.glb?${MODEL_VER}`;
   if (/mustang/.test(slugKey)) return `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`;
   return "";
 }
@@ -836,7 +848,7 @@ export class WebGLPreviewEngine {
     };
 
     const refineNonBodyMaterial = (id: string, mat: THREE.Material): THREE.Material => {
-      if (/(tireside|tiretread|tire|tyre|rubber|slick|gt3phong1|meshesff41|twixer_992_gt3rs_black)/.test(id)) return rubberTireMat;
+      if (/(tireside|tiretread|sidewall|tread|tire|tyre|rubber|slick|gt3phong1|meshesff41|twixer_992_gt3rs_black)/.test(id)) return rubberTireMat;
       if (/(rim1|rim2|wheel|alloy|spoke|phong9|meshesm8rim)/.test(id)) return gunmetalRimMat;
       if (/(glass|window|windshield|windscreen|visor|black_glass)/.test(id)) return smokedGlassMat;
       if (/(rotor|disc|caliper|brake)/.test(id)) return brakeSteelMat;

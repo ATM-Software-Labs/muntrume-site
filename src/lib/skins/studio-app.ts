@@ -1854,7 +1854,9 @@ export function initSkinsStudio(): void {
       if (!state.name || state.name.startsWith("MMT ")) {
         state.name = `MMT · ${effectiveName} #${state.customNumber}`;
       }
-      // Actualizar automáticamente el logo de marca si había uno del coche anterior
+      // Limpiar capas oficiales UV del coche anterior y actualizar automáticamente los logos de marca al coche nuevo
+      const hadBrandUvLayer = state.decals.some((d) => /^official-uv-.*-brand_decals$/.test(d.id));
+      state.decals = state.decals.filter((d) => !d.id.startsWith("official-uv-") || d.id.startsWith(`official-uv-${nextSlug}-`));
       const nextBrandDecal = BRAND_DECALS.find(
         (b) =>
           b.label.toLowerCase().includes(nextCar.brand.toLowerCase()) ||
@@ -1862,7 +1864,7 @@ export function initSkinsStudio(): void {
       );
       if (nextBrandDecal) {
         for (const d of state.decals) {
-          if (d.dataUrl && d.dataUrl.includes("/assets/brand/logos/")) {
+          if (d.dataUrl && (d.dataUrl.includes("/assets/brand/logos/") || d.dataUrl.includes("/assets/skins/brands/"))) {
             d.dataUrl = nextBrandDecal.src;
             d.name = `Logo ${nextBrandDecal.label}`;
           }
@@ -1879,6 +1881,11 @@ export function initSkinsStudio(): void {
         state.zones = getArchetypeZones(effectiveCategory, nextSlug);
       }
       loadKitWireframeForCar(nextSlug);
+      if (hadBrandUvLayer || !state.decals.some((d) => d.id.startsWith(`official-uv-${nextSlug}-`))) {
+        ensureCarOfficialBrandDecals(nextSlug);
+      }
+      syncOfficialKitUiForCar(nextSlug);
+      renderBrandDecalsForActiveCar();
       loadedTemplate = null;
       customPhotoShots = null;
       const bodyCat = mapCategoryStringToBody(effectiveCategory);
@@ -2439,12 +2446,113 @@ export function initSkinsStudio(): void {
 
   mountLibraryDecals("skTeamDecals", TEAM_DECALS, false);
   mountLibraryDecals("skSeriesDecals", SERIES_DECALS, true);
-  mountLibraryDecals("skBrandDecals", BRAND_DECALS, false);
+
+  function renderBrandDecalsForActiveCar(): void {
+    const car = getCarById(state.carId);
+    const brandLow = (car.brand || "").toLowerCase();
+    const sorted = [...BRAND_DECALS].sort((a, b) => {
+      const aMatch = brandLow && (a.label.toLowerCase().includes(brandLow) || brandLow.includes(a.label.toLowerCase())) ? 0 : 1;
+      const bMatch = brandLow && (b.label.toLowerCase().includes(brandLow) || brandLow.includes(b.label.toLowerCase())) ? 0 : 1;
+      return aMatch - bMatch;
+    });
+    mountLibraryDecals("skBrandDecals", sorted, false);
+    const firstBtn = byId<HTMLElement>("skBrandDecals")?.querySelector<HTMLButtonElement>("button");
+    if (firstBtn && brandLow && (sorted[0]?.label.toLowerCase().includes(brandLow) || brandLow.includes(sorted[0]?.label.toLowerCase() || ""))) {
+      firstBtn.classList.add("sk-btn-primary");
+    }
+  }
+  renderBrandDecalsForActiveCar();
 
   // Official iRacing 1-click UV layers (brand decals, IMSA, GT3 plates, wireframe)
   type OfficialKitEntry = { sourceSlug: string; layers: Record<string, string> };
   type OfficialKitManifest = Record<string, OfficialKitEntry>;
   let officialKits: OfficialKitManifest = {};
+
+  function syncOfficialKitUiForCar(carSlug: string): void {
+    const slug = (carSlug || "").toLowerCase();
+    const kit = officialKits[slug];
+    const layers = kit?.layers || {};
+    const car = getCarById(carSlug);
+    const meta = resolveCarMeta(carSlug);
+    const catLow = (meta.category || car.category || "").toLowerCase();
+    const isFormula = catLow.includes("fórmula") || catLow.includes("formula") || catLow.includes("open");
+    const isProto = catLow.includes("gtp") || catLow.includes("lmp") || catLow.includes("proto");
+    const isTcr = catLow.includes("tcr") || catLow.includes("producción") || catLow.includes("touring");
+    const isImsaEligible = !isFormula && !isTcr;
+
+    const btnBrand = byId<HTMLButtonElement>("skKitAddBrand");
+    const btnImsa = byId<HTMLButtonElement>("skKitAddImsa");
+    const btnSeries = byId<HTMLButtonElement>("skKitAddSeries");
+    const btnWire = byId<HTMLButtonElement>("skKitAddWire");
+    const statusEl = byId<HTMLElement>("skOfficialKitStatus");
+
+    const hasActive = (key: string) => state.decals.some((d) => d.id === `official-uv-${carSlug}-${key}`);
+
+    if (btnBrand) {
+      btnBrand.textContent = `${hasActive("brand_decals") ? "✓" : "+"} Logos ${car.brand} (UV)`;
+      btnBrand.classList.toggle("sk-btn-primary", hasActive("brand_decals"));
+    }
+    if (btnImsa) {
+      const showImsa = Boolean(layers.imsa_decals) || isImsaEligible;
+      btnImsa.classList.toggle("sk-hidden", !showImsa);
+      btnImsa.textContent = `${hasActive("imsa_decals") ? "✓" : "+"} Etiquetas IMSA`;
+      btnImsa.classList.toggle("sk-btn-primary", hasActive("imsa_decals"));
+    }
+    if (btnSeries) {
+      const showSeries = Boolean(layers.series_blocks) || isImsaEligible;
+      btnSeries.classList.toggle("sk-hidden", !showSeries);
+      const seriesLabel = isFormula
+        ? "Placas Fórmula / Dorsales"
+        : isProto
+          ? "Placas GTP / Dorsales"
+          : isTcr
+            ? "Placas TCR / Dorsales"
+            : "Placas GT3 / Dorsales";
+      btnSeries.textContent = `${hasActive("series_blocks") ? "✓" : "+"} ${seriesLabel}`;
+      btnSeries.classList.toggle("sk-btn-primary", hasActive("series_blocks"));
+    }
+    if (btnWire) {
+      btnWire.classList.toggle("sk-hidden", !layers.wireframe);
+      btnWire.textContent = `${hasActive("wireframe") ? "✓" : "+"} Cascarón UV`;
+      btnWire.classList.toggle("sk-btn-primary", hasActive("wireframe"));
+    }
+    if (statusEl) {
+      const available: string[] = [];
+      if (layers.brand_decals) available.push(`Logos ${car.brand}`);
+      if (layers.imsa_decals) available.push("IMSA oficial");
+      if (layers.series_blocks) available.push("Placas de serie");
+      if (layers.car_mandatory) available.push("Partes 2K auto");
+      statusEl.textContent = available.length > 0
+        ? `Kit oficial ${meta.name}: ${available.join(" · ")} ✓`
+        : `Añade los logos de ${car.brand} o capas oficiales calibradas para ${meta.name}.`;
+    }
+  }
+
+  function ensureCarOfficialBrandDecals(carSlug: string): void {
+    const slug = (carSlug || "").toLowerCase();
+    const url = officialKits[slug]?.layers?.brand_decals;
+    if (!url) return;
+    const layerId = `official-uv-${carSlug}-brand_decals`;
+    if (state.decals.some((d) => d.id === layerId)) return;
+    const car = getCarById(carSlug);
+    state.decals.push({
+      id: layerId,
+      name: `Logos ${car.brand} (${car.name})`,
+      kind: "custom",
+      dataUrl: url,
+      color: "#ffffff",
+      x: 0.5,
+      y: 0.5,
+      scale: 1.0,
+      rotation: 0,
+      opacity: 1,
+      mirrorX: false,
+    });
+    renderDecalList();
+    renderDecalEditor();
+    scheduleRender();
+  }
+
   fetch("/assets/skins/kits/manifest.json")
     .then((r) => (r.ok ? r.json() : {}))
     .then((data: OfficialKitManifest) => {
@@ -2462,6 +2570,10 @@ export function initSkinsStudio(): void {
       }
       officialKits = indexed;
       void loadKitWireframeForCar(state.carId);
+      if (!state.decals.some((d) => d.id.startsWith("official-uv-"))) {
+        ensureCarOfficialBrandDecals(state.carId);
+      }
+      syncOfficialKitUiForCar(state.carId);
     })
     .catch(() => {});
 
@@ -2534,6 +2646,7 @@ export function initSkinsStudio(): void {
       if (selectedDecalId === layerId || selectedDecalId?.startsWith(`${layerId}-`)) selectedDecalId = null;
       renderDecalList();
       renderDecalEditor();
+      syncOfficialKitUiForCar(state.carId);
       scheduleRender();
       setStatus(`Capa oficial "${label}" quitada`, "ok");
       return;
@@ -2597,9 +2710,58 @@ export function initSkinsStudio(): void {
         selectedDecalId = leftPlate.id;
         renderDecalList();
         renderDecalEditor();
+        syncOfficialKitUiForCar(state.carId);
         scheduleRender();
         setStatus(`Kit vectorial "${label}" (placas laterales + insignia GTD Pro) aplicado limpiamente sobre ${car.name}`, "ok");
         return;
+      }
+      if (layerKey === "brand_decals") {
+        const car = getCarById(state.carId);
+        const brandItem = BRAND_DECALS.find(
+          (b) =>
+            b.label.toLowerCase().includes(car.brand.toLowerCase()) ||
+            car.brand.toLowerCase().includes(b.label.toLowerCase()),
+        );
+        if (brandItem) {
+          const hood = state.zones.hood || { x: 0.14, y: 0.48, w: 0.28, h: 0.22 };
+          const rearB = state.zones.rearBumper || { x: 0.80, y: 0.48, w: 0.14, h: 0.22 };
+          const noseLogo: DecalLayer = {
+            id: layerId,
+            name: `Emblema ${brandItem.label} Capó (${car.name})`,
+            kind: "custom",
+            dataUrl: brandItem.src,
+            color: "#ffffff",
+            x: hood.x + hood.w * 0.22,
+            y: hood.y + hood.h * 0.5,
+            scale: 0.065,
+            rotation: 90,
+            opacity: 1,
+            mirrorX: false,
+            zoneHint: "hood",
+          };
+          const rearLogo: DecalLayer = {
+            id: `${layerId}-rear`,
+            name: `Emblema ${brandItem.label} Trasero (${car.name})`,
+            kind: "custom",
+            dataUrl: brandItem.src,
+            color: "#ffffff",
+            x: rearB.x + rearB.w * 0.5,
+            y: rearB.y + rearB.h * 0.5,
+            scale: 0.055,
+            rotation: 90,
+            opacity: 1,
+            mirrorX: false,
+            zoneHint: "rearBumper",
+          };
+          state.decals.push(noseLogo, rearLogo);
+          selectedDecalId = noseLogo.id;
+          renderDecalList();
+          renderDecalEditor();
+          syncOfficialKitUiForCar(state.carId);
+          scheduleRender();
+          setStatus(`Logos oficiales ${brandItem.label} aplicados en morro y trasera de ${car.name}`, "ok");
+          return;
+        }
       }
       setStatus(`Este coche (${state.carId}) no tiene capa oficial "${label}" en su plantilla iRacing`, "neutral");
       return;
@@ -2621,6 +2783,7 @@ export function initSkinsStudio(): void {
     selectedDecalId = layer.id;
     renderDecalList();
     renderDecalEditor();
+    syncOfficialKitUiForCar(state.carId);
     scheduleRender();
     setStatus(`Capa oficial "${label}" aplicada al píxel exacto sobre ${getCarById(state.carId).name}`, "ok");
   };
@@ -3345,6 +3508,8 @@ export function initSkinsStudio(): void {
     state.pattern = preset.pattern;
     state.spec = { finish: preset.finish, ...finishDefaults(preset.finish) };
     state.name = `${preset.label} · ${carName} #${state.customNumber}`;
+    ensureCarOfficialBrandDecals(state.carId);
+    syncOfficialKitUiForCar(state.carId);
     syncControlsFromState();
     scheduleRender();
     setStatus(`Livery real aplicada (${carName}): ${preset.label} · ${preset.era}`, "ok");
