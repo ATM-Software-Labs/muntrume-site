@@ -39,25 +39,26 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const MODELS_CDN_BASE = "/assets/models";
+const MODEL_VER = "v=3";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
-  gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
-  touring: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
-  gtp: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
-  nascar: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
-  formula: `${MODELS_CDN_BASE}/formula-v2.glb`,
+  gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
+  touring: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
+  gtp: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
+  nascar: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
+  formula: `${MODELS_CDN_BASE}/formula-v2.glb?${MODEL_VER}`,
 };
 
 function resolveBrandSpecificGlb(slugKey: string): string {
   if (!slugKey) return "";
-  if (/ferrari|296|488|499p/.test(slugKey)) return `${MODELS_CDN_BASE}/ferrari296gt3.glb`;
-  if (/porsche|992|991|911|718|963|919/.test(slugKey)) return `${MODELS_CDN_BASE}/porsche992rgt3.glb`;
-  if (/bmw|m4gt|m4evogt|m8gte|m2csr|m2g87|z4gt3/.test(slugKey)) return `${MODELS_CDN_BASE}/bmwm4gt3.glb`;
-  if (/lamborghini|huracan/.test(slugKey)) return `${MODELS_CDN_BASE}/lamborghinievogt3.glb`;
+  if (/ferrari|296|488|499p/.test(slugKey)) return `${MODELS_CDN_BASE}/ferrari296gt3.glb?${MODEL_VER}`;
+  if (/porsche|992|991|911|718|963|919/.test(slugKey)) return `${MODELS_CDN_BASE}/porsche992rgt3.glb?${MODEL_VER}`;
+  if (/bmw|m4gt|m4evogt|m8gte|m2csr|m2g87|z4gt3/.test(slugKey)) return `${MODELS_CDN_BASE}/bmwm4gt3.glb?${MODEL_VER}`;
+  if (/lamborghini|huracan/.test(slugKey)) return `${MODELS_CDN_BASE}/lamborghinievogt3.glb?${MODEL_VER}`;
   if (/formula|dallara(?!p217)|indy|ir18|ir01|dw12|sf23|sfl|raygr|skipbarber|vee|lotus49|lotus79|tatuus|usf2000|pm18|fr500|starmazda/.test(slugKey)) {
-    return `${MODELS_CDN_BASE}/formula-v2.glb`;
+    return `${MODELS_CDN_BASE}/formula-v2.glb?${MODEL_VER}`;
   }
-  if (/mustang|fordgt/.test(slugKey)) return `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`;
+  if (/mustang|fordgt/.test(slugKey)) return `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`;
   return "";
 }
 
@@ -464,7 +465,7 @@ export class WebGLPreviewEngine {
   public async loadGlbFromUrl(url: string): Promise<boolean> {
     const reqId = ++this.loadRequestId;
     try {
-      const res = await fetch(url, { cache: "force-cache" });
+      const res = await fetch(url, { cache: "default" });
       if (!res.ok || reqId !== this.loadRequestId) return false;
       const buffer = await res.arrayBuffer();
       if (reqId !== this.loadRequestId) return false;
@@ -472,7 +473,7 @@ export class WebGLPreviewEngine {
       const isGlb = bytes.length === 4 && bytes[0] === 0x67 && bytes[1] === 0x6c && bytes[2] === 0x54 && bytes[3] === 0x46;
       const isGltfJson = bytes.length > 0 && bytes[0] === 0x7b;
       if (!isGlb && !isGltfJson) return false;
-      await this.loadGltfBuffer(buffer, url.split("/").pop() || "model.glb", false, true);
+      await this.loadGltfBuffer(buffer, (url.split("/").pop() || "model.glb").split("?")[0], false, true);
       return true;
     } catch (err) {
       console.warn("[skins-3d] loadGlbFromUrl failed:", url, err);
@@ -491,7 +492,7 @@ export class WebGLPreviewEngine {
           slugKey && manifestModels[slugKey] ? manifestModels[slugKey] : "",
           resolveBrandSpecificGlb(slugKey),
           CATEGORY_BASE_GLB_PATHS[category],
-          category === "formula" ? `${MODELS_CDN_BASE}/formula-v2.glb` : `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb`,
+          category === "formula" ? `${MODELS_CDN_BASE}/formula-v2.glb?${MODEL_VER}` : `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
         ].filter(Boolean),
       ),
     );
@@ -500,7 +501,7 @@ export class WebGLPreviewEngine {
       if (reqId !== this.loadRequestId) return false;
       if (this.missingBasePaths.has(url)) continue;
       try {
-        const res = await fetch(url, { cache: "force-cache" });
+        const res = await fetch(url, { cache: "default" });
         if (reqId !== this.loadRequestId) return false;
         if (!res.ok) {
           this.missingBasePaths.add(url);
@@ -515,7 +516,7 @@ export class WebGLPreviewEngine {
           this.missingBasePaths.add(url);
           continue;
         }
-        await this.loadGltfBuffer(buffer, url.split("/").pop() || `${category}-base.glb`, false, true);
+        await this.loadGltfBuffer(buffer, (url.split("/").pop() || `${category}-base.glb`).split("?")[0], false, true);
         return true;
       } catch (err) {
         console.warn("[skins-3d] Base GLB load failed:", url, err);

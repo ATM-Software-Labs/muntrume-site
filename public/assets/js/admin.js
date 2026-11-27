@@ -244,12 +244,27 @@ function showRcNotice(title, msg, tone = "info") {
   const banner = document.getElementById("rcFeedbackBanner");
   const titleEl = document.getElementById("rcFeedbackTitle");
   const msgEl = document.getElementById("rcFeedbackMsg");
-  if (!banner || !titleEl || !msgEl) return;
-  const toneMap = { err: "error", warn: "warning" };
-  banner.className = `m-notice m-notice--${toneMap[tone] || tone}`;
-  titleEl.textContent = title;
-  msgEl.textContent = msg;
-  banner.classList.remove("hidden");
+  if (banner && titleEl && msgEl) {
+    const toneMap = { err: "error", warn: "warning" };
+    banner.className = `m-notice m-notice--${toneMap[tone] || tone}`;
+    titleEl.textContent = title;
+    msgEl.textContent = msg;
+    banner.classList.remove("hidden");
+  }
+  // Also show an always-visible floating toast so actions clicked while scrolled down are immediately clear
+  let toast = document.getElementById("rcFloatingToast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "rcFloatingToast";
+    toast.style.cssText = "position:fixed;right:20px;bottom:20px;z-index:99999;max-width:420px;padding:12px 16px;border-radius:10px;font-size:13px;line-height:1.4;box-shadow:0 12px 32px rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.16);color:#f8fafc;transition:opacity .2s;";
+    document.body.appendChild(toast);
+  }
+  const bg = tone === "err" ? "#7f1d1d" : tone === "warn" ? "#78350f" : tone === "success" ? "#065f46" : "#1e293b";
+  toast.style.background = bg;
+  toast.style.opacity = "1";
+  toast.innerHTML = `<strong style="display:block;margin-bottom:2px;">${rcEscape(title)}</strong><span>${rcEscape(msg)}</span>`;
+  clearTimeout(window.__rcToastTimer);
+  window.__rcToastTimer = setTimeout(() => { if (toast) toast.style.opacity = "0"; }, 6500);
 }
 
 function hideRcNotice() {
@@ -1758,23 +1773,39 @@ function openRowActionMenu(btn, ev) {
   const linkedProf = (rcState.profiles || []).find((pr) => pr.email && String(pr.email).toLowerCase() === email);
 
   const items = [
-    `<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-slug="${rcEscape(linkedProf?.slug || "")}" onclick="closeRowActionMenu(); openUnifiedPilotModal({ email: this.dataset.email, slug: this.dataset.slug })">✏️ Editar todo (rol, licencias, G61)</button>`
+    `<button type="button" class="rc-action-popover__item" data-act="edit" data-email="${rcEscape(member.email)}" data-slug="${rcEscape(linkedProf?.slug || "")}">✏️ Editar todo (rol, licencias, G61)</button>`
   ];
   if (!isBlocked) {
     items.push(`<div class="rc-action-popover__sep"></div>`);
-    items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-name="${rcEscape(member.name)}" onclick="closeRowActionMenu(); generateDriverAccessFromBtn(this, 'link')">🔑 Enviar enlace reset (72h)</button>`);
-    items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-name="${rcEscape(member.name)}" onclick="closeRowActionMenu(); generateDriverAccessFromBtn(this, 'copy_link')">📋 Copiar enlace (72h)</button>`);
-    items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-name="${rcEscape(member.name)}" onclick="closeRowActionMenu(); generateDriverAccessFromBtn(this, 'temp_password')">⚡ Emitir clave temporal</button>`);
-    items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" onclick="closeRowActionMenu(); revokePilotSessionsBtn(this)">⎋ Cerrar sesiones activas</button>`);
+    items.push(`<button type="button" class="rc-action-popover__item" data-act="reset_link" data-email="${rcEscape(member.email)}" data-name="${rcEscape(member.name)}">🔑 Enviar enlace reset (72h)</button>`);
+    items.push(`<button type="button" class="rc-action-popover__item" data-act="copy_link" data-email="${rcEscape(member.email)}" data-name="${rcEscape(member.name)}">📋 Copiar enlace (72h)</button>`);
+    items.push(`<button type="button" class="rc-action-popover__item" data-act="temp_password" data-email="${rcEscape(member.email)}" data-name="${rcEscape(member.name)}">⚡ Emitir clave temporal</button>`);
+    items.push(`<button type="button" class="rc-action-popover__item" data-act="revoke" data-email="${rcEscape(member.email)}">⎋ Cerrar sesiones activas</button>`);
   }
   if (!isPrincipal) {
     items.push(`<div class="rc-action-popover__sep"></div>`);
-    items.push(`<button type="button" class="rc-action-popover__item ${hasSetupAccess ? "rc-action-popover__item--ok" : ""}" data-email="${rcEscape(member.email)}" data-access="${hasSetupAccess ? "1" : "0"}" onclick="closeRowActionMenu(); toggleSetupAccessBtn(this)">${hasSetupAccess ? "✓ Setups Vault: Activo" : "○ Setups Vault: Bloqueado"}</button>`);
-    items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-status="${isBlocked ? "active" : "inactive"}" onclick="closeRowActionMenu(); toggleMemberStatusBtn(this)">${isBlocked ? "✓ Reactivar cuenta" : "⊘ Bloquear cuenta"}</button>`);
-    items.push(`<button type="button" class="rc-action-popover__item rc-action-popover__item--danger" data-email="${rcEscape(member.email)}" onclick="closeRowActionMenu(); deleteMemberBtn(this)">🗑 Eliminar cuenta</button>`);
+    items.push(`<button type="button" class="rc-action-popover__item ${hasSetupAccess ? "rc-action-popover__item--ok" : ""}" data-act="toggle_setups" data-email="${rcEscape(member.email)}" data-access="${hasSetupAccess ? "1" : "0"}">${hasSetupAccess ? "✓ Setups Vault: Activo" : "○ Setups Vault: Bloqueado"}</button>`);
+    items.push(`<button type="button" class="rc-action-popover__item" data-act="toggle_status" data-email="${rcEscape(member.email)}" data-status="${isBlocked ? "active" : "inactive"}">${isBlocked ? "✓ Reactivar cuenta" : "⊘ Bloquear cuenta"}</button>`);
+    items.push(`<button type="button" class="rc-action-popover__item rc-action-popover__item--danger" data-act="delete" data-email="${rcEscape(member.email)}">🗑 Eliminar cuenta</button>`);
   }
 
   pop.innerHTML = items.join("");
+  pop.querySelectorAll("button[data-act]").forEach((itemBtn) => {
+    itemBtn.addEventListener("click", (clickEv) => {
+      clickEv.preventDefault();
+      clickEv.stopPropagation();
+      const act = itemBtn.dataset.act;
+      closeRowActionMenu();
+      if (act === "edit") openUnifiedPilotModal({ email: itemBtn.dataset.email, slug: itemBtn.dataset.slug });
+      else if (act === "reset_link") void generateDriverAccessFromBtn(itemBtn, "link");
+      else if (act === "copy_link") void generateDriverAccessFromBtn(itemBtn, "copy_link");
+      else if (act === "temp_password") void generateDriverAccessFromBtn(itemBtn, "temp_password");
+      else if (act === "revoke") void revokePilotSessionsBtn(itemBtn);
+      else if (act === "toggle_setups") void toggleSetupAccessBtn(itemBtn);
+      else if (act === "toggle_status") void toggleMemberStatusBtn(itemBtn);
+      else if (act === "delete") void deleteMemberBtn(itemBtn);
+    });
+  });
   pop.classList.remove("hidden");
   btn.setAttribute("aria-expanded", "true");
   rcActiveMenuBtn = btn;
@@ -1843,18 +1874,20 @@ async function generateDriverAccessFromBtn(btn, method = "link") {
   }
   const alwaysOpenModal = method === "copy_link";
   try {
+    showRcNotice("Generando enlace de acceso...", `Procesando solicitud para ${email}...`, "info");
     const data = await rcAdminFetch("/api/setups/admin/resend-invite", { email, kind: "auto" });
     const secret = data.set_password_link || "";
     const kindLbl = data.kind === "invite" ? "Bienvenida / Primer acceso 72h" : "Reset 72h";
     appendAuditEvent("admin", "atrumin16@gmail.com", `${kindLbl} emitido para ${email}`, data.kind === "invite" ? "INVITE" : "RESET");
     await refreshRaceControlData();
-    if (secret && (alwaysOpenModal || !data.email_sent)) {
+    // Always open the modal with the live 72h link so the admin can copy/send it even if email goes to spam or provider fails
+    if (secret) {
       openCredentialsResultModal({ name, email, secret, isTempPass: false });
       try { await navigator.clipboard.writeText(secret); } catch {}
     }
     showRcNotice(
-      alwaysOpenModal ? "Enlace 72h copiado" : (data.email_sent ? `Correo (${kindLbl}) enviado` : "Correo pendiente"),
-      alwaysOpenModal ? `Enlace copiado al portapapeles para ${email}.` : (data.email_sent ? `Enviado a ${email}.` : `${data.email_error || "Copia el enlace desde el modal."}`),
+      alwaysOpenModal ? "Enlace 72h copiado" : (data.email_sent ? `Correo (${kindLbl}) enviado` : "Enlace listo (correo no enviado)"),
+      alwaysOpenModal ? `Enlace copiado al portapapeles para ${email}.` : (data.email_sent ? `Enviado a ${email} y copiado en el modal de respaldo.` : `${data.email_error || "Copia el enlace directamente desde el modal."}`),
       data.email_sent || alwaysOpenModal ? "success" : "warn"
     );
   } catch (err) {

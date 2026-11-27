@@ -1,18 +1,18 @@
 {
   "base_url": "/assets/models",
-  "updated_at": "2026-11-27T10:47:00.000Z",
+  "updated_at": "2026-11-27T12:08:00.000Z",
   "models": {
-    "ferrari296gt3": "/assets/models/ferrari296gt3.glb",
-    "ferrari296challenge": "/assets/models/ferrari296gt3.glb",
-    "ferrari499p": "/assets/models/ferrari296gt3.glb",
-    "bmwm4gt3": "/assets/models/bmwm4gt3.glb",
-    "bmwm4gt4": "/assets/models/bmwm4gt3.glb",
-    "bmwm4g82gt4": "/assets/models/bmwm4gt3.glb",
-    "porsche992rgt3": "/assets/models/porsche992rgt3.glb",
-    "porsche992cup": "/assets/models/porsche992rgt3.glb",
-    "porsche718gt4": "/assets/models/porsche992rgt3.glb",
-    "lamborghinievogt3": "/assets/models/lamborghinievogt3.glb",
-    "fordmustanggt3": "/assets/models/fordmustanggt3-v2.glb",
-    "fordmustanggt4": "/assets/models/fordmustanggt3-v2.glb"
+    "ferrari296gt3": "/assets/models/ferrari296gt3.glb?v=3",
+    "ferrari296challenge": "/assets/models/ferrari296gt3.glb?v=3",
+    "ferrari499p": "/assets/models/ferrari296gt3.glb?v=3",
+    "bmwm4gt3": "/assets/models/bmwm4gt3.glb?v=3",
+    "bmwm4gt4": "/assets/models/bmwm4gt3.glb?v=3",
+    "bmwm4g82gt4": "/assets/models/bmwm4gt3.glb?v=3",
+    "porsche992rgt3": "/assets/models/porsche992rgt3.glb?v=3",
+    "porsche992cup": "/assets/models/porsche992rgt3.glb?v=3",
+    "porsche718gt4": "/assets/models/porsche992rgt3.glb?v=3",
+    "lamborghinievogt3": "/assets/models/lamborghinievogt3.glb?v=3",
+    "fordmustanggt3": "/assets/models/fordmustanggt3-v2.glb?v=3",
+    "fordmustanggt4": "/assets/models/fordmustanggt3-v2.glb?v=3"
   }
 }
