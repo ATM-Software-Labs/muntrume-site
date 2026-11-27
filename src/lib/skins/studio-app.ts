@@ -2393,8 +2393,7 @@ export function initSkinsStudio(): void {
           workerSponsorBlocks.length > 0
             ? workerSponsorBlocks[state.decals.length % workerSponsorBlocks.length]
             : null;
-        const autoMirror =
-          realSlot ? false : defaultMirror || targetZoneKey === "leftSide" || targetZoneKey === "rightSide";
+        const autoMirror = false;
         const autoX = realSlot
           ? Math.max(0.05, Math.min(0.95, realSlot.cx))
           : Math.max(0.06, Math.min(0.94, z.x + z.w * 0.5));
@@ -2404,13 +2403,8 @@ export function initSkinsStudio(): void {
               0.06,
               Math.min(0.94, z.y + z.h * (item.group === "brand" && targetZoneKey === "hood" ? 0.28 : 0.5)),
             );
-        const autoScale = realSlot
-          ? Math.max(0.06, Math.min(0.24, Math.max(realSlot.nw, realSlot.nh) * 0.8))
-          : Math.max(
-              0.08,
-              Math.min(0.28, Math.min(z.w, z.h) * (item.group === "brand" ? 0.46 : 0.62)),
-            );
-        const finalScale = autoScale || (item.defaultScale ?? 0.14);
+        const zoneCap = Math.max(0.042, Math.min(0.095, Math.min(z.w, z.h) * (item.group === "brand" ? 0.28 : 0.36)));
+        const finalScale = Math.min(item.defaultScale ?? 0.065, zoneCap);
         const freeSpot = findFreeDecalSpot(autoX, autoY, finalScale, z);
         const panelRotation =
           targetZoneKey === "hood" || targetZoneKey === "roof" || targetZoneKey === "rearBumper"

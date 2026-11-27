@@ -39,7 +39,7 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const MODELS_CDN_BASE = "/assets/models";
-const MODEL_VER = "v=12";
+const MODEL_VER = "v=13";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
@@ -224,17 +224,42 @@ function applyIracingAutoFitUVs(
 
   const isRearWingMesh = /\b(wing|spoiler)\b/i.test(mesh.name || "");
 
+  // Auto-detect whether nose points toward +long (1) or -long (0):
+  // On race cars, the front 22% (nose/hood) has a lower average height than the rear 22% (cabin/rear wing/deck).
+  let lowEndY = 0;
+  let lowEndN = 0;
+  let highEndY = 0;
+  let highEndN = 0;
+  const sampleStep = Math.max(1, Math.floor(pos.count / 400));
+  for (let i = 0; i < pos.count; i += sampleStep) {
+    v.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld);
+    const a = longIsZ ? (v.z - min.z) / spanZ : (v.x - min.x) / spanX;
+    const yNorm = (v.y - min.y) / spanY;
+    if (a < 0.22) {
+      lowEndY += yNorm;
+      lowEndN++;
+    } else if (a > 0.78) {
+      highEndY += yNorm;
+      highEndN++;
+    }
+  }
+  const noseAtLowEnd = lowEndN > 0 && highEndN > 0 && lowEndY / lowEndN < highEndY / highEndN - 0.03;
+
   for (let i = 0; i < pos.count; i++) {
     v.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld);
     n.fromBufferAttribute(norm, i).applyMatrix3(normalMat).normalize();
 
-    // Normalized longitudinal (0=rear -Z, 1=front +Z), lateral (0=-X, 1=+X), vertical (0=bottom, 1=top)
-    const along = longIsZ ? (v.z - min.z) / spanZ : (v.x - min.x) / spanX;
-    const across = longIsZ ? (v.x - min.x) / spanX : (v.z - min.z) / spanZ;
+    // Normalized longitudinal (0=rear, 1=front nose), lateral (0=left, 1=right), vertical (0=bottom, 1=top)
+    const rawAlong = longIsZ ? (v.z - min.z) / spanZ : (v.x - min.x) / spanX;
+    const along = noseAtLowEnd ? 1 - rawAlong : rawAlong;
+    const rawAcross = longIsZ ? (v.x - min.x) / spanX : (v.z - min.z) / spanZ;
+    const across = noseAtLowEnd ? 1 - rawAcross : rawAcross;
     const up = (v.y - min.y) / spanY;
 
-    const latN = longIsZ ? n.x : n.z;
-    const longN = longIsZ ? n.z : n.x;
+    const rawLatN = longIsZ ? n.x : n.z;
+    const rawLongN = longIsZ ? n.z : n.x;
+    const latN = noseAtLowEnd ? -rawLatN : rawLatN;
+    const longN = noseAtLowEnd ? -rawLongN : rawLongN;
     const absLat = Math.abs(latN);
     const absLong = Math.abs(longN);
     const absUp = Math.abs(n.y);
@@ -244,33 +269,35 @@ function applyIracingAutoFitUVs(
     let lv = 0.5;
 
     if (isRearWingMesh || (up > 0.72 && along < 0.20)) {
-      // +Y Rear wing (viewed from rear 3/4: -X is left, +X is right)
+      // +Y Rear wing (viewed from rear 3/4: left -> right)
       zone = zones.rearWing;
       lu = across;
       lv = 1 - Math.max(0, Math.min(1, along / 0.20));
     } else if (absLong >= absLat && absLong >= absUp && longN >= 0 && along > 0.75) {
-      // +Z Front bumper (viewed from front: +X is left, -X is right)
+      // Front bumper (viewed from front: upright left -> right)
       zone = zones.frontBumper;
       lu = 1 - across;
       lv = 1 - up;
     } else if (absLong >= absLat && absLong >= absUp && longN < 0 && along < 0.25) {
-      // -Z Rear bumper (viewed from rear: -X is left, +X is right)
+      // Rear bumper (viewed from rear: upright left -> right)
       zone = zones.rearBumper;
       lu = across;
       lv = 1 - up;
     } else if (absLat >= absUp * 0.85 && (across < 0.46 || across > 0.54)) {
-      // Real iRacing horizontal UV: leftSide (bottom door, 0° upright) & rightSide (top door, 180° inverted)
+      // Real iRacing horizontal UV:
+      // leftSide (bottom door, 0° upright): nose on left (lu=0), rear on right (lu=1), top at lv=0
+      // rightSide (top door, 180° inverted): rear on left (lu=0), nose on right (lu=1), top at lv=1
       if (latN < 0) {
         zone = zones.leftSide;
         lu = 1 - along;
         lv = 1 - up;
       } else {
         zone = zones.rightSide;
-        lu = 1 - along;
+        lu = along;
         lv = up;
       }
     } else if (along > 0.54) {
-      // +Y Hood in real iRacing horizontal UV: nose (+Z, along=1) is on the LEFT (lu=0), windshield on RIGHT (lu=1)
+      // +Y Hood in real iRacing horizontal UV: nose (along=1) on LEFT (lu=0), windshield on RIGHT (lu=1)
       zone = zones.hood;
       lu = 1 - Math.max(0, Math.min(1, (along - 0.54) / 0.46));
       lv = 1 - across;
