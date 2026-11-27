@@ -19,6 +19,7 @@ import {
 } from "./compositor";
 import { renderShowroomCarView, type ShowroomAngle } from "./car-showroom-view";
 import { BRAND_DECALS, SERIES_DECALS, TEAM_DECALS, type LibraryDecalItem } from "./decals-library";
+import { buildChampionshipKitLayers, getCarSeriesProfile } from "./series-kits";
 import { DEFAULT_STAMPS } from "./stamps-library";
 import {
   exportDirectToIracingFolder,
@@ -1885,6 +1886,7 @@ export function initSkinsStudio(): void {
         ensureCarOfficialBrandDecals(nextSlug);
       }
       syncOfficialKitUiForCar(nextSlug);
+      renderSeriesDecalsForActiveCar();
       renderBrandDecalsForActiveCar();
       loadedTemplate = null;
       customPhotoShots = null;
@@ -2445,7 +2447,13 @@ export function initSkinsStudio(): void {
   };
 
   mountLibraryDecals("skTeamDecals", TEAM_DECALS, false);
-  mountLibraryDecals("skSeriesDecals", SERIES_DECALS, true);
+
+  function renderSeriesDecalsForActiveCar(): void {
+    const meta = resolveCarMeta(state.carId);
+    const profile = getCarSeriesProfile(state.carId, meta.category);
+    mountLibraryDecals("skSeriesDecals", profile.seriesDecals.length > 0 ? profile.seriesDecals : SERIES_DECALS, true);
+  }
+  renderSeriesDecalsForActiveCar();
 
   function renderBrandDecalsForActiveCar(): void {
     const car = getCarById(state.carId);
@@ -2463,7 +2471,7 @@ export function initSkinsStudio(): void {
   }
   renderBrandDecalsForActiveCar();
 
-  // Official iRacing 1-click UV layers (brand decals, IMSA, GT3 plates, wireframe)
+  // Official iRacing 1-click UV layers (brand decals, championship kit, series plates, wireframe)
   type OfficialKitEntry = { sourceSlug: string; layers: Record<string, string> };
   type OfficialKitManifest = Record<string, OfficialKitEntry>;
   let officialKits: OfficialKitManifest = {};
@@ -2474,11 +2482,7 @@ export function initSkinsStudio(): void {
     const layers = kit?.layers || {};
     const car = getCarById(carSlug);
     const meta = resolveCarMeta(carSlug);
-    const catLow = (meta.category || car.category || "").toLowerCase();
-    const isFormula = catLow.includes("fórmula") || catLow.includes("formula") || catLow.includes("open");
-    const isProto = catLow.includes("gtp") || catLow.includes("lmp") || catLow.includes("proto");
-    const isTcr = catLow.includes("tcr") || catLow.includes("producción") || catLow.includes("touring");
-    const isImsaEligible = !isFormula && !isTcr;
+    const profile = getCarSeriesProfile(carSlug, meta.category);
 
     const btnBrand = byId<HTMLButtonElement>("skKitAddBrand");
     const btnImsa = byId<HTMLButtonElement>("skKitAddImsa");
@@ -2493,22 +2497,13 @@ export function initSkinsStudio(): void {
       btnBrand.classList.toggle("sk-btn-primary", hasActive("brand_decals"));
     }
     if (btnImsa) {
-      const showImsa = Boolean(layers.imsa_decals) || isImsaEligible;
-      btnImsa.classList.toggle("sk-hidden", !showImsa);
-      btnImsa.textContent = `${hasActive("imsa_decals") ? "✓" : "+"} Etiquetas IMSA`;
+      btnImsa.classList.remove("sk-hidden");
+      btnImsa.textContent = `${hasActive("imsa_decals") ? "✓" : "+"} ${profile.kitButtonLabel}`;
       btnImsa.classList.toggle("sk-btn-primary", hasActive("imsa_decals"));
     }
     if (btnSeries) {
-      const showSeries = Boolean(layers.series_blocks) || isImsaEligible;
-      btnSeries.classList.toggle("sk-hidden", !showSeries);
-      const seriesLabel = isFormula
-        ? "Placas Fórmula / Dorsales"
-        : isProto
-          ? "Placas GTP / Dorsales"
-          : isTcr
-            ? "Placas TCR / Dorsales"
-            : "Placas GT3 / Dorsales";
-      btnSeries.textContent = `${hasActive("series_blocks") ? "✓" : "+"} ${seriesLabel}`;
+      btnSeries.classList.remove("sk-hidden");
+      btnSeries.textContent = `${hasActive("series_blocks") ? "✓" : "+"} ${profile.platesButtonLabel}`;
       btnSeries.classList.toggle("sk-btn-primary", hasActive("series_blocks"));
     }
     if (btnWire) {
@@ -2517,14 +2512,12 @@ export function initSkinsStudio(): void {
       btnWire.classList.toggle("sk-btn-primary", hasActive("wireframe"));
     }
     if (statusEl) {
-      const available: string[] = [];
+      const available: string[] = [profile.championshipName];
       if (layers.brand_decals) available.push(`Logos ${car.brand}`);
-      if (layers.imsa_decals) available.push("IMSA oficial");
-      if (layers.series_blocks) available.push("Placas de serie");
+      if (layers.imsa_decals && profile.useImsaOfficialLayer) available.push("IMSA oficial");
+      if (layers.series_blocks) available.push("Placas UV");
       if (layers.car_mandatory) available.push("Partes 2K auto");
-      statusEl.textContent = available.length > 0
-        ? `Kit oficial ${meta.name}: ${available.join(" · ")} ✓`
-        : `Añade los logos de ${car.brand} o capas oficiales calibradas para ${meta.name}.`;
+      statusEl.textContent = `${meta.name} · ${available.join(" · ")} ✓`;
     }
   }
 
@@ -2651,68 +2644,22 @@ export function initSkinsStudio(): void {
       setStatus(`Capa oficial "${label}" quitada`, "ok");
       return;
     }
-    if (!url) {
-      // Fallback: if this car's iRacing PSD didn't export a separate IMSA / GT3 plate webp layer,
-      // place crisp vector IMSA / GT3 plates directly onto the car's calibrated zones.
+    const meta = resolveCarMeta(state.carId);
+    const seriesProfile = getCarSeriesProfile(state.carId, meta.category);
+    const effectiveUrl = layerKey === "imsa_decals" && !seriesProfile.useImsaOfficialLayer ? undefined : url;
+    if (!effectiveUrl) {
+      // Championship-specific clean transparent vector plates & front badge tailored to this car's series
+      // (IMSA GTP / GTD Pro / Porsche Cup / Ferrari Challenge / GT4 / FIA F4 / F3 / SF23 / TCR / MX-5 / GR86)
       if (layerKey === "imsa_decals" || layerKey === "series_blocks") {
         const car = getCarById(state.carId);
-        const sideL = state.zones.leftSide || { x: 0.25, y: 0.72, w: 0.5, h: 0.16 };
-        const sideR = state.zones.rightSide || { x: 0.25, y: 0.24, w: 0.5, h: 0.16 };
-        const frontB = state.zones.frontBumper || { x: 0.04, y: 0.03, w: 0.44, h: 0.16 };
-        // Clean transparent-background IMSA GTD Pro contingency badges (NEVER a bulky black box on the hood!)
-        const gtdPlateSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 210"><rect x="4" y="4" width="272" height="202" rx="10" fill="#ffffff" stroke="#111827" stroke-width="6"/><rect x="4" y="4" width="272" height="46" rx="8" fill="#dc2626"/><text x="140" y="34" text-anchor="middle" font-family="Arial Black,Impact,sans-serif" font-weight="900" font-size="22" fill="#ffffff" letter-spacing="2">WeatherTech</text><rect x="18" y="160" width="244" height="34" rx="4" fill="#111827"/><text x="140" y="183" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="18" fill="#00e699" letter-spacing="3">IMSA · GTD PRO</text></svg>`;
-        const gtdBadgeSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 54"><polygon points="10,4 236,4 226,50 4,50" fill="#dc2626" stroke="#ffffff" stroke-width="4"/><text x="120" y="35" text-anchor="middle" font-family="Arial Black,Impact,sans-serif" font-style="italic" font-weight="900" font-size="24" fill="#ffffff" letter-spacing="2">GTD PRO</text></svg>`;
-        const plateUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(gtdPlateSvg)}`;
-        const badgeUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(gtdBadgeSvg)}`;
-        const leftPlate: DecalLayer = {
-          id: layerId,
-          name: `Placa IMSA Lateral Izq. (${car.name})`,
-          kind: "custom",
-          dataUrl: plateUrl,
-          color: "#ffffff",
-          x: sideL.x + sideL.w * 0.48,
-          y: sideL.y + sideL.h * 0.52,
-          scale: 0.085,
-          rotation: 0,
-          opacity: 1,
-          mirrorX: false,
-          zoneHint: "leftSide",
-        };
-        const rightPlate: DecalLayer = {
-          id: `${layerId}-right`,
-          name: `Placa IMSA Lateral Der. (${car.name})`,
-          kind: "custom",
-          dataUrl: plateUrl,
-          color: "#ffffff",
-          x: sideR.x + sideR.w * 0.48,
-          y: sideR.y + sideR.h * 0.48,
-          scale: 0.085,
-          rotation: 180,
-          opacity: 1,
-          mirrorX: false,
-          zoneHint: "rightSide",
-        };
-        const bumperBadge: DecalLayer = {
-          id: `${layerId}-bumper`,
-          name: `Insignia GTD Pro Frontal (${car.name})`,
-          kind: "custom",
-          dataUrl: badgeUrl,
-          color: "#ffffff",
-          x: frontB.x + frontB.w * 0.5,
-          y: frontB.y + frontB.h * 0.52,
-          scale: 0.065,
-          rotation: 0,
-          opacity: 1,
-          mirrorX: false,
-          zoneHint: "frontBumper",
-        };
-        state.decals.push(leftPlate, rightPlate, bumperBadge);
-        selectedDecalId = leftPlate.id;
+        const kitLayers = buildChampionshipKitLayers(seriesProfile, car.name, state.zones, layerId);
+        state.decals.push(...kitLayers);
+        selectedDecalId = kitLayers[0]?.id ?? null;
         renderDecalList();
         renderDecalEditor();
         syncOfficialKitUiForCar(state.carId);
         scheduleRender();
-        setStatus(`Kit vectorial "${label}" (placas laterales + insignia GTD Pro) aplicado limpiamente sobre ${car.name}`, "ok");
+        setStatus(`Kit ${seriesProfile.championshipName} aplicado limpiamente sobre ${car.name}`, "ok");
         return;
       }
       if (layerKey === "brand_decals") {

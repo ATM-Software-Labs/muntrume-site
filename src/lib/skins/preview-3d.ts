@@ -39,7 +39,7 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const MODELS_CDN_BASE = "/assets/models";
-const MODEL_VER = "v=11";
+const MODEL_VER = "v=12";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
@@ -51,40 +51,56 @@ const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
 
 function resolveBrandSpecificGlb(slugKey: string): string {
   if (!slugKey) return "";
-  // 1. Dedicated GTP / Hypercar & LMP2/LMP3 prototypes
+  // 1. Dedicated GTP / Hypercar & LMP2 / LMP3 prototypes (8/8 individually modeled!)
   if (/499p/.test(slugKey)) return `${MODELS_CDN_BASE}/ferrari499p.glb?${MODEL_VER}`;
   if (/963|919/.test(slugKey)) return `${MODELS_CDN_BASE}/porsche963gtp.glb?${MODEL_VER}`;
   if (/cadillac|vseries/.test(slugKey)) return `${MODELS_CDN_BASE}/cadillacvseriesrgtp.glb?${MODEL_VER}`;
   if (/bmwlmdh|hybridv8|m_hybrid/.test(slugKey)) return `${MODELS_CDN_BASE}/bmwlmdh.glb?${MODEL_VER}`;
   if (/arx06|acuraarx/.test(slugKey)) return `${MODELS_CDN_BASE}/acuraarx06gtp.glb?${MODEL_VER}`;
-  if (/p217|jsp320|lmp|hpdarx/.test(slugKey)) return `${MODELS_CDN_BASE}/dallarap217.glb?${MODEL_VER}`;
-  if (/valkyrie|gtp|audir18/.test(slugKey)) {
-    return `${MODELS_CDN_BASE}/gtp-prototype.glb?${MODEL_VER}`;
-  }
-  // 2. Dedicated Open-wheel / Formula models (F3, F4, Super Formula, FF1600, Vee, F1)
+  if (/jsp320|ligier|lmp3/.test(slugKey)) return `${MODELS_CDN_BASE}/ligierjsp320.glb?${MODEL_VER}`;
+  if (/p217|lmp2|hpdarx/.test(slugKey)) return `${MODELS_CDN_BASE}/dallarap217.glb?${MODEL_VER}`;
+  if (/valkyrie|gtp|audir18/.test(slugKey)) return `${MODELS_CDN_BASE}/gtp-prototype.glb?${MODEL_VER}`;
+
+  // 2. Dedicated Open-wheel / Formula models (6/6 individually modeled!)
   if (/dallaraf3|f312|f316/.test(slugKey)) return `${MODELS_CDN_BASE}/dallaraf3.glb?${MODEL_VER}`;
   if (/formulair04|ir04|fiaf4/.test(slugKey)) return `${MODELS_CDN_BASE}/formulair04.glb?${MODEL_VER}`;
-  if (/superformula|sf23|sfl|lights324/.test(slugKey)) return `${MODELS_CDN_BASE}/superformulasf23.glb?${MODEL_VER}`;
+  if (/lights324|sfl/.test(slugKey)) return `${MODELS_CDN_BASE}/superformulalights324.glb?${MODEL_VER}`;
+  if (/superformula|sf23/.test(slugKey)) return `${MODELS_CDN_BASE}/superformulasf23.glb?${MODEL_VER}`;
   if (/raygr|ff1600|skipbarber/.test(slugKey)) return `${MODELS_CDN_BASE}/raygr22.glb?${MODEL_VER}`;
   if (/formulavee|\bvee\b/.test(slugKey)) return `${MODELS_CDN_BASE}/formulavee.glb?${MODEL_VER}`;
   if (/formula|dallara(?!p217)|indy|ir18|ir01|dw12|lotus49|lotus79|tatuus|usf2000|pm18|fr500|starmazda/.test(slugKey)) {
     return `${MODELS_CDN_BASE}/formula-v2.glb?${MODEL_VER}`;
   }
-  // 3. Dedicated TCR & Production Cup cars
+
+  // 3. Dedicated TCR & Production Cup cars (6/6 individually modeled!)
   if (/mx5|miata/.test(slugKey)) return `${MODELS_CDN_BASE}/mx5.glb?${MODEL_VER}`;
   if (/gr86|toyotagr86/.test(slugKey)) return `${MODELS_CDN_BASE}/toyotagr86.glb?${MODEL_VER}`;
-  if (/elantra|rs3lms|civictyper|tcr|veloster/.test(slugKey)) return `${MODELS_CDN_BASE}/hyundaielantrantc.glb?${MODEL_VER}`;
-  // 4. Dedicated GT3 / GT4 / Cup race cars (ALL 11 current GT3s individually modeled!)
+  if (/bmwm2|m2g87|m2csr/.test(slugKey)) return `${MODELS_CDN_BASE}/bmwm2g87.glb?${MODEL_VER}`;
+  if (/rs3lms|audirs3/.test(slugKey)) return `${MODELS_CDN_BASE}/audirs3lmsgen2.glb?${MODEL_VER}`;
+  if (/civictyper|hondacivic/.test(slugKey)) return `${MODELS_CDN_BASE}/hondacivictyper.glb?${MODEL_VER}`;
+  if (/elantra|tcr|veloster/.test(slugKey)) return `${MODELS_CDN_BASE}/hyundaielantrantc.glb?${MODEL_VER}`;
+
+  // 4. Dedicated GT4 & Cup race cars (8/8 individually modeled!)
+  if (/porsche992cup|992.*cup|911.*cup/.test(slugKey)) return `${MODELS_CDN_BASE}/porsche992cup.glb?${MODEL_VER}`;
+  if (/296challenge|challenge/.test(slugKey)) return `${MODELS_CDN_BASE}/ferrari296challenge.glb?${MODEL_VER}`;
+  if (/m4g82gt4|m4.*gt4/.test(slugKey)) return `${MODELS_CDN_BASE}/bmwm4g82gt4.glb?${MODEL_VER}`;
+  if (/718|cayman/.test(slugKey)) return `${MODELS_CDN_BASE}/porsche718gt4.glb?${MODEL_VER}`;
+  if (/mercedesamggt4|amggt4/.test(slugKey)) return `${MODELS_CDN_BASE}/mercedesamggt4.glb?${MODEL_VER}`;
+  if (/amvantagegt4|vantagegt4/.test(slugKey)) return `${MODELS_CDN_BASE}/amvantagegt4.glb?${MODEL_VER}`;
+  if (/570s/.test(slugKey)) return `${MODELS_CDN_BASE}/mclaren570sgt4.glb?${MODEL_VER}`;
+  if (/mustanggt4/.test(slugKey)) return `${MODELS_CDN_BASE}/fordmustanggt4.glb?${MODEL_VER}`;
+
+  // 5. Dedicated GT3 race cars (11/11 individually modeled!)
   if (/audir8|r8lms/.test(slugKey)) return `${MODELS_CDN_BASE}/audir8lmsevo2gt3.glb?${MODEL_VER}`;
   if (/acuransx|nsxevo|nsxgt3/.test(slugKey)) return `${MODELS_CDN_BASE}/acuransxevo22gt3.glb?${MODEL_VER}`;
   if (/mercedes|amg/.test(slugKey)) return `${MODELS_CDN_BASE}/mercedesamgevogt3.glb?${MODEL_VER}`;
   if (/ferrari|296|488/.test(slugKey)) return `${MODELS_CDN_BASE}/ferrari296gt3.glb?${MODEL_VER}`;
-  if (/porsche|992|991|911|718/.test(slugKey)) return `${MODELS_CDN_BASE}/porsche992rgt3.glb?${MODEL_VER}`;
-  if (/bmw|m4gt|m4evogt|m4g82|m8gte|m2csr|m2g87|z4gt3/.test(slugKey)) return `${MODELS_CDN_BASE}/bmwm4gt3.glb?${MODEL_VER}`;
+  if (/porsche|992|991|911/.test(slugKey)) return `${MODELS_CDN_BASE}/porsche992rgt3.glb?${MODEL_VER}`;
+  if (/bmw|m4gt|m4evogt|m8gte|z4gt3/.test(slugKey)) return `${MODELS_CDN_BASE}/bmwm4gt3.glb?${MODEL_VER}`;
   if (/lamborghini|huracan/.test(slugKey)) return `${MODELS_CDN_BASE}/lamborghinievogt3.glb?${MODEL_VER}`;
   if (/corvette|chevyvette|c8r|c6r|z06/.test(slugKey)) return `${MODELS_CDN_BASE}/corvettec8gt3.glb?${MODEL_VER}`;
   if (/aston|amvantage|dbr9/.test(slugKey)) return `${MODELS_CDN_BASE}/amvantageevogt3.glb?${MODEL_VER}`;
-  if (/mclaren|720s|570s|mp4|ford_gt|fordgt/.test(slugKey)) return `${MODELS_CDN_BASE}/mclaren720sgt3.glb?${MODEL_VER}`;
+  if (/mclaren|720s|mp4|ford_gt|fordgt/.test(slugKey)) return `${MODELS_CDN_BASE}/mclaren720sgt3.glb?${MODEL_VER}`;
   if (/mustang/.test(slugKey)) return `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`;
   return "";
 }
