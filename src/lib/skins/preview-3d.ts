@@ -309,6 +309,7 @@ export class WebGLPreviewEngine {
   private uvMappingMode: UvMappingMode = "autofit";
   private hasCustomModel = false;
   private isSpeedformFallback = true;
+  private loadRequestId = 0;
   private originalUvs = new WeakMap<THREE.BufferGeometry, THREE.BufferAttribute>();
   private missingBasePaths = new Set<string>();
   private meshLabel = "Muestra de Pintura Speedform PBR · Carga tu modelo 3D real (.GLB / .GLTF)";
@@ -316,8 +317,8 @@ export class WebGLPreviewEngine {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.specPackedCanvas = document.createElement("canvas");
-    this.specPackedCanvas.width = 256;
-    this.specPackedCanvas.height = 256;
+    this.specPackedCanvas.width = 512;
+    this.specPackedCanvas.height = 512;
     this.initScene();
   }
 
@@ -460,8 +461,28 @@ export class WebGLPreviewEngine {
    * Attempts to load an optional category base .GLB from public/models/{gt3,gtp,formula}-base.glb.
    * If not present, cleanly falls back to the Automotive Speedform without errors or blocky cars.
    */
+  public async loadGlbFromUrl(url: string): Promise<boolean> {
+    const reqId = ++this.loadRequestId;
+    try {
+      const res = await fetch(url, { cache: "force-cache" });
+      if (!res.ok || reqId !== this.loadRequestId) return false;
+      const buffer = await res.arrayBuffer();
+      if (reqId !== this.loadRequestId) return false;
+      const bytes = new Uint8Array(buffer, 0, Math.min(4, buffer.byteLength));
+      const isGlb = bytes.length === 4 && bytes[0] === 0x67 && bytes[1] === 0x6c && bytes[2] === 0x54 && bytes[3] === 0x46;
+      const isGltfJson = bytes.length > 0 && bytes[0] === 0x7b;
+      if (!isGlb && !isGltfJson) return false;
+      await this.loadGltfBuffer(buffer, url.split("/").pop() || "model.glb", false, true);
+      return true;
+    } catch (err) {
+      console.warn("[skins-3d] loadGlbFromUrl failed:", url, err);
+      return false;
+    }
+  }
+
   public async tryLoadCategoryBaseModel(category: CarBodyCategory, carSlug = ""): Promise<boolean> {
     this.currentCategory = category;
+    const reqId = ++this.loadRequestId;
     const slugKey = (carSlug || "").toLowerCase().replace(/[^a-z0-9_-]/g, "");
     const manifestModels = (modelsManifest?.models || {}) as Record<string, string>;
     const candidates = Array.from(
@@ -476,14 +497,17 @@ export class WebGLPreviewEngine {
     );
 
     for (const url of candidates) {
+      if (reqId !== this.loadRequestId) return false;
       if (this.missingBasePaths.has(url)) continue;
       try {
         const res = await fetch(url, { cache: "force-cache" });
+        if (reqId !== this.loadRequestId) return false;
         if (!res.ok) {
           this.missingBasePaths.add(url);
           continue;
         }
         const buffer = await res.arrayBuffer();
+        if (reqId !== this.loadRequestId) return false;
         const bytes = new Uint8Array(buffer, 0, Math.min(4, buffer.byteLength));
         const isGlb = bytes.length === 4 && bytes[0] === 0x67 && bytes[1] === 0x6c && bytes[2] === 0x54 && bytes[3] === 0x46;
         const isGltfJson = bytes.length > 0 && bytes[0] === 0x7b;
@@ -493,12 +517,13 @@ export class WebGLPreviewEngine {
         }
         await this.loadGltfBuffer(buffer, url.split("/").pop() || `${category}-base.glb`, false, true);
         return true;
-      } catch {
+      } catch (err) {
+        console.warn("[skins-3d] Base GLB load failed:", url, err);
         this.missingBasePaths.add(url);
       }
     }
 
-    this.buildAutomotiveSpeedform();
+    if (reqId === this.loadRequestId) this.buildAutomotiveSpeedform();
     return false;
   }
 
@@ -689,7 +714,10 @@ export class WebGLPreviewEngine {
       const tex = new THREE.CanvasTexture(diffuseCanvas);
       tex.colorSpace = THREE.SRGBColorSpace;
       tex.flipY = false; // Standard glTF orientation: zero upside-down/mirrored text
-      tex.anisotropy = 4;
+      tex.anisotropy = this.renderer ? Math.min(16, this.renderer.capabilities.getMaxAnisotropy()) : 8;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.generateMipmaps = true;
       this.diffuseTexture = tex;
       this.paintMaterial.map = tex;
       this.paintMaterial.needsUpdate = true;
@@ -698,10 +726,12 @@ export class WebGLPreviewEngine {
     }
 
     if (specCanvas) {
+      const sw = this.specPackedCanvas.width;
+      const sh = this.specPackedCanvas.height;
       const ctx = this.specPackedCanvas.getContext("2d", { willReadFrequently: true });
       if (ctx) {
-        ctx.drawImage(specCanvas, 0, 0, 256, 256);
-        const img = ctx.getImageData(0, 0, 256, 256);
+        ctx.drawImage(specCanvas, 0, 0, sw, sh);
+        const img = ctx.getImageData(0, 0, sw, sh);
         const d = img.data;
         for (let i = 0; i < d.length; i += 4) {
           const irMetallic = d[i];

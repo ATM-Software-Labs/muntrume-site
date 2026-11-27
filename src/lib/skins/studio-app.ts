@@ -447,8 +447,8 @@ export function initSkinsStudio(): void {
   const uvCanvas = byId<HTMLCanvasElement>("skUvCanvas")!;
   const glCanvas = byId<HTMLCanvasElement>("skGlCanvas")!;
   const offscreenTexture = document.createElement("canvas");
-  offscreenTexture.width = 1024;
-  offscreenTexture.height = 1024;
+  offscreenTexture.width = 2048;
+  offscreenTexture.height = 2048;
 
   const glEngine = new WebGLPreviewEngine(glCanvas);
   const statusPill = byId<HTMLElement>("skStatusPill");
@@ -547,15 +547,15 @@ export function initSkinsStudio(): void {
           applyUvTransform();
         } else if (viewMode === "3d") {
           await renderSkinToCanvas(offscreenTexture, state, {
-            size: 1024,
+            size: 2048,
             partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
             psdPatternCanvas: psdPatCanvas,
             forExport: true,
           });
           const offscreenSpec = document.createElement("canvas");
-          offscreenSpec.width = 256;
-          offscreenSpec.height = 256;
-          renderSpecMapToCanvas(offscreenSpec, state, 256);
+          offscreenSpec.width = 512;
+          offscreenSpec.height = 512;
+          renderSpecMapToCanvas(offscreenSpec, state, 512);
           glEngine.updateTexture(
             offscreenTexture,
             state.spec.metallic,
@@ -1634,6 +1634,23 @@ export function initSkinsStudio(): void {
       );
     });
   });
+  byId<HTMLSelectElement>("skGlModelSelect")?.addEventListener("change", async (e) => {
+    const val = (e.target as HTMLSelectElement).value;
+    if (val === "auto") {
+      await restoreSaved3dModelForCar(state.carId);
+      setStatus("Modelo 3D sincronizado automáticamente con el coche seleccionado.", "ok");
+      return;
+    }
+    setStatus("Cargando modelo 3D seleccionado...");
+    const ok = await glEngine.loadGlbFromUrl(val);
+    if (ok) {
+      glEngine.updateZones(state.zones);
+      scheduleRender();
+      setStatus(`Modelo 3D cargado: ${(e.target as HTMLSelectElement).selectedOptions[0]?.textContent || val}`, "ok");
+    } else {
+      setStatus("No se pudo cargar ese modelo 3D. Intenta recargar con Ctrl+F5.", "err");
+    }
+  });
   byId<HTMLInputElement>("skObjInput")?.addEventListener("change", async (e) => {
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -1731,12 +1748,13 @@ export function initSkinsStudio(): void {
       customPhotoShots = null;
       const bodyCat = mapCategoryStringToBody(effectiveCategory);
       glEngine.setCategory(bodyCat);
-      void glEngine.tryLoadCategoryBaseModel(bodyCat, nextSlug);
       glEngine.updateZones(state.zones);
+      const glSel = byId<HTMLSelectElement>("skGlModelSelect");
+      if (glSel) glSel.value = "auto";
       syncControlsFromState();
       scheduleRender();
 
-      // Auto-restore cached .GLB / .GLTF for this car_slug from IndexedDB (or sculpted category bodywork)
+      // Auto-restore cached .GLB / .GLTF for this car_slug from IndexedDB (or brand/category real .GLB)
       void restoreSaved3dModelForCar(nextSlug);
       void syncCarUvFromWorker(nextSlug);
     });

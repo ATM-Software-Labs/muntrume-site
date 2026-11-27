@@ -309,6 +309,15 @@ const canonical = "https://skins.muntru.me/";
               <button type="button" class="sk-btn sk-btn-sm" data-gl-uv="native" title="Usa las coordenadas UV originales del archivo .GLB">UV Nativo</button>
               <button type="button" class="sk-btn sk-btn-sm is-active" data-gl-uv="autofit" title="Proyecta capó, techo, laterales, paragolpes y alerón sobre las zonas calibradas de iRacing">Auto-Fit Zonas iRacing</button>
               <span style="width:1px;height:18px;background:rgba(255,255,255,0.14);margin:0 2px;"></span>
+              <select id="skGlModelSelect" class="sk-select" style="width:auto;padding:4px 8px;font-size:11px;min-width:148px;" title="Cambiar modelo 3D del visor directamente">
+                <option value="auto">Coche 3D: Automático</option>
+                <option value="/assets/models/fordmustanggt3-v2.glb">Ford Mustang GT3</option>
+                <option value="/assets/models/porsche992rgt3.glb">Porsche 911 GT3</option>
+                <option value="/assets/models/ferrari296gt3.glb">Ferrari 296 / 488</option>
+                <option value="/assets/models/bmwm4gt3.glb">BMW M4 GT3</option>
+                <option value="/assets/models/lamborghinievogt3.glb">Lamborghini Huracán</option>
+                <option value="/assets/models/formula-v2.glb">Fórmula Monoplaza</option>
+              </select>
               <label class="sk-btn sk-btn-sm" style="cursor:pointer;">
                 Cargar .GLB / .GLTF / .OBJ
                 <input id="skObjInput" type="file" accept=".glb,.gltf,.obj" class="sk-hidden" />
