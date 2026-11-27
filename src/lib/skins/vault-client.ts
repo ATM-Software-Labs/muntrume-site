@@ -289,14 +289,14 @@ export function mapWorkerUvToZones(
   };
 
   const out: Record<ZoneKey, ZoneRect> = {
-    hood: norm(uv.zones.hood, fallback.hood, 0.14, 0.10),
-    roof: norm(uv.zones.roof, fallback.roof, 0.12, 0.09),
-    leftSide: norm(uv.zones.left_side, fallback.leftSide, 0.12, 0.12),
-    rightSide: norm(uv.zones.right_side, fallback.rightSide, 0.12, 0.12),
-    rearWing: norm(uv.zones.rear_wing?.top_plane, fallback.rearWing, 0.12, 0.05),
-    mirrors: norm(uv.zones.mirrors, fallback.mirrors, 0.06, 0.04),
-    frontBumper: norm(uv.zones.front_bumper, fallback.frontBumper, 0.14, 0.05),
-    rearBumper: norm(uv.zones.rear_bumper, fallback.rearBumper, 0.14, 0.05),
+    hood: norm(uv.zones.hood, fallback.hood, 0.10, 0.08),
+    roof: norm(uv.zones.roof, fallback.roof, 0.10, 0.08),
+    leftSide: norm(uv.zones.left_side, fallback.leftSide, 0.10, 0.07),
+    rightSide: norm(uv.zones.right_side, fallback.rightSide, 0.10, 0.07),
+    rearWing: norm(uv.zones.rear_wing?.top_plane, fallback.rearWing, 0.08, 0.05),
+    mirrors: norm(uv.zones.mirrors, fallback.mirrors, 0.05, 0.04),
+    frontBumper: norm(uv.zones.front_bumper, fallback.frontBumper, 0.05, 0.05),
+    rearBumper: norm(uv.zones.rear_bumper, fallback.rearBumper, 0.05, 0.05),
     numberPlateLeft: norm(uv.restricted_number_plates?.[0], fallback.numberPlateLeft, 0.04, 0.04),
     numberPlateRight: norm(uv.restricted_number_plates?.[1], fallback.numberPlateRight, 0.04, 0.04),
   };

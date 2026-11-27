@@ -630,6 +630,110 @@ function drawPatternCore(
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, size, size);
     drawBrushedMetalTexture(ctx, size);
+  } else if (pattern === "racing-stripes") {
+    // Franjas Le Mans / GT horizontales alineadas al eje real de iRacing
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    const cy = size * 0.59;
+    const sw = size * 0.048;
+    const gap = size * 0.016;
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(0, cy - sw - gap * 0.5, size, sw);
+    ctx.fillRect(0, cy + gap * 0.5, size, sw);
+    ctx.fillStyle = palette.detail;
+    ctx.fillRect(0, cy - sw - gap * 0.5 - size * 0.012, size, size * 0.008);
+    ctx.fillRect(0, cy + sw + gap * 0.5 + size * 0.004, size, size * 0.008);
+  } else if (pattern === "tricolor-works") {
+    // Tricolor Escudería (Works: 3 bandas diagonales limpias)
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    ctx.save();
+    ctx.translate(size * 0.5, size * 0.5);
+    ctx.rotate(-0.38);
+    ctx.fillStyle = secColor;
+    ctx.fillRect(-size, -size * 0.24, size * 2, size * 0.22);
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(-size, -size * 0.02, size * 2, size * 0.11);
+    ctx.fillStyle = palette.detail;
+    ctx.fillRect(-size, size * 0.09, size * 2, size * 0.04);
+    ctx.restore();
+  } else if (pattern === "checkered-flag") {
+    // Bandera a Cuadros GT con degradado elegante
+    const g = ctx.createLinearGradient(0, 0, size, 0);
+    g.addColorStop(0, palette.primary);
+    g.addColorStop(1, secColor);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, size, size);
+    const cells = 24;
+    const step = size / cells;
+    for (let gy = 0; gy < cells; gy++) {
+      for (let gx = 0; gx < cells; gx++) {
+        if ((gx + gy) % 2 !== 0) continue;
+        const fade = Math.max(0, Math.min(1, (gx / cells - 0.15) * 1.15));
+        if (fade <= 0.04) continue;
+        ctx.fillStyle = (gx + gy) % 4 === 0 ? palette.accent : palette.detail;
+        ctx.globalAlpha = fade * 0.26;
+        ctx.fillRect(gx * step, gy * step, step, step);
+      }
+    }
+    ctx.globalAlpha = 1;
+  } else if (pattern === "apex-shards") {
+    // Fragmentos Apex Racing (geometría agresiva de alto contraste)
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    const poly = (pts: Array<[number, number]>, col: string, alpha: number) => {
+      ctx.save();
+      ctx.fillStyle = col;
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      pts.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x * size, y * size) : ctx.lineTo(x * size, y * size)));
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    };
+    poly([[0, 0.18], [0.58, 0], [0.42, 0.36], [0, 0.44]], secColor, 0.9);
+    poly([[0.48, 0.32], [1, 0.12], [1, 0.56], [0.34, 0.62]], secColor, 0.78);
+    poly([[0, 0.66], [0.72, 0.54], [0.56, 1], [0, 1]], secColor, 0.85);
+    poly([[0.22, 0.28], [0.68, 0.18], [0.64, 0.25], [0.18, 0.35]], palette.accent, 0.85);
+    poly([[0.36, 0.72], [0.88, 0.60], [0.84, 0.67], [0.32, 0.79]], palette.accent, 0.85);
+    poly([[0.44, 0.26], [0.74, 0.19], [0.72, 0.22], [0.42, 0.29]], palette.detail, 0.7);
+  } else if (pattern === "speed-gradient") {
+    // Degradado Aero Racing tricolor fluido
+    const g = ctx.createLinearGradient(0, 0, size, 0);
+    g.addColorStop(0, palette.primary);
+    g.addColorStop(0.5, secColor);
+    g.addColorStop(0.85, palette.accent);
+    g.addColorStop(1, palette.primary);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, size, size);
+  } else if (pattern === "grid-circuit") {
+    // Telemetría / Circuito Tech
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    const step = Math.max(16, Math.round(size / 28));
+    ctx.strokeStyle = palette.accent;
+    ctx.globalAlpha = 0.16;
+    ctx.lineWidth = Math.max(1, size * 0.0012);
+    for (let x = 0; x <= size; x += step) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, size);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= size; y += step) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(size, y);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = palette.accent;
+    for (let x = step; x < size; x += step * 4) {
+      for (let y = step; y < size; y += step * 4) {
+        ctx.fillRect(x - 2, y - 2, 4, 4);
+      }
+    }
+    ctx.globalAlpha = 1;
   }
 
   if (carbonBase && pattern !== "carbon-exposed") {

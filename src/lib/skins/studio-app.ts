@@ -692,6 +692,12 @@ export function initSkinsStudio(): void {
     { id: "topo-flow", label: "Topo Flow" },
     { id: "halftone-pro", label: "Halftone" },
     { id: "brushed-metal", label: "Titanio" },
+    { id: "racing-stripes", label: "Franjas GT" },
+    { id: "tricolor-works", label: "Tricolor" },
+    { id: "checkered-flag", label: "Cuadros GT" },
+    { id: "apex-shards", label: "Apex Shards" },
+    { id: "speed-gradient", label: "Aero Fade" },
+    { id: "grid-circuit", label: "Circuito" },
   ];
 
   function renderPatternGallery(): void {

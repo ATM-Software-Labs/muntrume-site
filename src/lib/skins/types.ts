@@ -61,6 +61,12 @@ export type PatternStyle =
   | "topo-flow"
   | "halftone-pro"
   | "brushed-metal"
+  | "racing-stripes"
+  | "tricolor-works"
+  | "checkered-flag"
+  | "apex-shards"
+  | "speed-gradient"
+  | "grid-circuit"
   | "freeform"
   // Legacy aliases kept for backwards compatibility with saved presets
   | "endurance"
