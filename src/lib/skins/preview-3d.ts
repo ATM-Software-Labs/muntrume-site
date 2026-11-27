@@ -39,7 +39,7 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const MODELS_CDN_BASE = "/assets/models";
-const MODEL_VER = "v=7";
+const MODEL_VER = "v=8";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
@@ -830,7 +830,7 @@ export class WebGLPreviewEngine {
       if (/(rim1|rim2|wheel|alloy|spoke|phong9)/.test(id)) return gunmetalRimMat;
       if (/(glass|window|windshield|windscreen|visor|black_glass)/.test(id)) return smokedGlassMat;
       if (/(rotor|disc|caliper|brake)/.test(id)) return brakeSteelMat;
-      if (isMaterialUntexturedOrWhite(mat) && /(carbon|chassis|interior|cockpit|cab|misc|grille|grill|diffuser|splitter)/.test(id)) {
+      if (isMaterialUntexturedOrWhite(mat) && /(carbon|chassis|interior|cockpit|cab|misc|grille|grill|diffuser|splitter|intake|vent|badges|underbody|floor)/.test(id)) {
         return darkCarbonMat;
       }
       return mat;
