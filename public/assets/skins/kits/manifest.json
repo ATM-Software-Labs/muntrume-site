@@ -384,5 +384,43 @@
       "series_blocks": "/assets/skins/kits/ferrari488gte/series_blocks.webp",
       "car_mandatory": "/assets/skins/kits/ferrari488gte/car_mandatory.webp"
     }
+  },
+  "mercedesamgevogt3": {
+    "sourceSlug": "mercedes_amg_gt3_2020",
+    "layers": {
+      "wireframe": "/assets/skins/kits/mercedesamgevogt3/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/mercedesamgevogt3/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/mercedesamgevogt3/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/mercedesamgevogt3/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/mercedesamgevogt3/car_mandatory.webp"
+    }
+  },
+  "amvantageevogt3": {
+    "sourceSlug": "aston_martin_vantage_evo_gt3",
+    "layers": {
+      "wireframe": "/assets/skins/kits/amvantageevogt3/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/amvantageevogt3/brand_decals.webp",
+      "imsa_decals": "/assets/skins/kits/amvantageevogt3/imsa_decals.webp",
+      "series_blocks": "/assets/skins/kits/amvantageevogt3/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/amvantageevogt3/car_mandatory.webp"
+    }
+  },
+  "porsche992cup": {
+    "sourceSlug": "porsche_992_cup",
+    "layers": {
+      "wireframe": "/assets/skins/kits/porsche992cup/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/porsche992cup/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/porsche992cup/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/porsche992cup/car_mandatory.webp"
+    }
+  },
+  "porsche718gt4": {
+    "sourceSlug": "porsche_718_gt4",
+    "layers": {
+      "wireframe": "/assets/skins/kits/porsche718gt4/wireframe.webp",
+      "brand_decals": "/assets/skins/kits/porsche718gt4/brand_decals.webp",
+      "series_blocks": "/assets/skins/kits/porsche718gt4/series_blocks.webp",
+      "car_mandatory": "/assets/skins/kits/porsche718gt4/car_mandatory.webp"
+    }
   }
 }

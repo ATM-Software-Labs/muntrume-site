@@ -73,5 +73,20 @@
     },
     "sponsor_blocks": []
   },
-  "restricted_number_plates": []
+  "restricted_number_plates": [
+    {
+      "x": 820,
+      "y": 244,
+      "width": 80,
+      "height": 72,
+      "label": "DORSAL #1 (iRacing)"
+    },
+    {
+      "x": 820,
+      "y": 1732,
+      "width": 80,
+      "height": 72,
+      "label": "DORSAL #2 (iRacing)"
+    }
+  ]
 }

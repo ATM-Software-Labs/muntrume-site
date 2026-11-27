@@ -106,6 +106,8 @@ export function initSkinsStudio(): void {
   let rightTab: RightTab = "design";
   let loadedTemplate: LoadedTemplate | null = null;
   let workerWireframeCanvas: HTMLCanvasElement | null = null;
+  let kitWireframeCanvas: HTMLCanvasElement | null = null;
+  let kitWireframeSlug = "";
   let workerSponsorBlocks: Array<{ id: string; cx: number; cy: number; nw: number; nh: number }> = [];
   let workerRestrictedPlates: ReservedGuideBox[] = [];
   let workerSeriesSlots: ReservedGuideBox[] = [];
@@ -293,9 +295,21 @@ export function initSkinsStudio(): void {
     const car = getCarById(carSlug);
     state.zones = mapWorkerUvToZones(uv, car.defaultZones);
     const rawZones = uv.zones as Record<string, unknown>;
-    workerSponsorBlocks = Array.isArray(rawZones?.sponsor_blocks)
-      ? (rawZones.sponsor_blocks as Array<{ id: string; cx: number; cy: number; nw: number; nh: number }>)
-      : [];
+    const rawSponsors = Array.isArray(rawZones?.sponsor_blocks) ? rawZones.sponsor_blocks : [];
+    workerSponsorBlocks = rawSponsors.map((b: Record<string, unknown>, i: number) => {
+      if (typeof b.cx === "number" && typeof b.cy === "number") {
+        return { id: String(b.id || `sp_${i}`), cx: b.cx, cy: b.cy, nw: Number(b.nw || 0.12), nh: Number(b.nh || 0.08) };
+      }
+      const x = Number(b.x || 0);
+      const y = Number(b.y || 0);
+      const w = Number(b.width || b.w || 160);
+      const h = Number(b.height || b.h || 100);
+      const nw = w > 1 ? w / 2048 : w;
+      const nh = h > 1 ? h / 2048 : h;
+      const nx = x > 1 ? x / 2048 : x;
+      const ny = y > 1 ? y / 2048 : y;
+      return { id: String(b.id || `sp_${i}`), cx: nx + nw * 0.5, cy: ny + nh * 0.5, nw, nh };
+    });
     const rawPlates = Array.isArray(uv.restricted_number_plates) ? uv.restricted_number_plates : [];
     workerRestrictedPlates = rawPlates.map((p, i) => ({
       x: (p.x > 1 ? p.x / 2048 : p.x),
@@ -588,7 +602,7 @@ export function initSkinsStudio(): void {
         } else if (viewMode === "uv") {
           await renderSkinToCanvas(uvCanvas, state, {
             size: 1024,
-            templateCanvas: loadedTemplate?.wireframeCanvas ?? loadedTemplate?.canvas ?? workerWireframeCanvas,
+            templateCanvas: loadedTemplate?.wireframeCanvas ?? loadedTemplate?.canvas ?? kitWireframeCanvas ?? workerWireframeCanvas,
             partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
             psdPatternCanvas: psdPatCanvas,
             restrictedPlates: workerRestrictedPlates,
@@ -1863,6 +1877,7 @@ export function initSkinsStudio(): void {
       } else {
         state.zones = getArchetypeZones(effectiveCategory, nextSlug);
       }
+      loadKitWireframeForCar(nextSlug);
       loadedTemplate = null;
       customPhotoShots = null;
       const bodyCat = mapCategoryStringToBody(effectiveCategory);
@@ -2445,8 +2460,39 @@ export function initSkinsStudio(): void {
         indexed.mercedesamgevogt3 = indexed.mercedesamggt3;
       }
       officialKits = indexed;
+      void loadKitWireframeForCar(state.carId);
     })
     .catch(() => {});
+
+  const loadKitWireframeForCar = (carSlug: string): void => {
+    const slug = (carSlug || "").toLowerCase();
+    const url = officialKits[slug]?.layers?.wireframe;
+    if (!url) {
+      kitWireframeCanvas = null;
+      kitWireframeSlug = "";
+      return;
+    }
+    if (kitWireframeSlug === slug && kitWireframeCanvas) return;
+    kitWireframeSlug = slug;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      if (kitWireframeSlug !== slug) return;
+      const c = document.createElement("canvas");
+      c.width = 1024;
+      c.height = 1024;
+      const cx = c.getContext("2d");
+      if (cx) {
+        cx.drawImage(img, 0, 0, 1024, 1024);
+        kitWireframeCanvas = c;
+        scheduleRender();
+      }
+    };
+    img.onerror = () => {
+      if (kitWireframeSlug === slug) kitWireframeCanvas = null;
+    };
+    img.src = url;
+  };
 
   const toggleOfficialUvLayer = (layerKey: "brand_decals" | "imsa_decals" | "series_blocks" | "wireframe", label: string) => {
     const kit = officialKits[state.carId];

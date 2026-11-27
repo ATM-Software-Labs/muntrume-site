@@ -118,5 +118,34 @@
       }
     ]
   },
-  "restricted_number_plates": []
+  "restricted_number_plates": [
+    {
+      "x": 1700,
+      "y": 1956,
+      "width": 104,
+      "height": 88,
+      "label": "DORSAL #1 (iRacing)"
+    },
+    {
+      "x": 1188,
+      "y": 636,
+      "width": 112,
+      "height": 80,
+      "label": "DORSAL #2 (iRacing)"
+    },
+    {
+      "x": 172,
+      "y": 1276,
+      "width": 80,
+      "height": 112,
+      "label": "DORSAL #3 (iRacing)"
+    },
+    {
+      "x": 1188,
+      "y": 1948,
+      "width": 112,
+      "height": 80,
+      "label": "DORSAL #4 (iRacing)"
+    }
+  ]
 }
