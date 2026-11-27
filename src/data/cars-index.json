@@ -460,13 +460,6 @@
       "uv_status": "archetype"
     },
     {
-      "car_slug": "chevrolet_corvette_z06_gt3r",
-      "name": "Chevrolet Corvette Z06 GT3r",
-      "brand": "Chevrolet",
-      "category": "GT3",
-      "uv_status": "archetype"
-    },
-    {
       "car_slug": "chevrolet_impala_class_a",
       "name": "Chevrolet Impala Class A",
       "brand": "Chevrolet",
@@ -545,13 +538,13 @@
     },
     {
       "car_slug": "chevyvettez06rgt3",
-      "name": "Chevyvettez 06 Rgt 3",
+      "name": "Chevrolet Corvette Z06 GT3.R",
       "brand": "Chevrolet",
       "category": "GT3",
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/chevyvettez06rgt3/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },

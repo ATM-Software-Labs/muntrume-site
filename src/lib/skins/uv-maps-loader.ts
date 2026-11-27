@@ -28,8 +28,26 @@ for (const [filePath, mod] of Object.entries(rawModules)) {
   }
 }
 
+const SLUG_ALIASES: Record<string, string> = {
+  chevrolet_corvette_z06_gt3r: "chevyvettez06rgt3",
+  corvette_z06_gt3r: "chevyvettez06rgt3",
+  aston_martin_vantage_evo_gt3: "amvantageevogt3",
+  astonmartinvantagegt3: "amvantageevogt3",
+  audi_r8_lms_evo_ii_gt3: "audir8lmsevo2gt3",
+  mclaren_720s_evo_gt3: "mclaren720sgt3",
+  mercedes_amg_gt3_2020: "mercedesamggt3",
+  mercedesamgevogt3: "mercedesamggt3",
+  porsche_992r_gt3: "porsche992rgt3",
+  ferrari_296_gt3: "ferrari296gt3",
+  ford_mustang_gt3: "fordmustanggt3",
+  lamborghini_evo_gt3: "lamborghinievogt3",
+  bmw_m4_gt3: "bmwm4gt3",
+};
+
 export function getLocalUvMap(carSlug: string): WorkerUvResponse | null {
-  return UV_MAPS_BY_SLUG.get((carSlug || "").toLowerCase()) ?? null;
+  const key = (carSlug || "").toLowerCase();
+  const aliased = SLUG_ALIASES[key] || key;
+  return UV_MAPS_BY_SLUG.get(key) ?? UV_MAPS_BY_SLUG.get(aliased) ?? null;
 }
 
 export function getLocalUvMapCount(): number {

@@ -2299,31 +2299,102 @@ export function initSkinsStudio(): void {
   mountLibraryDecals("skBrandDecals", BRAND_DECALS, false);
 
   // Official iRacing 1-click UV layers (brand decals, IMSA, GT3 plates, wireframe)
-  type OfficialKitManifest = Record<string, { sourceSlug: string; layers: Record<string, string> }>;
+  type OfficialKitEntry = { sourceSlug: string; layers: Record<string, string> };
+  type OfficialKitManifest = Record<string, OfficialKitEntry>;
   let officialKits: OfficialKitManifest = {};
   fetch("/assets/skins/kits/manifest.json")
     .then((r) => (r.ok ? r.json() : {}))
     .then((data: OfficialKitManifest) => {
-      officialKits = data || {};
+      const indexed: OfficialKitManifest = { ...(data || {}) };
+      for (const entry of Object.values(data || {})) {
+        if (entry?.sourceSlug && !indexed[entry.sourceSlug]) {
+          indexed[entry.sourceSlug] = entry;
+        }
+      }
+      if (indexed.astonmartinvantagegt3 && !indexed.amvantageevogt3) {
+        indexed.amvantageevogt3 = indexed.astonmartinvantagegt3;
+      }
+      if (indexed.mercedesamggt3 && !indexed.mercedesamgevogt3) {
+        indexed.mercedesamgevogt3 = indexed.mercedesamggt3;
+      }
+      officialKits = indexed;
     })
     .catch(() => {});
 
   const toggleOfficialUvLayer = (layerKey: "brand_decals" | "imsa_decals" | "series_blocks" | "wireframe", label: string) => {
     const kit = officialKits[state.carId];
     const url = kit?.layers?.[layerKey];
-    if (!url) {
-      setStatus(`Este coche (${state.carId}) no tiene capa oficial "${label}" en su plantilla iRacing`, "neutral");
-      return;
-    }
     const layerId = `official-uv-${state.carId}-${layerKey}`;
     const existingIdx = state.decals.findIndex((d) => d.id === layerId);
     if (existingIdx !== -1) {
-      state.decals.splice(existingIdx, 1);
-      if (selectedDecalId === layerId) selectedDecalId = null;
+      state.decals = state.decals.filter((d) => d.id !== layerId && !d.id.startsWith(`${layerId}-`));
+      if (selectedDecalId === layerId || selectedDecalId?.startsWith(`${layerId}-`)) selectedDecalId = null;
       renderDecalList();
       renderDecalEditor();
       scheduleRender();
       setStatus(`Capa oficial "${label}" quitada`, "ok");
+      return;
+    }
+    if (!url) {
+      // Fallback: if this car's iRacing PSD didn't export a separate IMSA / GT3 plate webp layer,
+      // place crisp vector IMSA / GT3 plates directly onto the car's calibrated zones.
+      if (layerKey === "imsa_decals" || layerKey === "series_blocks") {
+        const car = getCarById(state.carId);
+        const sideZone = state.zones.leftSide || { x: 0.25, y: 0.72, w: 0.5, h: 0.16 };
+        const hoodZone = state.zones.hood || { x: 0.05, y: 0.44, w: 0.32, h: 0.35 };
+        const plateDecal: DecalLayer = {
+          id: layerId,
+          name: `${label} · Lateral (${car.name})`,
+          kind: "builtin",
+          assetId: "stamp-number-plate-imsa",
+          color: "#00e699",
+          x: sideZone.x + sideZone.w * 0.5,
+          y: sideZone.y + sideZone.h * 0.52,
+          scale: 0.13,
+          rotation: 0,
+          opacity: 1,
+          mirrorX: true,
+          zoneHint: "leftSide",
+        };
+        const imsaItem = SERIES_DECALS.find((s) => s.id === "series-imsa");
+        const hoodDecal: DecalLayer = imsaItem && layerKey === "imsa_decals"
+          ? {
+              id: `${layerId}-hood`,
+              name: `IMSA Capó (${car.name})`,
+              kind: "custom",
+              dataUrl: imsaItem.src,
+              color: "#ffffff",
+              x: hoodZone.x + hoodZone.w * 0.5,
+              y: hoodZone.y + hoodZone.h * 0.72,
+              scale: 0.13,
+              rotation: 0,
+              opacity: 1,
+              mirrorX: false,
+              zoneHint: "hood",
+            }
+          : {
+              id: `${layerId}-hood`,
+              name: `Placa GT3 Capó (${car.name})`,
+              kind: "builtin",
+              assetId: "stamp-number-plate-imsa",
+              color: "#00e699",
+              x: hoodZone.x + hoodZone.w * 0.5,
+              y: hoodZone.y + hoodZone.h * 0.72,
+              scale: 0.11,
+              rotation: 0,
+              opacity: 1,
+              mirrorX: false,
+              zoneHint: "hood",
+            };
+        state.decals.push(plateDecal, hoodDecal);
+        selectedDecalId = plateDecal.id;
+        renderDecalList();
+        renderDecalEditor();
+        scheduleRender();
+        setStatus(`Kit vectorial "${label}" aplicado sobre las zonas calibradas de ${car.name}`, "ok");
+        return;
+      }
+      setStatus(`Este coche (${state.carId}) no tiene capa oficial "${label}" en su plantilla iRacing`, "neutral");
       return;
     }
     const layer: DecalLayer = {
