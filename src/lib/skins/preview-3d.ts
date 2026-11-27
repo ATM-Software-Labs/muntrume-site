@@ -197,10 +197,46 @@ function isPaintableBodyMesh(mesh: THREE.Mesh): boolean {
  * with CanvasTexture.flipY = false so pilot names ("Alberto Trujillo"), numbers (#16), and MMT logos
  * ALWAYS read upright and left-to-right on every side of the car without mirroring.
  */
+function detectCarNoseAtLowEnd(carGroup: THREE.Object3D, carBox: THREE.Box3): boolean {
+  const min = carBox.min;
+  const max = carBox.max;
+  const spanX = Math.max(0.001, max.x - min.x);
+  const spanY = Math.max(0.001, max.y - min.y);
+  const spanZ = Math.max(0.001, max.z - min.z);
+  const longIsZ = spanZ >= spanX;
+  let lowEndY = 0;
+  let lowEndN = 0;
+  let highEndY = 0;
+  let highEndN = 0;
+  const v = new THREE.Vector3();
+
+  carGroup.traverse((obj) => {
+    if (!(obj instanceof THREE.Mesh) || !obj.visible) return;
+    const pos = obj.geometry?.getAttribute("position");
+    if (!pos) return;
+    obj.updateWorldMatrix(true, false);
+    const step = Math.max(1, Math.floor(pos.count / 200));
+    for (let i = 0; i < pos.count; i += step) {
+      v.fromBufferAttribute(pos, i).applyMatrix4(obj.matrixWorld);
+      const a = longIsZ ? (v.z - min.z) / spanZ : (v.x - min.x) / spanX;
+      const yNorm = (v.y - min.y) / spanY;
+      if (a < 0.22) {
+        lowEndY += yNorm;
+        lowEndN++;
+      } else if (a > 0.78) {
+        highEndY += yNorm;
+        highEndN++;
+      }
+    }
+  });
+  return lowEndN > 0 && highEndN > 0 && lowEndY / lowEndN < highEndY / highEndN - 0.03;
+}
+
 function applyIracingAutoFitUVs(
   mesh: THREE.Mesh,
   carBox: THREE.Box3,
   zones: Record<ZoneKey, UvRect>,
+  noseAtLowEnd: boolean,
 ): void {
   const geo = mesh.geometry;
   const pos = geo.getAttribute("position");
@@ -223,27 +259,6 @@ function applyIracingAutoFitUVs(
   const uvArr = new Float32Array(pos.count * 2);
 
   const isRearWingMesh = /\b(wing|spoiler)\b/i.test(mesh.name || "");
-
-  // Auto-detect whether nose points toward +long (1) or -long (0):
-  // On race cars, the front 22% (nose/hood) has a lower average height than the rear 22% (cabin/rear wing/deck).
-  let lowEndY = 0;
-  let lowEndN = 0;
-  let highEndY = 0;
-  let highEndN = 0;
-  const sampleStep = Math.max(1, Math.floor(pos.count / 400));
-  for (let i = 0; i < pos.count; i += sampleStep) {
-    v.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld);
-    const a = longIsZ ? (v.z - min.z) / spanZ : (v.x - min.x) / spanX;
-    const yNorm = (v.y - min.y) / spanY;
-    if (a < 0.22) {
-      lowEndY += yNorm;
-      lowEndN++;
-    } else if (a > 0.78) {
-      highEndY += yNorm;
-      highEndN++;
-    }
-  }
-  const noseAtLowEnd = lowEndN > 0 && highEndN > 0 && lowEndY / lowEndN < highEndY / highEndN - 0.03;
 
   for (let i = 0; i < pos.count; i++) {
     v.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld);
@@ -631,6 +646,7 @@ export class WebGLPreviewEngine {
     if (!this.carGroup || !this.paintMaterial || this.isSpeedformFallback) return;
     this.carGroup.updateMatrixWorld(true);
     const carBox = new THREE.Box3().setFromObject(this.carGroup);
+    const noseAtLowEnd = detectCarNoseAtLowEnd(this.carGroup, carBox);
     const paintMat = this.paintMaterial;
 
     this.carGroup.traverse((obj) => {
@@ -652,7 +668,7 @@ export class WebGLPreviewEngine {
           return;
         }
       }
-      applyIracingAutoFitUVs(obj, carBox, this.currentZones);
+      applyIracingAutoFitUVs(obj, carBox, this.currentZones, noseAtLowEnd);
     });
   }
 
