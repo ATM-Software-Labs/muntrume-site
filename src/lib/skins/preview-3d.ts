@@ -39,12 +39,12 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const MODELS_CDN_BASE = "/assets/models";
-const MODEL_VER = "v=3";
+const MODEL_VER = "v=4";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
   touring: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
-  gtp: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
+  gtp: `${MODELS_CDN_BASE}/mclaren720sgt3.glb?${MODEL_VER}`,
   nascar: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
   formula: `${MODELS_CDN_BASE}/formula-v2.glb?${MODEL_VER}`,
 };
@@ -55,6 +55,10 @@ function resolveBrandSpecificGlb(slugKey: string): string {
   if (/porsche|992|991|911|718|963|919/.test(slugKey)) return `${MODELS_CDN_BASE}/porsche992rgt3.glb?${MODEL_VER}`;
   if (/bmw|m4gt|m4evogt|m8gte|m2csr|m2g87|z4gt3/.test(slugKey)) return `${MODELS_CDN_BASE}/bmwm4gt3.glb?${MODEL_VER}`;
   if (/lamborghini|huracan/.test(slugKey)) return `${MODELS_CDN_BASE}/lamborghinievogt3.glb?${MODEL_VER}`;
+  if (/mclaren|720s|570s|mp4/.test(slugKey)) return `${MODELS_CDN_BASE}/mclaren720sgt3.glb?${MODEL_VER}`;
+  if (/audi|r8lms|rs3lms/.test(slugKey)) return `${MODELS_CDN_BASE}/audir8lmsevo2gt3.glb?${MODEL_VER}`;
+  if (/aston|amvantage|amvalkyrie|dbr9/.test(slugKey)) return `${MODELS_CDN_BASE}/amvantageevogt3.glb?${MODEL_VER}`;
+  if (/corvette|chevyvette|c8r|c7dp|c6r|z06/.test(slugKey)) return `${MODELS_CDN_BASE}/corvettec8gt3.glb?${MODEL_VER}`;
   if (/formula|dallara(?!p217)|indy|ir18|ir01|dw12|sf23|sfl|raygr|skipbarber|vee|lotus49|lotus79|tatuus|usf2000|pm18|fr500|starmazda/.test(slugKey)) {
     return `${MODELS_CDN_BASE}/formula-v2.glb?${MODEL_VER}`;
   }
@@ -128,8 +132,8 @@ function isPaintableBodyMesh(mesh: THREE.Mesh): boolean {
   const matId = getMeshMaterialNames(mesh);
   const meshId = (mesh.name || "").toLowerCase();
 
-  // 1. Explicit positive match on material name first (handles Khronos "Paint 1", F1 "redbull_paint", BMW M4 "Meshesbody151Mtl", Porsche "Paint"/"paint1Mtl", Lambo "Mt_Body", Mustang GT3 "Body")
-  if (/(paint|carpaint|livery|redbull_color|body_color|bodypaint|meshesbody|mt_body|mt_mirrorcover|\bbody\b)/.test(matId)) {
+  // 1. Explicit positive match on material name first (handles Mustang GT3, F1, BMW M4, Porsche, Lambo STO "mat_carrozzeria", Ferrari 488 GT3 "phong4", McLaren P1 GTR "vehicle_exterior_mm_ext", Audi R8 "bodymaterials", Aston "mat_body", Corvette "body_color")
+  if (/(paint|carpaint|livery|redbull_color|body_color|bodypaint|meshesbody|mt_body|mat_body|mat_carrozzeria|bodymaterials|vehicle_exterior_mm_ext|\bphong4\b|mt_mirrorcover|\bbody\b)/.test(matId)) {
     return true;
   }
 
