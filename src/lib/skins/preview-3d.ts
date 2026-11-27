@@ -40,10 +40,10 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
-  gt3: "/assets/models/gt3-base.glb",
-  touring: "/assets/models/touring-base.glb",
-  gtp: "/assets/models/gtp-base.glb",
-  nascar: "/assets/models/nascar-base.glb",
+  gt3: "/assets/models/fordmustanggt3.glb",
+  touring: "/assets/models/fordmustanggt3.glb",
+  gtp: "/assets/models/gt3-base.glb",
+  nascar: "/assets/models/fordmustanggt3.glb",
   formula: "/assets/models/formula-base.glb",
 };
 
@@ -55,6 +55,18 @@ const CAR_SPECIFIC_GLB_PATHS: Record<string, string> = {
   bmwm4g82gt4: "/assets/models/bmwm4gt3.glb",
   bmwm4evogt4: "/assets/models/bmwm4gt3.glb",
   bmw_m4_evo_gt4: "/assets/models/bmwm4gt3.glb",
+  porsche992rgt3: "/assets/models/porsche992rgt3.glb",
+  porsche_911_gt3_r_992: "/assets/models/porsche992rgt3.glb",
+  porsche992cup: "/assets/models/porsche992rgt3.glb",
+  porsche9922cup: "/assets/models/porsche992rgt3.glb",
+  porsche991rsr: "/assets/models/porsche992rgt3.glb",
+  porsche718gt4: "/assets/models/porsche992rgt3.glb",
+  lamborghinievogt3: "/assets/models/lamborghinievogt3.glb",
+  lamborghini_huracan_gt3_evo: "/assets/models/lamborghinievogt3.glb",
+  fordmustanggt3: "/assets/models/fordmustanggt3.glb",
+  ford_mustang_gt3: "/assets/models/fordmustanggt3.glb",
+  fordmustanggt4: "/assets/models/fordmustanggt3.glb",
+  ford_mustang_gt4: "/assets/models/fordmustanggt3.glb",
 };
 
 export function mapCategoryStringToBody(category?: string): CarBodyCategory {
@@ -110,7 +122,7 @@ function getMeshMaterialNames(mesh: THREE.Mesh): string {
 function shouldHideStockDecalMesh(mesh: THREE.Mesh, isBaseModel: boolean): boolean {
   if (!isBaseModel) return false;
   const matId = getMeshMaterialNames(mesh);
-  return /(redbull_decals|redbull_number|sw_decals)/.test(matId);
+  return /(redbull_decals|redbull_number|sw_decals|mt_shadow_plane)/.test(matId);
 }
 
 /**
@@ -123,8 +135,8 @@ function isPaintableBodyMesh(mesh: THREE.Mesh): boolean {
   const matId = getMeshMaterialNames(mesh);
   const meshId = (mesh.name || "").toLowerCase();
 
-  // 1. Explicit positive match on material name first (handles Khronos "Paint 1 Carmine", F1 "redbull_paint", BMW M4 "Meshesbody151Mtl" / "Mesheslivery1Mtl")
-  if (/(paint|carpaint|livery|redbull_color|body_color|bodypaint|meshesbody)/.test(matId)) {
+  // 1. Explicit positive match on material name first (handles Khronos "Paint 1", F1 "redbull_paint", BMW M4 "Meshesbody151Mtl", Porsche "Paint"/"paint1Mtl", Lambo "Mt_Body", Mustang GT3 "Body")
+  if (/(paint|carpaint|livery|redbull_color|body_color|bodypaint|meshesbody|mt_body|mt_mirrorcover|\bbody\b)/.test(matId)) {
     return true;
   }
 

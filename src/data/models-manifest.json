@@ -1,5 +1,15 @@
 {
   "base_url": "/assets/models",
-  "updated_at": "2026-11-27T00:18:00.000Z",
-  "models": {}
+  "updated_at": "2026-11-27T01:24:00.000Z",
+  "models": {
+    "bmwm4gt3": "/assets/models/bmwm4gt3.glb",
+    "bmwm4gt4": "/assets/models/bmwm4gt3.glb",
+    "bmwm4g82gt4": "/assets/models/bmwm4gt3.glb",
+    "porsche992rgt3": "/assets/models/porsche992rgt3.glb",
+    "porsche992cup": "/assets/models/porsche992rgt3.glb",
+    "porsche718gt4": "/assets/models/porsche992rgt3.glb",
+    "lamborghinievogt3": "/assets/models/lamborghinievogt3.glb",
+    "fordmustanggt3": "/assets/models/fordmustanggt3.glb",
+    "fordmustanggt4": "/assets/models/fordmustanggt3.glb"
+  }
 }
