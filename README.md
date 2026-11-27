@@ -26,8 +26,10 @@
   <img alt="Rust" src="https://img.shields.io/badge/Rust-Native%2060Hz-000000?logo=rust&logoColor=white" />
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" />
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white" />
-  <a href="LICENSE"><img alt="Licencia" src="https://img.shields.io/badge/licencia-MIT-10B981" /></a>
+  <a href="LICENSE"><img alt="Licencia" src="https://img.shields.io/badge/licencia-Uso%20Interno%20MMT-EF4444" /></a>
 </p>
+
+> **Aviso de propiedad intelectual:** Este repositorio es **privado** y de **uso interno exclusivo de Muntrume Motorsport (MMT)**. Todos los derechos reservados. Consulta [LICENSE](LICENSE) y [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
 
 ---
 

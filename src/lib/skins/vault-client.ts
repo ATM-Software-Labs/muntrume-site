@@ -75,15 +75,96 @@ export function getVaultToken(): string {
   }
 }
 
+export function syncSessionCookieForProtectedAssets(token: string): void {
+  try {
+    const clean = token.trim();
+    const isMuntru = typeof window !== "undefined" && /(^|\.)muntru\.me$/i.test(window.location.hostname);
+    const domainPart = isMuntru ? "; Domain=.muntru.me" : "";
+    const securePart = typeof window !== "undefined" && window.location.protocol === "https:" ? "; Secure" : "";
+    if (!clean) {
+      document.cookie = `mm_sso_tk=; Max-Age=0; Path=/${domainPart}${securePart}; SameSite=Lax`;
+    } else {
+      document.cookie = `mm_sso_tk=${encodeURIComponent(clean)}; Max-Age=604800; Path=/${domainPart}${securePart}; SameSite=Lax`;
+    }
+  } catch {
+    // Ignore cookie errors in restricted environments
+  }
+}
+
+export interface VaultLoginResult {
+  token: string;
+  user?: {
+    email?: string;
+    name?: string;
+    display_name?: string;
+    role?: string;
+  };
+}
+
+export async function loginWithVaultCredentials(email: string, password: string): Promise<VaultLoginResult> {
+  const res = await fetch(`${API_BASE}/api/setups/auth`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+  });
+  const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!res.ok || typeof data.token !== "string" || !data.token) {
+    const msg = typeof data.error === "string" ? data.error : `Error de acceso (HTTP ${res.status}).`;
+    throw new SkinsApiError(msg, res.status, typeof data.code === "string" ? data.code : "login_failed");
+  }
+  const token = data.token.trim();
+  setVaultToken(token);
+  try {
+    localStorage.setItem("mm_token", token);
+    if (data.user && typeof data.user === "object") {
+      localStorage.setItem("mrt_vault_user", JSON.stringify(data.user));
+    }
+    window.dispatchEvent(new Event("mm-auth-changed"));
+  } catch {
+    // Ignore storage errors
+  }
+  return {
+    token,
+    user: (data.user && typeof data.user === "object" ? data.user : undefined) as VaultLoginResult["user"],
+  };
+}
+
+export function clearVaultSession(): void {
+  setVaultToken("");
+  try {
+    localStorage.removeItem("mm_token");
+    localStorage.removeItem("mrt_vault_user");
+    sessionStorage.removeItem("mm_token");
+    window.dispatchEvent(new Event("mm-auth-changed"));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+export function getCachedVaultUserLabel(): string {
+  try {
+    const raw = localStorage.getItem("mrt_vault_user");
+    if (!raw) return "";
+    const u = JSON.parse(raw) as Record<string, unknown>;
+    return String(u.display_name || u.name || u.email || "").trim();
+  } catch {
+    return "";
+  }
+}
+
 export function setVaultToken(token: string): void {
   try {
     const clean = token.trim();
     if (!clean) {
       localStorage.removeItem(VAULT_TOKEN_KEY);
+      localStorage.removeItem("mm_token");
       sessionStorage.removeItem(VAULT_TOKEN_KEY);
     } else {
       localStorage.setItem(VAULT_TOKEN_KEY, clean);
+      localStorage.setItem("mm_token", clean);
     }
+    syncSessionCookieForProtectedAssets(clean);
   } catch {
     // Ignore storage quota errors
   }

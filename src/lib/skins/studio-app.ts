@@ -42,10 +42,13 @@ import { getArchetypeZones, lazyLoadCarUv, saveLocalCalibration } from "./uv-arc
 import carsIndexData from "../../data/cars-index.json";
 import {
   SkinsApiError,
+  clearVaultSession,
   fetchWorkerAiAssist,
   fetchWorkerCars,
   fetchWorkerUvMap,
+  getCachedVaultUserLabel,
   getVaultToken,
+  loginWithVaultCredentials,
   mapWorkerPhotoGuideToShots,
   mapWorkerUvToZones,
   setVaultToken,
@@ -138,6 +141,14 @@ export function initSkinsStudio(): void {
     vaultAuthenticated = true;
     authGate?.classList.add("sk-hidden");
     studioShell?.classList.remove("sk-hidden");
+    const tk = getVaultToken();
+    if (tk) setVaultToken(tk);
+    const pill = byId<HTMLElement>("skSessionUserPill");
+    const userLabel = getCachedVaultUserLabel();
+    if (pill) pill.textContent = userLabel ? `${userLabel} ✓` : "Piloto MMT ✓";
+    if (Object.keys(officialKits).length === 0) {
+      void fetchOfficialKitsAuthenticated();
+    }
   }
 
   function renderSvgStringToCanvas(svgMarkup: string): Promise<HTMLCanvasElement | null> {
@@ -513,6 +524,58 @@ export function initSkinsStudio(): void {
     await verifyVaultSession();
   });
 
+  // Inline synchronized login form on skins.muntru.me
+  const inlineLoginForm = byId<HTMLFormElement>("skInlineLoginForm");
+  inlineLoginForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const emailEl = byId<HTMLInputElement>("skLoginEmail");
+    const passEl = byId<HTMLInputElement>("skLoginPass");
+    const btn = byId<HTMLButtonElement>("skInlineLoginBtn");
+    const email = (emailEl?.value || "").trim();
+    const password = passEl?.value || "";
+    if (!email || !password) return;
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Verificando acceso...";
+    }
+    if (authErrorBox) authErrorBox.textContent = "Iniciando sesión en muntru.me...";
+    try {
+      await loginWithVaultCredentials(email, password);
+      if (passEl) passEl.value = "";
+      await verifyVaultSession();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Credenciales no válidas.";
+      if (authErrorBox) authErrorBox.textContent = msg;
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Entrar al Estudio →";
+      }
+    }
+  });
+
+  // Synchronized logout (clears localStorage + .muntru.me SSO cookie)
+  byId<HTMLButtonElement>("skLogoutBtn")?.addEventListener("click", () => {
+    clearVaultSession();
+    lockStudio("Sesión cerrada correctamente. Vuelve a iniciar sesión para abrir el estudio.");
+  });
+
+  // Cross-tab & SSO auto-sync: if user logs in/out on muntru.me in another tab, sync automatically
+  window.addEventListener("storage", (ev) => {
+    if (ev.key === "mrt_vault_token" || ev.key === "mm_token") {
+      if (!ev.newValue) {
+        lockStudio("Tu sesión de muntru.me se cerró en otra pestaña.");
+      } else if (!vaultAuthenticated) {
+        void verifyVaultSession();
+      }
+    }
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && !vaultAuthenticated && getVaultToken()) {
+      void verifyVaultSession();
+    }
+  });
+
   // UV Pan/Zoom state
   let uvZoom = 1;
   let uvPanX = 0;
@@ -623,9 +686,10 @@ export function initSkinsStudio(): void {
         } else if (viewMode === "3d") {
           await renderSkinToCanvas(offscreenTexture, state, {
             size: 2048,
-            partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
+            partsOverlayCanvas: null,
             psdPatternCanvas: psdPatCanvas,
             forExport: true,
+            for3dPreview: true,
           });
           const offscreenSpec = document.createElement("canvas");
           offscreenSpec.width = 512;
@@ -2540,29 +2604,37 @@ export function initSkinsStudio(): void {
     scheduleRender();
   }
 
-  fetch("/assets/skins/kits/manifest.json")
-    .then((r) => (r.ok ? r.json() : {}))
-    .then((data: OfficialKitManifest) => {
-      const indexed: OfficialKitManifest = { ...(data || {}) };
-      for (const entry of Object.values(data || {})) {
-        if (entry?.sourceSlug && !indexed[entry.sourceSlug]) {
-          indexed[entry.sourceSlug] = entry;
+  function fetchOfficialKitsAuthenticated(): Promise<void> {
+    const tk = getVaultToken();
+    const headers: Record<string, string> = {};
+    if (tk) headers.Authorization = `Bearer ${tk}`;
+    return fetch("/assets/skins/kits/manifest.json", { credentials: "include", headers })
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((data: OfficialKitManifest) => {
+        const indexed: OfficialKitManifest = { ...(data || {}) };
+        for (const entry of Object.values(data || {})) {
+          if (entry?.sourceSlug && !indexed[entry.sourceSlug]) {
+            indexed[entry.sourceSlug] = entry;
+          }
         }
-      }
-      if (indexed.astonmartinvantagegt3 && !indexed.amvantageevogt3) {
-        indexed.amvantageevogt3 = indexed.astonmartinvantagegt3;
-      }
-      if (indexed.mercedesamggt3 && !indexed.mercedesamgevogt3) {
-        indexed.mercedesamgevogt3 = indexed.mercedesamggt3;
-      }
-      officialKits = indexed;
-      void loadKitWireframeForCar(state.carId);
-      if (!state.decals.some((d) => d.id.startsWith("official-uv-"))) {
-        ensureCarOfficialBrandDecals(state.carId);
-      }
-      syncOfficialKitUiForCar(state.carId);
-    })
-    .catch(() => {});
+        if (indexed.astonmartinvantagegt3 && !indexed.amvantageevogt3) {
+          indexed.amvantageevogt3 = indexed.astonmartinvantagegt3;
+        }
+        if (indexed.mercedesamggt3 && !indexed.mercedesamgevogt3) {
+          indexed.mercedesamgevogt3 = indexed.mercedesamggt3;
+        }
+        officialKits = indexed;
+        void loadKitWireframeForCar(state.carId);
+        if (!state.decals.some((d) => d.id.startsWith("official-uv-"))) {
+          ensureCarOfficialBrandDecals(state.carId);
+        }
+        syncOfficialKitUiForCar(state.carId);
+      })
+      .catch(() => {});
+  }
+  if (getVaultToken()) {
+    void fetchOfficialKitsAuthenticated();
+  }
 
   const loadKitWireframeForCar = (carSlug: string): void => {
     const slug = (carSlug || "").toLowerCase();

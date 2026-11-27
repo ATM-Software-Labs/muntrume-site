@@ -21,6 +21,8 @@ Disallow: /paddock/sala
 Disallow: /paddock/sala/
 Disallow: /app/vincular
 Disallow: /app/vincular/
+Disallow: /assets/skins/
+Disallow: /assets/brand/logos/
 
 # Explicit welcome for Brave Search, Bing, DuckDuckGo, Apple & AI crawlers
 User-agent: Bravebot

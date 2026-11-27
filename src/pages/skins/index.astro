@@ -17,35 +17,46 @@ const canonical = "https://skins.muntru.me/";
           <div class="sk-landing-copy">
             <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
               <span class="sk-brand-badge">MUNTRUME MOTORSPORT (MMT) · SKINS STUDIO</span>
-              <span class="sk-tag" style="border-color:rgba(245,158,11,0.4);color:#fcd34d;background:rgba(245,158,11,0.10);">ACCESO PRIVADO · SOLO PILOTOS AUTORIZADOS</span>
+              <span class="sk-tag" style="border-color:rgba(0,230,153,0.42);color:#6ee7b7;background:rgba(0,230,153,0.10);">39 COCHES 3D PBR · 2K/4K</span>
+              <span class="sk-tag" style="border-color:rgba(245,158,11,0.4);color:#fcd34d;background:rgba(245,158,11,0.10);">ACCESO PRIVADO · EQUIPO MMT</span>
             </div>
             <h1 class="sk-landing-title">
-              Estudio de diseño 2D/3D y exportación de <span>liveries para iRacing</span>
+              Estudio 2D/3D de <span>liveries y skins</span> para iRacing
             </h1>
             <p class="sk-landing-lead">
-              Herramienta interna de <strong>Muntrume Motorsport</strong> para componer diseños de alta resolución (2K/4K), previsualizar acabados PBR/Spec Map en Three.js y preparar paquetes <code>.tga</code> / <code>.zip</code> listos para Trading Paints.
+              Diseña desde cero o sube una skin <code>.TGA/.PNG/.PSD</code> ya hecha para editar logos, aplicar kits por campeonato (IMSA, GT3, Porsche Cup, Fórmula, TCR), previsualizar acabados PBR en Three.js y exportar en local listas para Trading Paints.
             </p>
 
-            <div id="skAuthError" class="sk-landing-status">Inicia sesión con tu cuenta autorizada de muntru.me para desbloquear el estudio.</div>
+            <!-- Inline Synchronized Login Form (syncs localStorage + .muntru.me SSO cookie automatically) -->
+            <form id="skInlineLoginForm" class="sk-card" style="margin:6px 0 4px;padding:14px 16px;border-color:rgba(0,230,153,0.28);background:rgba(13,20,31,0.88);max-width:520px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;">
+                <strong style="font-size:12.5px;letter-spacing:0.04em;text-transform:uppercase;color:#e2e8f0;">Acceso de piloto muntru.me</strong>
+                <span style="font-size:11px;color:var(--sk-accent);">Sesión sincronizada SSO ✓</span>
+              </div>
+              <div id="skAuthError" class="sk-landing-status" style="margin-bottom:10px;">Inicia sesión con tu cuenta de muntru.me para desbloquear el estudio.</div>
+              <div class="sk-row" style="gap:8px;flex-wrap:wrap;">
+                <input id="skLoginEmail" type="email" class="sk-input" placeholder="Email de piloto (ej. piloto@muntru.me)" autocomplete="username" required style="flex:1;min-width:190px;" />
+                <input id="skLoginPass" type="password" class="sk-input" placeholder="Contraseña" autocomplete="current-password" required style="flex:1;min-width:160px;" />
+              </div>
+              <div class="sk-row" style="gap:8px;margin-top:10px;flex-wrap:wrap;">
+                <button type="submit" id="skInlineLoginBtn" class="sk-btn sk-btn-primary sk-btn-lg" style="flex:1;min-width:180px;">
+                  Entrar al Estudio →
+                </button>
+                <a
+                  href="https://muntru.me/login/?redirect=https://skins.muntru.me/"
+                  class="sk-btn sk-btn-lg"
+                  style="text-decoration:none;"
+                >
+                  Login en muntru.me
+                </a>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;font-size:11px;color:var(--sk-muted);">
+                <span>Procesado 100 % local · Sin almacenamiento de skins</span>
+                <a href="mailto:admin@muntru.me?subject=Solicitud%20de%20acceso%20a%20skins.muntru.me" style="color:var(--sk-accent);text-decoration:underline;">Solicitar acceso</a>
+              </div>
+            </form>
 
-            <div class="sk-landing-cta">
-              <a
-                href="https://muntru.me/login/?redirect=https://skins.muntru.me/"
-                class="sk-btn sk-btn-primary sk-btn-lg"
-                style="text-decoration:none;"
-              >
-                Iniciar sesión con cuenta muntru.me →
-              </a>
-              <a
-                href="mailto:admin@muntru.me?subject=Solicitud%20de%20acceso%20a%20skins.muntru.me"
-                class="sk-btn sk-btn-lg"
-                style="text-decoration:none;"
-              >
-                Solicitar acceso / Contacto equipo
-              </a>
-            </div>
-
-            <details class="sk-token-details">
+            <details class="sk-token-details" style="max-width:520px;">
               <summary>Acceso alternativo con token de sesión (<code>mrt_vault_token</code>)</summary>
               <div class="sk-row" style="margin-top:10px;">
                 <input id="skAuthTokenInput" type="password" class="sk-input" placeholder="Pega aquí tu token JWT del Vault..." autocomplete="off" />
@@ -58,21 +69,21 @@ const canonical = "https://skins.muntru.me/";
           <div class="sk-landing-visual" aria-hidden="true">
             <div class="sk-visual-chrome">
               <span class="sk-dot"></span><span class="sk-dot"></span><span class="sk-dot"></span>
-              <span class="sk-visual-url">skins.muntru.me · Flujo 2K/4K → Three.js 3D → Trading Paints</span>
+              <span class="sk-visual-url">skins.muntru.me · 39 Coches 3D PBR → Editor UV 2K/4K → Trading Paints</span>
             </div>
             <div class="sk-visual-grid">
               <div class="sk-visual-uv">
                 <div class="sk-uv-zone sk-uv-hood"><span>CAPÓ · #16 / #1 / #22</span></div>
                 <div class="sk-uv-zone sk-uv-roof"><span>TECHO · DORSAL</span></div>
                 <div class="sk-uv-zone sk-uv-left"><span>LATERAL IZQ.</span></div>
-                <div class="sk-uv-zone sk-uv-right"><span>LATERAL DER. (L↔R)</span></div>
+                <div class="sk-uv-zone sk-uv-right"><span>LATERAL DER.</span></div>
                 <div class="sk-uv-zone sk-uv-wing"><span>ALERÓN · MMT</span></div>
               </div>
               <div class="sk-visual-specs">
-                <div class="sk-spec-chip"><strong>01 · UV 2K/4K</strong><span>Capas, dorsales y simetría</span></div>
-                <div class="sk-spec-chip"><strong>02 · Visor 3D PBR</strong><span>Mate · Metálico · Carbono</span></div>
-                <div class="sk-spec-chip"><strong>03 · Export TGA</strong><span>car_&lt;id&gt;.tga + Spec Map</span></div>
-                <div class="sk-spec-chip"><strong>Acceso Vault</strong><span>Solo pilotos muntru.me</span></div>
+                <div class="sk-spec-chip"><strong>39 Coches 3D</strong><span>GT3 · GTP · LMP · F3/F4 · TCR</span></div>
+                <div class="sk-spec-chip"><strong>21 Patrones PBR</strong><span>Mate · Metálico · Carbono</span></div>
+                <div class="sk-spec-chip"><strong>Editor .TGA/.PSD</strong><span>Tapa y reemplaza logos</span></div>
+                <div class="sk-spec-chip"><strong>Kits por Serie</strong><span>IMSA · PCup · F3/F4 · TCR</span></div>
               </div>
             </div>
           </div>
@@ -81,21 +92,27 @@ const canonical = "https://skins.muntru.me/";
         <!-- 3-Step Studio Workflow Bento Grid -->
         <div class="sk-bento">
           <article class="sk-bento-card">
-            <span class="sk-bento-kicker">PASO 01 · COMPOSICIÓN UV 2K/4K</span>
-            <h3>Capas, dorsales #16, #1, #22 y simetría automática</h3>
-            <p>Edición visual sin Photoshop sobre coordenadas UV calibradas, simetría L↔R instantánea y respeto automático de los huecos de dorsal y serie de iRacing.</p>
+            <span class="sk-bento-kicker">PASO 01 · COMPOSICIÓN UV 2K/4K Y EDITOR DE SKINS</span>
+            <h3>Crea desde cero o edita cualquier .TGA / .PNG / .PSD</h3>
+            <p>Arrastra logos sobre coordenadas UV calibradas, cubre marcas previas con parche inteligente, ajusta color/saturación y aplica kits propios de cada campeonato.</p>
           </article>
           <article class="sk-bento-card">
-            <span class="sk-bento-kicker">PASO 02 · PREVISUALIZACIÓN 3D &amp; SPEC MAP</span>
-            <h3>Acabados mate, metálico y fibra de carbono</h3>
-            <p>Proyección 2D → 3D en tiempo real con Three.js, reflejos de estudio configurables (Mediodía, Atardecer, Boxes) y control real de canales RGB del Spec Map.</p>
+            <span class="sk-bento-kicker">PASO 02 · VISOR 3D WEBGL PBR &amp; SPEC MAP</span>
+            <h3>39 modelos 3D dedicados con acabados reales</h3>
+            <p>Previsualiza pintura sólida, metalizada, mate, satinada o fibra de carbono en Three.js con cristales oscuros, iluminación de estudio y mapa especular RGB en vivo.</p>
           </article>
           <article class="sk-bento-card">
-            <span class="sk-bento-kicker">PASO 03 · EXPORTACIÓN .TGA + GUÍA TRADING PAINTS</span>
-            <h3>Listo para Documents\iRacing\paint\ y ficha de cámara</h3>
-            <p>Generación binaria local de <code>car_&lt;id&gt;.tga</code>, <code>car_spec_&lt;id&gt;.tga</code> y paquete <code>.zip</code> junto a la guía de circuito, luz y ángulos <code>Ctrl+F12</code>.</p>
+            <span class="sk-bento-kicker">PASO 03 · EXPORTACIÓN .TGA + PUENTE LIVE iRACING</span>
+            <h3>Listo para Documents\iRacing\paint\ y Trading Paints</h3>
+            <p>Generación binaria 100 % local de <code>car_&lt;id&gt;.tga</code>, <code>car_spec_&lt;id&gt;.tga</code> y paquete <code>.zip</code>, o envío directo a tu carpeta de iRacing para ver con <code>Ctrl+R</code>.</p>
           </article>
         </div>
+
+        <p style="margin:18px 0 0;font-size:11px;color:var(--sk-muted);text-align:center;">
+          Uso interno exclusivo de Muntrume Motorsport (MMT) · Sin afiliación con iRacing.com Motorsport Simulations, LLC, Trading Paints, IMSA ni fabricantes ·
+          <a href="https://muntru.me/aviso-legal" style="color:var(--sk-accent);text-decoration:underline;">Aviso legal</a> ·
+          <a href="https://muntru.me/legal/retirada" style="color:var(--sk-accent);text-decoration:underline;">DMCA</a>
+        </p>
       </div>
     </section>
 
@@ -106,20 +123,22 @@ const canonical = "https://skins.muntru.me/";
         <span class="sk-brand-badge">MMT SKINS STUDIO</span>
         <div>
           <h1 class="sk-title">skins.muntru.me</h1>
-          <div class="sk-subtitle">Compositor iRacing 2K/4K · Siluetas UV sin copy · Muntrume AI · Trading Paints</div>
+          <div class="sk-subtitle">Compositor 2K/4K · 39 Coches 3D PBR · Editor .TGA/.PSD · Trading Paints</div>
         </div>
       </div>
 
       <div class="sk-top-actions">
-        <span id="skStatusPill" class="sk-status-pill is-ok">Listo · Procesamiento 100 % local en navegador</span>
+        <span id="skStatusPill" class="sk-status-pill is-ok">Listo · 100 % local</span>
         <div class="sk-seg" role="group" aria-label="Resolución de exportación">
           <button type="button" data-res-mode="2048" class="is-active">2048 px</button>
           <button type="button" data-res-mode="4096">4096 px (4K)</button>
         </div>
         <button type="button" id="skUndoBtn" class="sk-btn sk-btn-sm" title="Deshacer (Ctrl+Z)">↶</button>
         <button type="button" id="skRedoBtn" class="sk-btn sk-btn-sm" title="Rehacer (Ctrl+Y)">↷</button>
-        <button type="button" id="skCleanCanvasBtn" class="sk-btn sk-btn-sm">Limpiar lienzo</button>
-        <button type="button" id="skSaveLocalBtn" class="sk-btn sk-btn-sm">Guardar preset</button>
+        <button type="button" id="skCleanCanvasBtn" class="sk-btn sk-btn-sm">Limpiar</button>
+        <button type="button" id="skSaveLocalBtn" class="sk-btn sk-btn-sm">Guardar</button>
+        <span id="skSessionUserPill" class="sk-tag" style="border-color:rgba(0,230,153,0.35);color:#a7f3d0;background:rgba(0,230,153,0.08);" title="Sesión sincronizada con muntru.me">Piloto MMT ✓</span>
+        <button type="button" id="skLogoutBtn" class="sk-btn sk-btn-sm" title="Cerrar sesión en skins.muntru.me y muntru.me">Salir</button>
       </div>
     </header>
 
@@ -346,46 +365,46 @@ const canonical = "https://skins.muntru.me/";
               <span style="width:1px;height:18px;background:rgba(255,255,255,0.14);margin:0 2px;"></span>
               <select id="skGlModelSelect" class="sk-select" style="width:auto;padding:4px 8px;font-size:11px;min-width:155px;" title="Cambiar modelo 3D del visor directamente">
                 <option value="auto">Coche 3D: Automático</option>
-                <option value="/assets/models/dallaraf3.glb?v=12">Dallara F3 (Fórmula 3)</option>
-                <option value="/assets/models/formulair04.glb?v=12">FIA F4 (iR-04)</option>
-                <option value="/assets/models/superformulalights324.glb?v=12">Super Formula Lights 324</option>
-                <option value="/assets/models/superformulasf23.glb?v=12">Super Formula SF23</option>
-                <option value="/assets/models/raygr22.glb?v=12">Ray FF1600 (Sin alerones)</option>
-                <option value="/assets/models/formulavee.glb?v=12">Formula Vee</option>
-                <option value="/assets/models/formula-v2.glb?v=12">Fórmula 1 / Monoplaza</option>
-                <option value="/assets/models/ferrari499p.glb?v=12">Ferrari 499P Hypercar (GTP)</option>
-                <option value="/assets/models/porsche963gtp.glb?v=12">Porsche 963 (GTP)</option>
-                <option value="/assets/models/cadillacvseriesrgtp.glb?v=12">Cadillac V-Series.R (GTP)</option>
-                <option value="/assets/models/bmwlmdh.glb?v=12">BMW M Hybrid V8 (GTP)</option>
-                <option value="/assets/models/acuraarx06gtp.glb?v=12">Acura ARX-06 (GTP)</option>
-                <option value="/assets/models/gtp-prototype.glb?v=12">Aston Martin Valkyrie (GTP)</option>
-                <option value="/assets/models/dallarap217.glb?v=12">Dallara P217 (LMP2)</option>
-                <option value="/assets/models/ligierjsp320.glb?v=12">Ligier JS P320 (LMP3)</option>
-                <option value="/assets/models/ferrari296gt3.glb?v=12">Ferrari 296 GT3</option>
-                <option value="/assets/models/porsche992rgt3.glb?v=12">Porsche 911 GT3 R (992)</option>
-                <option value="/assets/models/bmwm4gt3.glb?v=12">BMW M4 GT3 EVO</option>
-                <option value="/assets/models/mercedesamgevogt3.glb?v=12">Mercedes-AMG GT3 2020</option>
-                <option value="/assets/models/lamborghinievogt3.glb?v=12">Lamborghini Huracán GT3 EVO</option>
-                <option value="/assets/models/mclaren720sgt3.glb?v=12">McLaren 720S GT3 EVO</option>
-                <option value="/assets/models/fordmustanggt3-v2.glb?v=12">Ford Mustang GT3</option>
-                <option value="/assets/models/corvettec8gt3.glb?v=12">Corvette Z06 GT3.R</option>
-                <option value="/assets/models/audir8lmsevo2gt3.glb?v=12">Audi R8 LMS EVO II GT3</option>
-                <option value="/assets/models/amvantageevogt3.glb?v=12">Aston Martin Vantage GT3 EVO</option>
-                <option value="/assets/models/acuransxevo22gt3.glb?v=12">Acura NSX GT3 EVO 22</option>
-                <option value="/assets/models/porsche992cup.glb?v=12">Porsche 911 GT3 Cup (992)</option>
-                <option value="/assets/models/ferrari296challenge.glb?v=12">Ferrari 296 Challenge</option>
-                <option value="/assets/models/bmwm4g82gt4.glb?v=12">BMW M4 G82 GT4 EVO</option>
-                <option value="/assets/models/porsche718gt4.glb?v=12">Porsche 718 Cayman GT4</option>
-                <option value="/assets/models/mercedesamggt4.glb?v=12">Mercedes-AMG GT4</option>
-                <option value="/assets/models/amvantagegt4.glb?v=12">Aston Martin Vantage GT4</option>
-                <option value="/assets/models/mclaren570sgt4.glb?v=12">McLaren 570S GT4</option>
-                <option value="/assets/models/fordmustanggt4.glb?v=12">Ford Mustang GT4</option>
-                <option value="/assets/models/mx5.glb?v=12">Mazda MX-5 Cup</option>
-                <option value="/assets/models/toyotagr86.glb?v=12">Toyota GR86 Cup</option>
-                <option value="/assets/models/bmwm2g87.glb?v=12">BMW M2 CS Racing (G87)</option>
-                <option value="/assets/models/hyundaielantrantc.glb?v=12">Hyundai Elantra N TCR</option>
-                <option value="/assets/models/audirs3lmsgen2.glb?v=12">Audi RS 3 LMS Gen 2 TCR</option>
-                <option value="/assets/models/hondacivictyper.glb?v=12">Honda Civic Type R TCR</option>
+                <option value="/assets/models/dallaraf3.glb?v=14">Dallara F3 (Fórmula 3)</option>
+                <option value="/assets/models/formulair04.glb?v=14">FIA F4 (iR-04)</option>
+                <option value="/assets/models/superformulalights324.glb?v=14">Super Formula Lights 324</option>
+                <option value="/assets/models/superformulasf23.glb?v=14">Super Formula SF23</option>
+                <option value="/assets/models/raygr22.glb?v=14">Ray FF1600 (Sin alerones)</option>
+                <option value="/assets/models/formulavee.glb?v=14">Formula Vee</option>
+                <option value="/assets/models/formula-v2.glb?v=14">Fórmula 1 / Monoplaza</option>
+                <option value="/assets/models/ferrari499p.glb?v=14">Ferrari 499P Hypercar (GTP)</option>
+                <option value="/assets/models/porsche963gtp.glb?v=14">Porsche 963 (GTP)</option>
+                <option value="/assets/models/cadillacvseriesrgtp.glb?v=14">Cadillac V-Series.R (GTP)</option>
+                <option value="/assets/models/bmwlmdh.glb?v=14">BMW M Hybrid V8 (GTP)</option>
+                <option value="/assets/models/acuraarx06gtp.glb?v=14">Acura ARX-06 (GTP)</option>
+                <option value="/assets/models/gtp-prototype.glb?v=14">Aston Martin Valkyrie (GTP)</option>
+                <option value="/assets/models/dallarap217.glb?v=14">Dallara P217 (LMP2)</option>
+                <option value="/assets/models/ligierjsp320.glb?v=14">Ligier JS P320 (LMP3)</option>
+                <option value="/assets/models/ferrari296gt3.glb?v=14">Ferrari 296 GT3</option>
+                <option value="/assets/models/porsche992rgt3.glb?v=14">Porsche 911 GT3 R (992)</option>
+                <option value="/assets/models/bmwm4gt3.glb?v=14">BMW M4 GT3 EVO</option>
+                <option value="/assets/models/mercedesamgevogt3.glb?v=14">Mercedes-AMG GT3 2020</option>
+                <option value="/assets/models/lamborghinievogt3.glb?v=14">Lamborghini Huracán GT3 EVO</option>
+                <option value="/assets/models/mclaren720sgt3.glb?v=14">McLaren 720S GT3 EVO</option>
+                <option value="/assets/models/fordmustanggt3-v2.glb?v=14">Ford Mustang GT3</option>
+                <option value="/assets/models/corvettec8gt3.glb?v=14">Corvette Z06 GT3.R</option>
+                <option value="/assets/models/audir8lmsevo2gt3.glb?v=14">Audi R8 LMS EVO II GT3</option>
+                <option value="/assets/models/amvantageevogt3.glb?v=14">Aston Martin Vantage GT3 EVO</option>
+                <option value="/assets/models/acuransxevo22gt3.glb?v=14">Acura NSX GT3 EVO 22</option>
+                <option value="/assets/models/porsche992cup.glb?v=14">Porsche 911 GT3 Cup (992)</option>
+                <option value="/assets/models/ferrari296challenge.glb?v=14">Ferrari 296 Challenge</option>
+                <option value="/assets/models/bmwm4g82gt4.glb?v=14">BMW M4 G82 GT4 EVO</option>
+                <option value="/assets/models/porsche718gt4.glb?v=14">Porsche 718 Cayman GT4</option>
+                <option value="/assets/models/mercedesamggt4.glb?v=14">Mercedes-AMG GT4</option>
+                <option value="/assets/models/amvantagegt4.glb?v=14">Aston Martin Vantage GT4</option>
+                <option value="/assets/models/mclaren570sgt4.glb?v=14">McLaren 570S GT4</option>
+                <option value="/assets/models/fordmustanggt4.glb?v=14">Ford Mustang GT4</option>
+                <option value="/assets/models/mx5.glb?v=14">Mazda MX-5 Cup</option>
+                <option value="/assets/models/toyotagr86.glb?v=14">Toyota GR86 Cup</option>
+                <option value="/assets/models/bmwm2g87.glb?v=14">BMW M2 CS Racing (G87)</option>
+                <option value="/assets/models/hyundaielantrantc.glb?v=14">Hyundai Elantra N TCR</option>
+                <option value="/assets/models/audirs3lmsgen2.glb?v=14">Audi RS 3 LMS Gen 2 TCR</option>
+                <option value="/assets/models/hondacivictyper.glb?v=14">Honda Civic Type R TCR</option>
               </select>
               <label class="sk-btn sk-btn-sm" style="cursor:pointer;">
                 Cargar .GLB / .GLTF / .OBJ
@@ -771,6 +790,25 @@ const canonical = "https://skins.muntru.me/";
         </div>
       </aside>
     </div>
+
+    <footer
+      aria-label="Aviso legal y propiedad intelectual de Skins Studio"
+      style="margin-top:16px;padding:12px 16px;border-top:1px solid var(--sk-line);border-radius:10px;background:rgba(9,13,20,0.72);font-size:11.5px;line-height:1.55;color:var(--sk-muted);display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;"
+    >
+      <p style="margin:0;max-width:960px;">
+        <strong style="color:var(--sk-text);">Aviso de no afiliación y uso interno MMT:</strong>
+        Muntrume Motorsport (MMT) no está afiliado, patrocinado ni respaldado por
+        <strong>iRacing.com Motorsport Simulations, LLC</strong>, <strong>Trading Paints</strong>,
+        <strong>IMSA</strong> ni ningún fabricante de automóviles. El procesamiento de archivos
+        <code>.PSD</code>, <code>.TGA</code> y <code>.PNG</code> se ejecuta 100 % en local en tu navegador sin almacenamiento en servidor.
+        El usuario es el único responsable legal de los logotipos, marcas o diseños que cargue o exporte.
+        Todos los derechos reservados · Uso interno exclusivo de Muntrume Motorsport (MMT).
+      </p>
+      <nav aria-label="Enlaces legales" style="display:flex;gap:12px;flex-wrap:wrap;white-space:nowrap;">
+        <a href="https://muntru.me/aviso-legal" style="color:var(--sk-accent);text-decoration:underline;">Aviso legal y licencias 3D</a>
+        <a href="https://muntru.me/legal/retirada" style="color:var(--sk-accent);text-decoration:underline;">Retirada DMCA</a>
+      </nav>
+    </footer>
     </div>
   </main>
 

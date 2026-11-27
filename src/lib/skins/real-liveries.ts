@@ -24,7 +24,7 @@ const SPECIFIC_CAR_LIVERIES: Array<{ match: RegExp; presets: RealLiveryPreset[] 
     presets: [
       { id: "pcup-mobil1", label: "Porsche Mobil 1 Supercup", era: "Porsche Cup", primary: "#f8fafc", secondary: "#0f172a", accent: "#dc2626", detail: "#2563eb", pattern: "tricolor-works", finish: "gloss" },
       { id: "pcup-manthey", label: "Manthey Cup Grello #911", era: "Carrera Cup", primary: "#bef264", secondary: "#16a34a", accent: "#090b0f", detail: "#ffffff", pattern: "chevron-works", finish: "gloss" },
-      { id: "pcup-martini", label: "Martini Carrera Cup", era: "Porsche Cup", primary: "#f8fafc", secondary: "#1d4ed8", accent: "#dc2626", detail: "#38bdf8", pattern: "martini-heritage", finish: "gloss" },
+      { id: "pcup-tricolor-stripes", label: "Classic Tricolor Stripes Cup", era: "Porsche Cup", primary: "#f8fafc", secondary: "#1d4ed8", accent: "#dc2626", detail: "#38bdf8", pattern: "martini-heritage", finish: "gloss" },
       { id: "pcup-pesc", label: "PESC Esports Works", era: "iRacing PESC", primary: "#0f172a", secondary: "#1e293b", accent: "#ef4444", detail: "#f8fafc", pattern: "endurance-split", finish: "satin" },
       { id: "pcup-gulf", label: "Gulf Heritage Cup", era: "Carrera Cup", primary: "#38bdf8", secondary: "#0284c7", accent: "#f97316", detail: "#0f172a", pattern: "gulf-classic", finish: "gloss" },
     ],
@@ -72,7 +72,7 @@ const SPECIFIC_CAR_LIVERIES: Array<{ match: RegExp; presets: RealLiveryPreset[] 
       { id: "f3-prema", label: "Prema Powerteam Tricolore", era: "FIA F3 / F4", primary: "#dc2626", secondary: "#f8fafc", accent: "#16a34a", detail: "#090b0f", pattern: "tricolor-works", finish: "gloss" },
       { id: "f1-jps", label: "Lotus JPS Black & Gold", era: "Formula Heritage", primary: "#090b0f", secondary: "#1e293b", accent: "#ca8a04", detail: "#facc15", pattern: "jps-pinstripe", finish: "gloss" },
       { id: "f1-gulf", label: "Gulf Heritage Open-Wheel", era: "Formula Heritage", primary: "#38bdf8", secondary: "#0284c7", accent: "#f97316", detail: "#0f172a", pattern: "gulf-classic", finish: "gloss" },
-      { id: "f1-martini", label: "Williams Martini Racing", era: "Formula Heritage", primary: "#f8fafc", secondary: "#1d4ed8", accent: "#dc2626", detail: "#38bdf8", pattern: "martini-heritage", finish: "gloss" },
+      { id: "f1-tricolor-stripes", label: "Classic Tricolor Stripes", era: "Formula Heritage", primary: "#f8fafc", secondary: "#1d4ed8", accent: "#dc2626", detail: "#38bdf8", pattern: "martini-heritage", finish: "gloss" },
       { id: "f-mmt", label: "Muntrume Formula Works", era: "MMT Open-Wheel", primary: "#0f1722", secondary: "#1a2c3a", accent: "#00e699", detail: "#ffffff", pattern: "chevron-works", finish: "satin" },
     ],
   },
@@ -85,8 +85,8 @@ const BRAND_LIVERIES: Array<{ match: RegExp; presets: RealLiveryPreset[] }> = [
       { id: "manthey-grello", label: "Manthey 'Grello' #911", era: "NLS / N24", primary: "#bef264", secondary: "#16a34a", accent: "#090b0f", detail: "#ffffff", pattern: "chevron-works", finish: "gloss" },
       { id: "ao-rexy", label: "AO Racing 'Rexy' #77", era: "IMSA GTD Pro", primary: "#22c55e", secondary: "#14532d", accent: "#f8fafc", detail: "#ef4444", pattern: "stealth-camo", finish: "gloss" },
       { id: "penske-wec", label: "Porsche Penske #6", era: "WEC / IMSA GTP", primary: "#f8fafc", secondary: "#dc2626", accent: "#0f172a", detail: "#facc15", pattern: "endurance-split", finish: "gloss" },
-      { id: "rothmans-82", label: "Rothmans Le Mans 1982", era: "Histórica", primary: "#f8fafc", secondary: "#1e3a8a", accent: "#ca8a04", detail: "#dc2626", pattern: "tricolor-works", finish: "gloss" },
-      { id: "martini-911", label: "Martini Racing", era: "Histórica", primary: "#f8fafc", secondary: "#1d4ed8", accent: "#dc2626", detail: "#38bdf8", pattern: "martini-heritage", finish: "gloss" },
+      { id: "lemans-heritage-82", label: "Le Mans 1982 Heritage", era: "Histórica", primary: "#f8fafc", secondary: "#1e3a8a", accent: "#ca8a04", detail: "#dc2626", pattern: "tricolor-works", finish: "gloss" },
+      { id: "classic-tricolor-911", label: "Classic Tricolor Stripes", era: "Histórica", primary: "#f8fafc", secondary: "#1d4ed8", accent: "#dc2626", detail: "#38bdf8", pattern: "martini-heritage", finish: "gloss" },
       { id: "pink-pig", label: "Pink Pig 'Sau' #92", era: "Le Mans 1971/2018", primary: "#f472b6", secondary: "#db2777", accent: "#be123c", detail: "#ffffff", pattern: "topo-flow", finish: "satin" },
     ],
   },
@@ -107,7 +107,7 @@ const BRAND_LIVERIES: Array<{ match: RegExp; presets: RealLiveryPreset[] }> = [
       { id: "wrt-46-rossi", label: "Team WRT #46 (Rossi)", era: "GTWC / WEC", primary: "#0f172a", secondary: "#1d4ed8", accent: "#facc15", detail: "#ffffff", pattern: "apex-shards", finish: "satin" },
       { id: "rowe-998", label: "ROWE Racing #998", era: "Spa 24h / N24", primary: "#facc15", secondary: "#090b0f", accent: "#dc2626", detail: "#ffffff", pattern: "endurance-split", finish: "gloss" },
       { id: "paul-miller-1", label: "Paul Miller Racing #1", era: "IMSA GTD Pro", primary: "#1d4ed8", secondary: "#090b0f", accent: "#38bdf8", detail: "#ffffff", pattern: "chevron-works", finish: "gloss" },
-      { id: "jagermeister-bmw", label: "Jägermeister Classic", era: "Histórica", primary: "#ea580c", secondary: "#090b0f", accent: "#ffffff", detail: "#22c55e", pattern: "jps-pinstripe", finish: "gloss" },
+      { id: "classic-orange-gt", label: "Classic Orange GT", era: "Histórica", primary: "#ea580c", secondary: "#090b0f", accent: "#ffffff", detail: "#22c55e", pattern: "jps-pinstripe", finish: "gloss" },
     ],
   },
   {
@@ -188,7 +188,7 @@ const BRAND_LIVERIES: Array<{ match: RegExp; presets: RealLiveryPreset[] }> = [
 const FALLBACK_LIVERIES: RealLiveryPreset[] = [
   { id: "mmt-works", label: "Muntrume Factory Works", era: "MMT", primary: "#0f1722", secondary: "#1a2c3a", accent: "#00e699", detail: "#f8fafc", pattern: "chevron-works", finish: "satin" },
   { id: "gulf-classic", label: "Gulf Racing Heritage", era: "Le Mans", primary: "#38bdf8", secondary: "#0284c7", accent: "#f97316", detail: "#0f172a", pattern: "gulf-classic", finish: "gloss" },
-  { id: "martini-classic", label: "Martini Racing", era: "Histórica", primary: "#f8fafc", secondary: "#1d4ed8", accent: "#dc2626", detail: "#38bdf8", pattern: "martini-heritage", finish: "gloss" },
+  { id: "classic-tricolor-stripes", label: "Classic Tricolor Stripes", era: "Histórica", primary: "#f8fafc", secondary: "#1d4ed8", accent: "#dc2626", detail: "#38bdf8", pattern: "martini-heritage", finish: "gloss" },
   { id: "jps-gold", label: "Black & Gold Classic", era: "Histórica", primary: "#090b0f", secondary: "#1e293b", accent: "#ca8a04", detail: "#facc15", pattern: "jps-pinstripe", finish: "gloss" },
   { id: "dazzle-proto", label: "Pre-Season Dazzle Camo", era: "Test", primary: "#090b0f", secondary: "#1e293b", accent: "#00e699", detail: "#e2e8f0", pattern: "dazzle-test", finish: "matte" },
 ];

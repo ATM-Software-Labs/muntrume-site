@@ -26,6 +26,8 @@ export interface CompositeOptions {
   selectedZone?: ZoneKey | null;
   selectedDecalId?: string | null;
   forExport?: boolean;
+  /** When true (3D WebGL preview), omits 2D iRacing Car_Mandatory & full-UV 2D sticker sheets so no stray lights/grilles/banners bleed onto approximate 3D panels */
+  for3dPreview?: boolean;
   /** Override number rendering mode (used by exporter to generate both clean car_<id>.tga and stamped car_num_<id>.tga) */
   numberModeOverride?: NumberPlateMode;
 }
@@ -1041,11 +1043,13 @@ function drawDriverNumbers(
   ctx.restore();
 }
 
-async function drawDecals(ctx: CanvasRenderingContext2D, state: SkinDesignState, size: number, selectedDecalId?: string | null, forExport?: boolean): Promise<void> {
+async function drawDecals(ctx: CanvasRenderingContext2D, state: SkinDesignState, size: number, selectedDecalId?: string | null, forExport?: boolean, for3dPreview = false): Promise<void> {
   for (const decal of state.decals) {
-    // Skip hidden layers (eye toggle) and never bake wireframe guide into exported TGA
+    // Skip hidden layers (eye toggle), never bake wireframe guide into exported TGA,
+    // and never project full-UV 2D iRacing sticker sheets onto approximate 3D preview meshes
     if (decal.opacity <= 0.001) continue;
     if (forExport && decal.id.includes("-wireframe")) continue;
+    if (for3dPreview && decal.id.startsWith("official-uv-") && decal.scale >= 0.95) continue;
     const positions = decal.mirrorX
       ? [
           { x: decal.x, y: decal.y, rot: decal.rotation },
@@ -1358,10 +1362,10 @@ export async function renderSkinToCanvas(
   drawZonePaintOverrides(ctx, state, size);
   drawBrushStrokes(ctx, state, size);
   drawDriverNumbers(ctx, state, size, effectiveNumberMode);
-  await drawDecals(ctx, state, size, opts.selectedDecalId, opts.forExport);
+  await drawDecals(ctx, state, size, opts.selectedDecalId, opts.forExport, opts.for3dPreview);
 
-  // Official iRacing Parts / Car_Mandatory layer (lights, grilles, vents, carbon trim — preserved on high-res PNG/TGA export!)
-  const mandatoryLayer = opts.partsOverlayCanvas ?? activeKitMandatoryCanvas;
+  // Official iRacing Parts / Car_Mandatory layer (lights, grilles, vents, carbon trim — shown in 2D UV & PNG/TGA export, omitted in 3D preview so it never bleeds onto approximate 3D bodywork)
+  const mandatoryLayer = opts.for3dPreview ? null : (opts.partsOverlayCanvas ?? activeKitMandatoryCanvas);
   if (mandatoryLayer) {
     ctx.save();
     ctx.imageSmoothingEnabled = true;

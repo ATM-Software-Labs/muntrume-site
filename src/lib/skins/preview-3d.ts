@@ -39,7 +39,7 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const MODELS_CDN_BASE = "/assets/models";
-const MODEL_VER = "v=13";
+const MODEL_VER = "v=14";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
@@ -878,7 +878,7 @@ export class WebGLPreviewEngine {
     // Apply live paint ONLY to exterior bodywork panels; refine untextured/blown-out rims/tires/glass/carbon into realistic motorsport PBR
     const gunmetalRimMat = new THREE.MeshStandardMaterial({ color: "#282f3a", roughness: 0.26, metalness: 0.88, envMapIntensity: 1.25 });
     const rubberTireMat = new THREE.MeshStandardMaterial({ color: "#14171c", roughness: 0.88, metalness: 0.05 });
-    const smokedGlassMat = new THREE.MeshPhysicalMaterial({ color: "#0b121c", roughness: 0.08, metalness: 0.12, transparent: true, opacity: 0.74, clearcoat: 1.0 });
+    const smokedGlassMat = new THREE.MeshPhysicalMaterial({ color: "#060b12", roughness: 0.06, metalness: 0.15, transparent: true, opacity: 0.90, clearcoat: 1.0, clearcoatRoughness: 0.04, envMapIntensity: 1.8 });
     const brakeSteelMat = new THREE.MeshStandardMaterial({ color: "#68727e", roughness: 0.34, metalness: 0.9 });
     const darkCarbonMat = new THREE.MeshStandardMaterial({ color: "#161b22", roughness: 0.48, metalness: 0.22 });
 
@@ -894,9 +894,9 @@ export class WebGLPreviewEngine {
     };
 
     const refineNonBodyMaterial = (id: string, mat: THREE.Material): THREE.Material => {
-      if (/(tireside|tiretread|sidewall|tread|tire|tyre|rubber|slick|gt3phong1|meshesff41|twixer_992_gt3rs_black)/.test(id)) return rubberTireMat;
-      if (/(rim1|rim2|wheel|alloy|spoke|phong9|meshesm8rim)/.test(id)) return gunmetalRimMat;
-      if (/(glass|window|windshield|windscreen|visor|black_glass)/.test(id)) return smokedGlassMat;
+      if (/(tireside|tiretread|sidewall|tread|tire|tyre|rubber|slick|gt3phong1|meshesff41|twixer_992_gt3rs_black|rubbertrim)/.test(id)) return rubberTireMat;
+      if (/(rim1|rim2|wheel|alloy|spoke|lugs|phong9|meshesm8rim)/.test(id)) return gunmetalRimMat;
+      if (/(glass|window|windshield|windscreen|visor|black_glass|cockpit_glass)/.test(id)) return smokedGlassMat;
       if (/(rotor|disc|caliper|brake)/.test(id)) return brakeSteelMat;
       if (isMaterialUntexturedOrWhite(mat) && /(carbon|chassis|interior|cockpit|cab|misc|grille|grill|diffuser|splitter|intake|vent|badges|underbody|floor|material_0)/.test(id)) {
         return darkCarbonMat;
