@@ -39,7 +39,7 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const MODELS_CDN_BASE = "/assets/models";
-const MODEL_VER = "v=9";
+const MODEL_VER = "v=10";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
@@ -51,15 +51,21 @@ const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
 
 function resolveBrandSpecificGlb(slugKey: string): string {
   if (!slugKey) return "";
-  // 1. Prototypes (GTP / Hypercar / LMP2 / LMP3) ALWAYS load the real Hypercar/GTP prototype first!
-  if (/gtp|lmdh|499p|963|919|vseries|arx06|valkyrie|p217|jsp320|lmp|hpdarx|audir18/.test(slugKey)) {
+  // 1. Dedicated GTP / Hypercar prototypes (ALL 6 current iRacing GTPs!)
+  if (/499p/.test(slugKey)) return `${MODELS_CDN_BASE}/ferrari499p.glb?${MODEL_VER}`;
+  if (/963|919/.test(slugKey)) return `${MODELS_CDN_BASE}/porsche963gtp.glb?${MODEL_VER}`;
+  if (/cadillac|vseries/.test(slugKey)) return `${MODELS_CDN_BASE}/cadillacvseriesrgtp.glb?${MODEL_VER}`;
+  if (/bmwlmdh|hybridv8|m_hybrid/.test(slugKey)) return `${MODELS_CDN_BASE}/bmwlmdh.glb?${MODEL_VER}`;
+  if (/arx06|acuraarx/.test(slugKey)) return `${MODELS_CDN_BASE}/acuraarx06gtp.glb?${MODEL_VER}`;
+  if (/valkyrie|gtp|p217|jsp320|lmp|hpdarx|audir18/.test(slugKey)) {
     return `${MODELS_CDN_BASE}/gtp-prototype.glb?${MODEL_VER}`;
   }
   // 2. Open-wheel / Formula
   if (/formula|dallara(?!p217)|indy|ir18|ir01|dw12|sf23|sfl|raygr|skipbarber|vee|lotus49|lotus79|tatuus|usf2000|pm18|fr500|starmazda/.test(slugKey)) {
     return `${MODELS_CDN_BASE}/formula-v2.glb?${MODEL_VER}`;
   }
-  // 3. Brand-specific GT3 / GT4 / Cup race cars (zero street convertibles)
+  // 3. Brand-specific GT3 / GT4 / Cup race cars
+  if (/mercedes|amg/.test(slugKey)) return `${MODELS_CDN_BASE}/mercedesamgevogt3.glb?${MODEL_VER}`;
   if (/ferrari|296|488/.test(slugKey)) return `${MODELS_CDN_BASE}/ferrari296gt3.glb?${MODEL_VER}`;
   if (/porsche|992|991|911|718/.test(slugKey)) return `${MODELS_CDN_BASE}/porsche992rgt3.glb?${MODEL_VER}`;
   if (/bmw|m4gt|m4evogt|m4g82|m8gte|m2csr|m2g87|z4gt3/.test(slugKey)) return `${MODELS_CDN_BASE}/bmwm4gt3.glb?${MODEL_VER}`;
@@ -67,7 +73,7 @@ function resolveBrandSpecificGlb(slugKey: string): string {
   if (/corvette|chevyvette|c8r|c6r|z06/.test(slugKey)) return `${MODELS_CDN_BASE}/corvettec8gt3.glb?${MODEL_VER}`;
   if (/aston|amvantage|dbr9/.test(slugKey)) return `${MODELS_CDN_BASE}/amvantageevogt3.glb?${MODEL_VER}`;
   if (/mclaren|720s|570s|mp4|audi|r8lms|acura|nsx|ford_gt|fordgt/.test(slugKey)) return `${MODELS_CDN_BASE}/mclaren720sgt3.glb?${MODEL_VER}`;
-  if (/mustang|mercedes|amg/.test(slugKey)) return `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`;
+  if (/mustang/.test(slugKey)) return `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`;
   return "";
 }
 
