@@ -1290,9 +1290,74 @@ export function initSkinsStudio(): void {
     }
   });
 
+  // Anti-overlap collision check so logos/decals NEVER stack on top of each other or official iRacing number plates
+  function doesDecalCollide(x: number, y: number, scale: number, excludeId?: string): boolean {
+    const hw = Math.max(0.028, scale * 0.38);
+    const hh = Math.max(0.022, scale * 0.28);
+    for (const other of state.decals) {
+      if (other.id === excludeId || other.scale >= 0.95) continue;
+      const ohw = Math.max(0.028, other.scale * 0.38);
+      const ohh = Math.max(0.022, other.scale * 0.28);
+      if (Math.abs(x - other.x) < hw + ohw && Math.abs(y - other.y) < hh + ohh) return true;
+    }
+    for (const plate of workerRestrictedPlates) {
+      const pcx = plate.x + plate.w * 0.5;
+      const pcy = plate.y + plate.h * 0.5;
+      if (Math.abs(x - pcx) < hw + plate.w * 0.45 && Math.abs(y - pcy) < hh + plate.h * 0.45) return true;
+    }
+    return false;
+  }
+
+  function findFreeDecalSpot(
+    baseX: number,
+    baseY: number,
+    scale: number,
+    rect?: { x: number; y: number; w: number; h: number },
+    excludeId?: string,
+  ): { x: number; y: number; shifted: boolean } {
+    if (!doesDecalCollide(baseX, baseY, scale, excludeId)) {
+      return { x: Number(baseX.toFixed(3)), y: Number(baseY.toFixed(3)), shifted: false };
+    }
+    const minX = rect ? rect.x + 0.02 : 0.04;
+    const maxX = rect ? rect.x + rect.w - 0.02 : 0.96;
+    const minY = rect ? rect.y + 0.02 : 0.04;
+    const maxY = rect ? rect.y + rect.h - 0.02 : 0.96;
+    const step = Math.max(0.035, scale * 0.45);
+    const offsets: Array<[number, number]> = [
+      [step, 0], [-step, 0], [0, step], [0, -step],
+      [step, step], [-step, step], [step, -step], [-step, -step],
+      [step * 2, 0], [-step * 2, 0], [0, step * 2], [0, -step * 2],
+    ];
+    for (const [dx, dy] of offsets) {
+      const cx = Math.max(minX, Math.min(maxX, baseX + dx));
+      const cy = Math.max(minY, Math.min(maxY, baseY + dy));
+      if (!doesDecalCollide(cx, cy, scale, excludeId)) {
+        return { x: Number(cx.toFixed(3)), y: Number(cy.toFixed(3)), shifted: true };
+      }
+    }
+    return { x: Number(baseX.toFixed(3)), y: Number(baseY.toFixed(3)), shifted: true };
+  }
+
   const endUvDrag = () => {
     if (dragMode === "zone-move" || dragMode === "zone-resize") renderZoneList();
-    if (dragMode === "decal-move" || dragMode === "decal-resize") renderDecalEditor();
+    if (dragMode === "decal-move" && selectedDecalId) {
+      const d = state.decals.find((item) => item.id === selectedDecalId);
+      if (d && d.scale < 0.95 && doesDecalCollide(d.x, d.y, d.scale, d.id)) {
+        const free = findFreeDecalSpot(d.x, d.y, d.scale, undefined, d.id);
+        if (!doesDecalCollide(free.x, free.y, d.scale, d.id)) {
+          d.x = free.x;
+          d.y = free.y;
+        } else {
+          d.x = origRect.x;
+          d.y = origRect.y;
+        }
+        scheduleRender();
+        setStatus("Anti-solapamiento: no se permite tapar otro logo ni la placa de dorsal.", "neutral");
+      }
+      renderDecalEditor();
+    } else if (dragMode === "decal-resize") {
+      renderDecalEditor();
+    }
     activeStroke = null;
     dragMode = "none";
   };
@@ -1375,15 +1440,18 @@ export function initSkinsStudio(): void {
         // Real iRacing horizontal layout: Left Side (bottom door, 0°) + Right Side (top door, 180° inverted)
         const leftRect = state.zones.leftSide;
         const rightRect = state.zones.rightSide;
+        const sideScale = Number(Math.min(0.24, Math.max(0.11, leftRect.w * 0.42)).toFixed(3));
+        const posL = findFreeDecalSpot(leftRect.x + leftRect.w * 0.56, leftRect.y + leftRect.h * 0.52, sideScale, leftRect);
+        const posR = findFreeDecalSpot(rightRect.x + rightRect.w * 0.56, rightRect.y + rightRect.h * 0.48, sideScale, rightRect);
         const leftLayer: DecalLayer = {
           id: `decal-q-l-${now}`,
           name: `MUNTRUME (${leftRect.label})`,
           kind: "builtin",
           assetId: "mmt-wordmark",
           color: "#ffffff",
-          x: Number((leftRect.x + leftRect.w * 0.56).toFixed(3)),
-          y: Number((leftRect.y + leftRect.h * 0.52).toFixed(3)),
-          scale: Number(Math.min(0.24, Math.max(0.11, leftRect.w * 0.42)).toFixed(3)),
+          x: posL.x,
+          y: posL.y,
+          scale: sideScale,
           rotation: 0,
           opacity: 1,
           mirrorX: false,
@@ -1395,9 +1463,9 @@ export function initSkinsStudio(): void {
           kind: "builtin",
           assetId: "mmt-wordmark",
           color: "#ffffff",
-          x: Number((rightRect.x + rightRect.w * 0.56).toFixed(3)),
-          y: Number((rightRect.y + rightRect.h * 0.48).toFixed(3)),
-          scale: leftLayer.scale,
+          x: posR.x,
+          y: posR.y,
+          scale: sideScale,
           rotation: 180,
           opacity: 1,
           mirrorX: false,
@@ -1406,16 +1474,19 @@ export function initSkinsStudio(): void {
         state.decals.push(leftLayer, rightLayer);
         selectedDecalId = leftLayer.id;
       } else {
-        const isTopPanel = zk === "hood" || zk === "roof";
+        const isTopPanel = zk === "hood" || zk === "roof" || zk === "rearBumper";
+        const isWebZone = zk === "rearWing" || zk === "frontBumper" || zk === "rearBumper";
+        const sc = Number(Math.min(0.24, Math.max(0.08, Math.min(rect.w, rect.h) * 0.62)).toFixed(3));
+        const spot = findFreeDecalSpot(rect.x + rect.w * 0.5, rect.y + rect.h * 0.5, sc, rect);
         const layer: DecalLayer = {
           id: `decal-q-${now}`,
-          name: `MUNTRUME (${rect.label})`,
+          name: `${isWebZone ? "MUNTRU.ME" : "MUNTRUME"} (${rect.label})`,
           kind: "builtin",
-          assetId: zk === "hood" ? "mmt-crest" : zk === "rearWing" ? "muntru-url" : "mmt-wordmark",
+          assetId: zk === "hood" || zk === "mirrors" ? "mmt-crest" : isWebZone ? "muntru-url" : "mmt-wordmark",
           color: zk === "rearWing" ? "#090b0f" : "#ffffff",
-          x: Number((rect.x + rect.w * 0.5).toFixed(3)),
-          y: Number((rect.y + rect.h * 0.5).toFixed(3)),
-          scale: Number(Math.min(0.26, Math.max(0.10, Math.min(rect.w, rect.h) * 0.62)).toFixed(3)),
+          x: spot.x,
+          y: spot.y,
+          scale: sc,
           rotation: isTopPanel ? 90 : 0,
           opacity: 1,
           mirrorX: false,
@@ -1426,7 +1497,7 @@ export function initSkinsStudio(): void {
       }
       rightTab = "decals";
       if (zk === "hood" || zk === "roof") showroomAngle = "top";
-      else if (zk === "rearWing") showroomAngle = "rear";
+      else if (zk === "rearWing" || zk === "rearBumper") showroomAngle = "rear";
       else if (zk === "frontBumper") showroomAngle = "front";
       else showroomAngle = "side";
       document.querySelectorAll<HTMLButtonElement>("[data-showroom-angle]").forEach((b) => {
@@ -1436,8 +1507,53 @@ export function initSkinsStudio(): void {
       renderDecalList();
       renderDecalEditor();
       scheduleRender();
-      setStatus(`Sponsor colocado en ${rect.label}${isSide ? " (ambas puertas: 0° izq. y 180° der. iRacing)" : ""}.`, "ok");
+      setStatus(`Colocado en ${rect.label} sin solapamientos${isSide ? " (0° izq. y 180° der.)" : ""}.`, "ok");
     });
+  });
+
+  // 1-Click Complete Muntrume Team + Website Kit (zero overlaps across all key zones)
+  byId<HTMLButtonElement>("skApplyTeamKitBtn")?.addEventListener("click", () => {
+    const now = Date.now();
+    const z = state.zones;
+    const addSafe = (
+      name: string,
+      assetId: DecalLayer["assetId"],
+      color: string,
+      rect: { x: number; y: number; w: number; h: number },
+      rx: number,
+      ry: number,
+      scale: number,
+      rotation: number,
+      zoneHint: ZoneKey,
+    ) => {
+      const spot = findFreeDecalSpot(rect.x + rect.w * rx, rect.y + rect.h * ry, scale, rect);
+      if (doesDecalCollide(spot.x, spot.y, scale)) return;
+      state.decals.push({
+        id: `kit-${zoneHint}-${now}-${Math.floor(Math.random() * 999)}`,
+        name,
+        kind: "builtin",
+        assetId,
+        color,
+        x: spot.x,
+        y: spot.y,
+        scale,
+        rotation,
+        opacity: 1,
+        mirrorX: false,
+        zoneHint,
+      });
+    };
+    addSafe("Escudo MMT (Capó)", "mmt-crest", "#ffffff", z.hood, 0.5, 0.5, 0.14, 90, "hood");
+    addSafe("MUNTRUME (Lateral Izq.)", "mmt-wordmark", "#ffffff", z.leftSide, 0.58, 0.52, 0.20, 0, "leftSide");
+    addSafe("MUNTRUME (Lateral Der.)", "mmt-wordmark", "#ffffff", z.rightSide, 0.58, 0.48, 0.20, 180, "rightSide");
+    addSafe("MUNTRU.ME (Alerón)", "muntru-url", "#ffffff", z.rearWing, 0.5, 0.5, 0.18, 0, "rearWing");
+    addSafe("MUNTRU.ME (Frontal)", "muntru-url", "#ffffff", z.frontBumper, 0.5, 0.5, 0.14, 0, "frontBumper");
+    addSafe("MUNTRU.ME (Trasera)", "muntru-url", "#ffffff", z.rearBumper, 0.5, 0.5, 0.12, 90, "rearBumper");
+    selectedDecalId = state.decals[state.decals.length - 1]?.id ?? null;
+    renderDecalList();
+    renderDecalEditor();
+    scheduleRender();
+    setStatus("★ Kit completo MUNTRUME + MUNTRU.ME aplicado sin solapamientos en capó, puertas, alerón y parachoques.", "ok");
   });
 
   document.querySelectorAll<HTMLButtonElement>("[data-right-tab]").forEach((btn) => {
