@@ -14,7 +14,7 @@
     },
     {
       "car_slug": "acuransxevo22gt3",
-      "name": "Acura NSX EVO22 GT3",
+      "name": "Acura NSX GT3 EVO 22",
       "brand": "Acura",
       "category": "GT3",
       "archetype": "gt3_gt4",
@@ -38,13 +38,13 @@
     },
     {
       "car_slug": "amvantageevogt3",
-      "name": "Amvantageevogt 3",
+      "name": "Aston Martin Vantage GT3 EVO",
       "brand": "Aston Martin",
       "category": "GT3",
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/amvantageevogt3/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
@@ -96,13 +96,6 @@
       "uv_status": "archetype"
     },
     {
-      "car_slug": "aston_martin_vantage_evo_gt3",
-      "name": "Aston Martin Vantage EVO GT3",
-      "brand": "Aston Martin",
-      "category": "GT3",
-      "uv_status": "archetype"
-    },
-    {
       "car_slug": "aston_martin_vantage_gt4",
       "name": "Aston Martin Vantage GT4",
       "brand": "Aston Martin",
@@ -146,20 +139,6 @@
       "wireframe_url": null
     },
     {
-      "car_slug": "audi_r8_lms_evo_ii_gt3",
-      "name": "Audi R8 LMS EVO II GT3",
-      "brand": "Audi",
-      "category": "GT3",
-      "uv_status": "archetype"
-    },
-    {
-      "car_slug": "audi_r8_lms_gt3",
-      "name": "Audi R8 LMS GT3",
-      "brand": "Audi",
-      "category": "GT3",
-      "uv_status": "archetype"
-    },
-    {
       "car_slug": "audirs3lms",
       "name": "Audi RS3 LMS",
       "brand": "Audi",
@@ -185,7 +164,7 @@
     },
     {
       "car_slug": "audir8gt3",
-      "name": "Audir 8 Gt 3",
+      "name": "Audi R8 LMS GT3",
       "brand": "Audi",
       "category": "GT3",
       "archetype": "gt3_gt4",
@@ -197,13 +176,13 @@
     },
     {
       "car_slug": "audir8lmsevo2gt3",
-      "name": "Audir 8 Lmsevo 2 Gt 3",
+      "name": "Audi R8 LMS EVO II GT3",
       "brand": "Audi",
       "category": "GT3",
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/audir8lmsevo2gt3/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
@@ -357,7 +336,7 @@
     },
     {
       "car_slug": "c8rvettegte",
-      "name": "C 8 Rvettegte",
+      "name": "Chevrolet Corvette C8.R GTE",
       "brand": "iRacing",
       "category": "GT3",
       "archetype": "gt3_gt4",
@@ -849,7 +828,7 @@
     },
     {
       "car_slug": "ferrarievogt3",
-      "name": "Ferrari EVO GT3",
+      "name": "Ferrari 488 GT3 EVO 2020",
       "brand": "Ferrari",
       "category": "GT3",
       "archetype": "gt3_gt4",
@@ -1271,7 +1250,7 @@
     },
     {
       "car_slug": "lamborghinievogt3",
-      "name": "Lamborghini EVO GT3",
+      "name": "Lamborghini Huracán GT3 EVO",
       "brand": "Lamborghini",
       "category": "GT3",
       "archetype": "gt3_gt4",
@@ -1402,22 +1381,15 @@
     },
     {
       "car_slug": "mclaren720sgt3",
-      "name": "Mclaren 720 Sgt 3",
+      "name": "McLaren 720S GT3 EVO",
       "brand": "McLaren",
       "category": "GT3",
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/mclaren720sgt3/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
-    },
-    {
-      "car_slug": "mclaren_720s_evo_gt3",
-      "name": "McLaren 720s EVO GT3",
-      "brand": "McLaren",
-      "category": "GT3",
-      "uv_status": "archetype"
     },
     {
       "car_slug": "mclarenmp4",
@@ -1445,13 +1417,13 @@
     },
     {
       "car_slug": "mercedesamggt3",
-      "name": "Mercedes AMG GT3",
+      "name": "Mercedes-AMG GT3",
       "brand": "Mercedes-AMG",
       "category": "GT3",
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/mercedesamggt3/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
@@ -1468,21 +1440,14 @@
       "wireframe_url": null
     },
     {
-      "car_slug": "mercedes_amg_gt3_2020",
-      "name": "Mercedes-AMG GT3 2020",
-      "brand": "Mercedes-AMG",
-      "category": "GT3",
-      "uv_status": "archetype"
-    },
-    {
       "car_slug": "mercedesamgevogt3",
-      "name": "Mercedesamgevogt 3",
+      "name": "Mercedes-AMG GT3 2020",
       "brand": "Mercedes-AMG",
       "category": "GT3",
       "archetype": "gt3_gt4",
       "iracing_paint_dir": "paint/mercedesamgevogt3/",
       "resolution": "2048x2048",
-      "uv_status": "archetype",
+      "uv_status": "extracted",
       "uv_url": null,
       "wireframe_url": null
     },
@@ -1636,7 +1601,7 @@
     },
     {
       "car_slug": "porsche991rsr",
-      "name": "Porsche 991 Rsr",
+      "name": "Porsche 911 RSR GTE",
       "brand": "Porsche",
       "category": "GT3",
       "archetype": "gt3_gt4",
@@ -1672,7 +1637,7 @@
     },
     {
       "car_slug": "porsche992rgt3",
-      "name": "Porsche 992r GT3",
+      "name": "Porsche 911 GT3 R (992)",
       "brand": "Porsche",
       "category": "GT3",
       "archetype": "gt3_gt4",
@@ -2236,5 +2201,6 @@
       "uv_url": null,
       "wireframe_url": null
     }
-  ]
+  ],
+  "count": 223
 }
