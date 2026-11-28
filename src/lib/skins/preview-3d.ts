@@ -39,13 +39,13 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const MODELS_CDN_BASE = "/assets/models";
-const MODEL_VER = "v=15";
+const MODEL_VER = "v=16";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
   touring: `${MODELS_CDN_BASE}/hyundaielantrantc.glb?${MODEL_VER}`,
   gtp: `${MODELS_CDN_BASE}/gtp-prototype.glb?${MODEL_VER}`,
-  nascar: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
+  nascar: `${MODELS_CDN_BASE}/nascar-nextgen.glb?${MODEL_VER}`,
   formula: `${MODELS_CDN_BASE}/formula-v2.glb?${MODEL_VER}`,
 };
 
@@ -68,7 +68,9 @@ function resolveBrandSpecificGlb(slugKey: string): string {
   if (/superformula|sf23/.test(slugKey)) return `${MODELS_CDN_BASE}/superformulasf23.glb?${MODEL_VER}`;
   if (/raygr|ff1600|skipbarber/.test(slugKey)) return `${MODELS_CDN_BASE}/raygr22.glb?${MODEL_VER}`;
   if (/formulavee|\bvee\b/.test(slugKey)) return `${MODELS_CDN_BASE}/formulavee.glb?${MODEL_VER}`;
-  if (/formula|dallara(?!p217)|indy|ir18|ir01|dw12|lotus49|lotus79|tatuus|usf2000|pm18|fr500|starmazda/.test(slugKey)) {
+  if (/indy|ir18|dw12|il15/.test(slugKey)) return `${MODELS_CDN_BASE}/dallarair18.glb?${MODEL_VER}`;
+  if (/nascar|nextgen|camry|camaro|arca|stockcar/.test(slugKey)) return `${MODELS_CDN_BASE}/nascar-nextgen.glb?${MODEL_VER}`;
+  if (/formula|dallara(?!p217)|ir01|lotus49|lotus79|tatuus|usf2000|pm18|fr500|starmazda/.test(slugKey)) {
     return `${MODELS_CDN_BASE}/formula-v2.glb?${MODEL_VER}`;
   }
 
@@ -238,9 +240,16 @@ function applyIracingAutoFitUVs(
   zones: Record<ZoneKey, UvRect>,
   noseAtLowEnd: boolean,
 ): void {
+  // Convert to non-indexed so every triangle projects cleanly into a SINGLE iRacing UV zone
+  // (eliminates smeared/stretched seam triangles bridging hood <-> fender or door <-> roof!)
+  if (mesh.geometry.index) {
+    const nonIdx = mesh.geometry.toNonIndexed();
+    mesh.geometry.dispose();
+    mesh.geometry = nonIdx;
+  }
   const geo = mesh.geometry;
   const pos = geo.getAttribute("position");
-  if (!pos) return;
+  if (!pos || pos.count < 3) return;
   if (!geo.getAttribute("normal")) geo.computeVertexNormals();
   const norm = geo.getAttribute("normal");
 
@@ -254,82 +263,123 @@ function applyIracingAutoFitUVs(
 
   mesh.updateWorldMatrix(true, false);
   const normalMat = new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld);
-  const v = new THREE.Vector3();
-  const n = new THREE.Vector3();
+  const v0 = new THREE.Vector3();
+  const v1 = new THREE.Vector3();
+  const v2 = new THREE.Vector3();
+  const n0 = new THREE.Vector3();
+  const n1 = new THREE.Vector3();
+  const n2 = new THREE.Vector3();
+  const verts = [v0, v1, v2];
   const uvArr = new Float32Array(pos.count * 2);
 
   const isRearWingMesh = /\b(wing|spoiler)\b/i.test(mesh.name || "");
+  const inset = 0.035;
 
-  for (let i = 0; i < pos.count; i++) {
-    v.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld);
-    n.fromBufferAttribute(norm, i).applyMatrix3(normalMat).normalize();
-
-    // Normalized longitudinal (0=rear, 1=front nose), lateral (0=left, 1=right), vertical (0=bottom, 1=top)
+  const projectVertexToZone = (
+    v: THREE.Vector3,
+    zoneKind: "rearWing" | "frontBumper" | "rearBumper" | "leftSide" | "rightSide" | "hood" | "roof",
+  ): [number, number] => {
     const rawAlong = longIsZ ? (v.z - min.z) / spanZ : (v.x - min.x) / spanX;
     const along = noseAtLowEnd ? 1 - rawAlong : rawAlong;
     const rawAcross = longIsZ ? (v.x - min.x) / spanX : (v.z - min.z) / spanZ;
     const across = noseAtLowEnd ? 1 - rawAcross : rawAcross;
     const up = (v.y - min.y) / spanY;
 
-    const rawLatN = longIsZ ? n.x : n.z;
-    const rawLongN = longIsZ ? n.z : n.x;
+    let zone: UvRect = zones.hood;
+    let lu = 0.5;
+    let lv = 0.5;
+    if (zoneKind === "rearWing") {
+      zone = zones.rearWing;
+      lu = across;
+      lv = 1 - Math.max(0, Math.min(1, along / 0.22));
+    } else if (zoneKind === "frontBumper") {
+      zone = zones.frontBumper;
+      lu = 1 - across;
+      lv = 1 - up;
+    } else if (zoneKind === "rearBumper") {
+      zone = zones.rearBumper;
+      lu = across;
+      lv = 1 - up;
+    } else if (zoneKind === "leftSide") {
+      zone = zones.leftSide;
+      lu = 1 - along;
+      lv = 1 - up;
+    } else if (zoneKind === "rightSide") {
+      zone = zones.rightSide;
+      lu = along;
+      lv = up;
+    } else if (zoneKind === "hood") {
+      zone = zones.hood;
+      lu = 1 - Math.max(0, Math.min(1, (along - 0.52) / 0.48));
+      lv = 1 - across;
+    } else {
+      zone = zones.roof;
+      lu = 1 - Math.max(0, Math.min(1, (along - 0.12) / 0.42));
+      lv = 1 - across;
+    }
+
+    const clampedU = inset + Math.max(0, Math.min(1, lu)) * (1 - inset * 2);
+    const clampedV = inset + Math.max(0, Math.min(1, lv)) * (1 - inset * 2);
+    return [
+      Math.max(0.001, Math.min(0.999, zone.x + clampedU * zone.w)),
+      Math.max(0.001, Math.min(0.999, zone.y + clampedV * zone.h)),
+    ];
+  };
+
+  for (let i = 0; i + 2 < pos.count; i += 3) {
+    v0.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld);
+    v1.fromBufferAttribute(pos, i + 1).applyMatrix4(mesh.matrixWorld);
+    v2.fromBufferAttribute(pos, i + 2).applyMatrix4(mesh.matrixWorld);
+
+    n0.fromBufferAttribute(norm, i).applyMatrix3(normalMat);
+    n1.fromBufferAttribute(norm, i + 1).applyMatrix3(normalMat);
+    n2.fromBufferAttribute(norm, i + 2).applyMatrix3(normalMat);
+    const fnx = n0.x + n1.x + n2.x;
+    const fny = n0.y + n1.y + n2.y;
+    const fnz = n0.z + n1.z + n2.z;
+    const flen = Math.hypot(fnx, fny, fnz) || 1;
+    const nx = fnx / flen;
+    const ny = fny / flen;
+    const nz = fnz / flen;
+
+    const cx = (v0.x + v1.x + v2.x) / 3;
+    const cy = (v0.y + v1.y + v2.y) / 3;
+    const cz = (v0.z + v1.z + v2.z) / 3;
+
+    const rawAlong = longIsZ ? (cz - min.z) / spanZ : (cx - min.x) / spanX;
+    const along = noseAtLowEnd ? 1 - rawAlong : rawAlong;
+    const rawAcross = longIsZ ? (cx - min.x) / spanX : (cz - min.z) / spanZ;
+    const across = noseAtLowEnd ? 1 - rawAcross : rawAcross;
+    const up = (cy - min.y) / spanY;
+
+    const rawLatN = longIsZ ? nx : nz;
+    const rawLongN = longIsZ ? nz : nx;
     const latN = noseAtLowEnd ? -rawLatN : rawLatN;
     const longN = noseAtLowEnd ? -rawLongN : rawLongN;
     const absLat = Math.abs(latN);
     const absLong = Math.abs(longN);
-    const absUp = Math.abs(n.y);
+    const absUp = Math.abs(ny);
 
-    let zone: UvRect;
-    let lu = 0.5;
-    let lv = 0.5;
-
-    if (isRearWingMesh || (up > 0.72 && along < 0.20)) {
-      // +Y Rear wing (viewed from rear 3/4: left -> right)
-      zone = zones.rearWing;
-      lu = across;
-      lv = 1 - Math.max(0, Math.min(1, along / 0.20));
-    } else if (absLong >= absLat && absLong >= absUp && longN >= 0 && along > 0.75) {
-      // Front bumper (viewed from front: upright left -> right)
-      zone = zones.frontBumper;
-      lu = 1 - across;
-      lv = 1 - up;
-    } else if (absLong >= absLat && absLong >= absUp && longN < 0 && along < 0.25) {
-      // Rear bumper (viewed from rear: upright left -> right)
-      zone = zones.rearBumper;
-      lu = across;
-      lv = 1 - up;
+    let zoneKind: "rearWing" | "frontBumper" | "rearBumper" | "leftSide" | "rightSide" | "hood" | "roof";
+    if (isRearWingMesh || (up > 0.72 && along < 0.22)) {
+      zoneKind = "rearWing";
+    } else if (absLong >= absLat && absLong >= absUp && longN >= 0 && along > 0.78) {
+      zoneKind = "frontBumper";
+    } else if (absLong >= absLat && absLong >= absUp && longN < 0 && along < 0.22) {
+      zoneKind = "rearBumper";
     } else if (absLat >= absUp * 0.85 && (across < 0.46 || across > 0.54)) {
-      // Real iRacing horizontal UV:
-      // leftSide (bottom door, 0° upright): nose on left (lu=0), rear on right (lu=1), top at lv=0
-      // rightSide (top door, 180° inverted): rear on left (lu=0), nose on right (lu=1), top at lv=1
-      if (latN < 0) {
-        zone = zones.leftSide;
-        lu = 1 - along;
-        lv = 1 - up;
-      } else {
-        zone = zones.rightSide;
-        lu = along;
-        lv = up;
-      }
-    } else if (along > 0.54) {
-      // +Y Hood in real iRacing horizontal UV: nose (along=1) on LEFT (lu=0), windshield on RIGHT (lu=1)
-      zone = zones.hood;
-      lu = 1 - Math.max(0, Math.min(1, (along - 0.54) / 0.46));
-      lv = 1 - across;
+      zoneKind = latN < 0 ? "leftSide" : "rightSide";
+    } else if (along > 0.52) {
+      zoneKind = "hood";
     } else {
-      // +Y Roof & rear deck in real iRacing horizontal UV: front on LEFT (lu=0), rear on RIGHT (lu=1)
-      zone = zones.roof;
-      lu = 1 - Math.max(0, Math.min(1, (along - 0.12) / 0.44));
-      lv = 1 - across;
+      zoneKind = "roof";
     }
 
-    const inset = 0.04;
-    const clampedU = inset + Math.max(0, Math.min(1, lu)) * (1 - inset * 2);
-    const clampedV = inset + Math.max(0, Math.min(1, lv)) * (1 - inset * 2);
-    const u = Math.max(0.001, Math.min(0.999, zone.x + clampedU * zone.w));
-    const w = Math.max(0.001, Math.min(0.999, zone.y + clampedV * zone.h));
-    uvArr[i * 2] = u;
-    uvArr[i * 2 + 1] = w;
+    for (let k = 0; k < 3; k++) {
+      const [u, w] = projectVertexToZone(verts[k], zoneKind);
+      uvArr[(i + k) * 2] = u;
+      uvArr[(i + k) * 2 + 1] = w;
+    }
   }
 
   geo.setAttribute("uv", new THREE.BufferAttribute(uvArr, 2));
@@ -406,8 +456,8 @@ export class WebGLPreviewEngine {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.specPackedCanvas = document.createElement("canvas");
-    this.specPackedCanvas.width = 512;
-    this.specPackedCanvas.height = 512;
+    this.specPackedCanvas.width = 1024;
+    this.specPackedCanvas.height = 1024;
     this.initScene();
   }
 
@@ -454,7 +504,7 @@ export class WebGLPreviewEngine {
       this.keyLight = new THREE.DirectionalLight("#ffffff", 2.35);
       this.keyLight.position.set(4.5, 8.5, 5.2);
       this.keyLight.castShadow = true;
-      this.keyLight.shadow.mapSize.set(1024, 1024);
+      this.keyLight.shadow.mapSize.set(2048, 2048);
       this.keyLight.shadow.camera.near = 1;
       this.keyLight.shadow.camera.far = 22;
       this.keyLight.shadow.camera.left = -4.5;

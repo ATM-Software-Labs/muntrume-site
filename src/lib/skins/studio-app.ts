@@ -665,8 +665,9 @@ export function initSkinsStudio(): void {
         if (viewMode === "showroom") {
           await renderShowroomCarView(showroomCanvas, state, showroomAngle);
         } else if (viewMode === "uv") {
+          const uvRenderSize = state.resolution === 4096 ? 2048 : 1536;
           await renderSkinToCanvas(uvCanvas, state, {
-            size: 1024,
+            size: uvRenderSize,
             templateCanvas: loadedTemplate?.wireframeCanvas ?? loadedTemplate?.canvas ?? kitWireframeCanvas ?? workerWireframeCanvas,
             partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
             psdPatternCanvas: psdPatCanvas,
@@ -684,17 +685,18 @@ export function initSkinsStudio(): void {
           renderSpecMapToCanvas(uvCanvas, state, 1024);
           applyUvTransform();
         } else if (viewMode === "3d") {
+          const glTexSize = state.resolution === 4096 ? 4096 : 2048;
           await renderSkinToCanvas(offscreenTexture, state, {
-            size: 2048,
+            size: glTexSize,
             partsOverlayCanvas: null,
             psdPatternCanvas: psdPatCanvas,
             forExport: true,
             for3dPreview: true,
           });
           const offscreenSpec = document.createElement("canvas");
-          offscreenSpec.width = 512;
-          offscreenSpec.height = 512;
-          renderSpecMapToCanvas(offscreenSpec, state, 512);
+          offscreenSpec.width = 1024;
+          offscreenSpec.height = 1024;
+          renderSpecMapToCanvas(offscreenSpec, state, 1024);
           glEngine.updateTexture(
             offscreenTexture,
             state.spec.metallic,
