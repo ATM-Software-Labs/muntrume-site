@@ -878,6 +878,14 @@ export function initSkinsStudio(): void {
   }
 
   const GALLERY_PATTERNS: Array<{ id: PatternStyle; label: string }> = [
+    { id: "iracing-works-01", label: "#01 Works" },
+    { id: "iracing-gt-02", label: "#02 GT Sweep" },
+    { id: "iracing-enduro-03", label: "#03 Enduro" },
+    { id: "iracing-apex-04", label: "#04 Apex" },
+    { id: "iracing-sprint-05", label: "#05 Sprint" },
+    { id: "iracing-blade-06", label: "#06 Blade" },
+    { id: "iracing-rally-07", label: "#07 Slash" },
+    { id: "iracing-factory-08", label: "#08 Factory" },
     { id: "solid-factory", label: "Fábrica" },
     { id: "pearl-shift", label: "Perlado" },
     { id: "carbon-exposed", label: "Carbono 2×2" },
@@ -903,7 +911,7 @@ export function initSkinsStudio(): void {
 
   function renderPatternGallery(): void {
     const host = byId<HTMLElement>("skPatternGallery");
-    if (!host || host.classList.contains("sk-hidden") || host.offsetParent === null) return;
+    if (!host || host.classList.contains("sk-hidden")) return;
     if (host.childElementCount === 0) {
       host.innerHTML = GALLERY_PATTERNS.map(
         (p) =>
@@ -1768,8 +1776,11 @@ export function initSkinsStudio(): void {
 
   // 1-Click Complete Muntrume Team + Website Kit using pixel-calibrated TEAM_LAYOUT_ZONES
   byId<HTMLButtonElement>("skApplyTeamKitBtn")?.addEventListener("click", () => {
-    const preset = MMT_TEAM_PRESETS[0];
-    applyTeamPresetConfig(preset, true);
+    const qSel = byId<HTMLSelectElement>("skQuickKitSelect");
+    const tSel = byId<HTMLSelectElement>("skTeamPresetSelect");
+    const chosenId = qSel?.value || tSel?.value || MMT_TEAM_PRESETS[0].id;
+    const preset = MMT_TEAM_PRESETS.find((p) => p.id === chosenId) ?? MMT_TEAM_PRESETS[0];
+    applyTeamPresetConfig(preset, false);
   });
 
   document.querySelectorAll<HTMLButtonElement>("[data-right-tab]").forEach((btn) => {
@@ -3553,16 +3564,33 @@ export function initSkinsStudio(): void {
     grid.innerHTML = list
       .map(
         (p, idx) =>
-          `<button type="button" class="sk-pal-chip" data-car-real-idx="${idx}" title="${escapeHtml(p.label)} (${escapeHtml(p.era)} · ${escapeHtml(p.finish)})"><span class="sk-pal-dots"><i style="background:${p.primary}"></i><i style="background:${p.accent}"></i></span>${escapeHtml(p.label)}</button>`,
+          `<button type="button" class="sk-pattern-card" data-car-real-idx="${idx}" title="${escapeHtml(p.label)} (${escapeHtml(p.era)} · ${escapeHtml(p.finish)})" style="padding:4px;gap:3px;">
+            <canvas width="84" height="34" style="height:30px;"></canvas>
+            <span style="font-size:9.5px;text-align:left;width:100%;">${escapeHtml(p.label)}</span>
+          </button>`,
       )
       .join("");
     grid.querySelectorAll<HTMLButtonElement>("[data-car-real-idx]").forEach((btn) => {
+      const idx = Number(btn.dataset.carRealIdx || 0);
+      const preset = list[idx];
+      const canvas = btn.querySelector("canvas");
+      if (canvas && preset) {
+        renderPatternThumbnail(canvas, preset.pattern, {
+          primary: preset.primary,
+          secondary: preset.secondary,
+          accent: preset.accent,
+          detail: preset.detail,
+          numberColor: "#ffffff",
+          numberBg: "#090b0f",
+        });
+      }
       btn.addEventListener("click", () => {
-        const idx = Number(btn.dataset.carRealIdx || 0);
-        const preset = list[idx];
         if (!preset) return;
         realLiveryCycleIdx = (idx + 1) % list.length;
         applyRealLiveryPreset(preset, car.name);
+        grid.querySelectorAll<HTMLButtonElement>("[data-car-real-idx]").forEach((b) => {
+          b.classList.toggle("is-active", b === btn);
+        });
       });
     });
   }
@@ -3681,11 +3709,18 @@ export function initSkinsStudio(): void {
       spec: SkinDesignState["spec"];
       fontStyle: SkinDesignState["fontStyle"];
       showNumberOnCar: boolean;
+      defaultBrandStyle?: MmtBrandStyle;
       slots: Partial<Record<TeamSlotId, SlotAssignment>>;
     },
     keepBasePaint = false,
   ): void {
     const car = getCarById(state.carId);
+    if (cfg.defaultBrandStyle) {
+      activeMmtBrandStyle = cfg.defaultBrandStyle;
+      document.querySelectorAll<HTMLButtonElement>("[data-mmt-logo-style]").forEach((b) => {
+        b.classList.toggle("is-active", b.dataset.mmtLogoStyle === activeMmtBrandStyle);
+      });
+    }
     if (!keepBasePaint) {
       state.pattern = cfg.pattern;
       state.psdPatternName = null;
@@ -3848,23 +3883,64 @@ export function initSkinsStudio(): void {
     });
   }
 
-  // Wire Official MMT Team Preset selector + 1-click Apply button
+  // Wire Official MMT Team Preset selector, visual cards & Topbar Quick Kit selector
   const teamPresetSel = byId<HTMLSelectElement>("skTeamPresetSelect");
+  const quickKitSel = byId<HTMLSelectElement>("skQuickKitSelect");
   const teamPresetDesc = byId<HTMLElement>("skTeamPresetDesc");
+  const teamPresetCardsHost = byId<HTMLElement>("skTeamPresetCards");
+  let selectedKitId = MMT_TEAM_PRESETS[0].id;
+
+  const syncSelectedKitUI = (kitId: string) => {
+    selectedKitId = kitId;
+    if (teamPresetSel) teamPresetSel.value = kitId;
+    if (quickKitSel) quickKitSel.value = kitId;
+    const found = MMT_TEAM_PRESETS.find((p) => p.id === kitId) ?? MMT_TEAM_PRESETS[0];
+    if (teamPresetDesc && found) teamPresetDesc.textContent = found.tagline;
+    teamPresetCardsHost?.querySelectorAll<HTMLButtonElement>("[data-kit-card]").forEach((btn) => {
+      btn.classList.toggle("is-active", btn.dataset.kitCard === kitId);
+    });
+  };
+
+  const kitOptionsHtml = MMT_TEAM_PRESETS.map(
+    (p) => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`,
+  ).join("");
   if (teamPresetSel) {
-    teamPresetSel.innerHTML = MMT_TEAM_PRESETS.map(
-      (p) => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`,
-    ).join("");
-    const updatePresetDesc = () => {
-      const found = MMT_TEAM_PRESETS.find((p) => p.id === teamPresetSel.value) ?? MMT_TEAM_PRESETS[0];
-      if (teamPresetDesc && found) teamPresetDesc.textContent = found.tagline;
-    };
-    updatePresetDesc();
-    teamPresetSel.addEventListener("change", updatePresetDesc);
+    teamPresetSel.innerHTML = kitOptionsHtml;
+    teamPresetSel.addEventListener("change", () => syncSelectedKitUI(teamPresetSel.value));
   }
+  if (quickKitSel) {
+    quickKitSel.innerHTML = kitOptionsHtml;
+    quickKitSel.addEventListener("change", () => {
+      syncSelectedKitUI(quickKitSel.value);
+      const preset = MMT_TEAM_PRESETS.find((p) => p.id === quickKitSel.value) ?? MMT_TEAM_PRESETS[0];
+      applyTeamPresetConfig(preset, false);
+    });
+  }
+  if (teamPresetCardsHost) {
+    teamPresetCardsHost.innerHTML = MMT_TEAM_PRESETS.map(
+      (p) =>
+        `<button type="button" class="sk-pattern-card" data-kit-card="${escapeHtml(p.id)}" title="${escapeHtml(p.tagline)}" style="padding:4px;gap:3px;">
+          <canvas width="84" height="34" style="height:30px;"></canvas>
+          <span style="font-size:9.5px;text-align:left;width:100%;">${escapeHtml(p.name.replace("Muntrume Motorsport (MMT) ", "MMT "))}</span>
+        </button>`,
+    ).join("");
+    teamPresetCardsHost.querySelectorAll<HTMLButtonElement>("[data-kit-card]").forEach((btn) => {
+      const preset = MMT_TEAM_PRESETS.find((p) => p.id === btn.dataset.kitCard);
+      const canvas = btn.querySelector("canvas");
+      if (canvas && preset) {
+        renderPatternThumbnail(canvas, preset.pattern, preset.palette);
+      }
+      btn.addEventListener("click", () => {
+        if (!preset) return;
+        syncSelectedKitUI(preset.id);
+        applyTeamPresetConfig(preset, false);
+      });
+    });
+  }
+  syncSelectedKitUI(selectedKitId);
 
   byId<HTMLButtonElement>("skApplyMmtBaseBtn")?.addEventListener("click", () => {
-    const id = teamPresetSel?.value || MMT_TEAM_PRESETS[0].id;
+    const id = selectedKitId || teamPresetSel?.value || MMT_TEAM_PRESETS[0].id;
     const preset = MMT_TEAM_PRESETS.find((p) => p.id === id) ?? MMT_TEAM_PRESETS[0];
     applyTeamPresetConfig(preset, false);
   });

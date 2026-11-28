@@ -1503,6 +1503,7 @@ export interface TeamPresetDefinition {
   spec: SpecConfig;
   fontStyle: SkinDesignState["fontStyle"];
   showNumberOnCar: boolean;
+  defaultBrandStyle?: MmtBrandStyle;
   slots: Partial<Record<TeamSlotId, SlotAssignment>>;
 }
 
@@ -1523,6 +1524,7 @@ export const MMT_TEAM_PRESETS: TeamPresetDefinition[] = [
     spec: { finish: "satin", metallic: 28, roughness: 32, clearcoat: 78, carbonAccent: false },
     fontStyle: "racing-bold",
     showNumberOnCar: false,
+    defaultBrandStyle: "modern",
     slots: {
       hood_main: { assetId: "slot-mmt-escudo", color: "#ffffff" },
       doors_side: { assetId: "slot-mmt-wordmark-white", color: "#ffffff" },
@@ -1530,6 +1532,32 @@ export const MMT_TEAM_PRESETS: TeamPresetDefinition[] = [
       rear_bumper: { assetId: "slot-muntru-url-emerald", color: "#00e699" },
       front_splitter_fenders: { assetId: "slot-atm-labs", color: "#ffffff" },
       roof_banner: { assetId: "slot-mmt-monogram", color: "#00e699" },
+    },
+  },
+  {
+    id: "mmt-classic-green-white",
+    name: "MMT Clásico Verde / Blanco",
+    tagline: "Esquema clásico oficial Muntrume (verde racing + blanco + negro) con escudo heráldico clásico",
+    pattern: "iracing-works-01",
+    palette: {
+      primary: "#0e8f48",
+      secondary: "#f8fafc",
+      accent: "#0b0f14",
+      detail: "#00e699",
+      numberColor: "#090b0f",
+      numberBg: "#f8fafc",
+    },
+    spec: { finish: "gloss", metallic: 16, roughness: 18, clearcoat: 92, carbonAccent: false },
+    fontStyle: "racing-bold",
+    showNumberOnCar: false,
+    defaultBrandStyle: "classic",
+    slots: {
+      hood_main: { assetId: "slot-mmt-classic-logo", color: "#ffffff" },
+      doors_side: { assetId: "slot-mmt-wordmark-white", color: "#ffffff" },
+      rear_wing: { assetId: "slot-muntru-url-white", color: "#ffffff" },
+      rear_bumper: { assetId: "slot-muntru-url-white", color: "#ffffff" },
+      front_splitter_fenders: { assetId: "slot-aero-labs", color: "#ffffff" },
+      roof_banner: { assetId: "slot-mmt-classic-icon", color: "#ffffff" },
     },
   },
   {
@@ -1548,6 +1576,7 @@ export const MMT_TEAM_PRESETS: TeamPresetDefinition[] = [
     spec: { finish: "gloss", metallic: 12, roughness: 14, clearcoat: 94, carbonAccent: false },
     fontStyle: "condensed-gt",
     showNumberOnCar: false,
+    defaultBrandStyle: "modern",
     slots: {
       hood_main: { assetId: "slot-mmt-escudo", color: "#090b0f" },
       doors_side: { assetId: "slot-mmt-wordmark-dark", color: "#090b0f" },
@@ -1573,6 +1602,7 @@ export const MMT_TEAM_PRESETS: TeamPresetDefinition[] = [
     spec: { finish: "carbon", metallic: 40, roughness: 44, clearcoat: 62, carbonAccent: true },
     fontStyle: "mono-tech",
     showNumberOnCar: false,
+    defaultBrandStyle: "modern",
     slots: {
       hood_main: { assetId: "slot-mmt-escudo", color: "#ffffff" },
       doors_side: { assetId: "slot-mmt-wordmark-white", color: "#ffffff" },

@@ -1122,9 +1122,14 @@ export function renderPatternThumbnail(
 ): void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
-  const s = canvas.width || 96;
-  ctx.clearRect(0, 0, s, s);
+  const w = canvas.width || 80;
+  const h = canvas.height || 48;
+  const s = 96;
+  ctx.save();
+  ctx.clearRect(0, 0, w, h);
+  ctx.scale(w / s, h / s);
   drawPatternCore(ctx, pattern, palette, s, pattern === "carbon-stealth", surfaceTexture, null, null);
+  ctx.restore();
 }
 
 function getFontFamily(style: SkinDesignState["fontStyle"]): string {
