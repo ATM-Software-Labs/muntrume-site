@@ -19,6 +19,24 @@ import {
 } from "./compositor";
 import { renderShowroomCarView, type ShowroomAngle } from "./car-showroom-view";
 import { BRAND_DECALS, SERIES_DECALS, TEAM_DECALS, type LibraryDecalItem } from "./decals-library";
+import {
+  MMT_TEAM_PRESETS,
+  QUICK_SLOT_ASSETS,
+  SLOT_DECAL_PREFIX,
+  TEAM_SLOT_META,
+  TEAM_SLOT_ORDER,
+  buildDecalsForSlot,
+  deleteFleetPreset,
+  extractCurrentSlotsFromDecals,
+  getSlotAssetById,
+  loadSavedFleetPresets,
+  makeSlotDecalId,
+  resolveTeamLayoutForCar,
+  saveFleetPreset,
+  type PortableTeamPreset,
+  type SlotAssignment,
+  type TeamSlotId,
+} from "./team-presets";
 import { buildChampionshipKitLayers, getCarSeriesProfile } from "./series-kits";
 import { DEFAULT_STAMPS } from "./stamps-library";
 import {
@@ -3610,6 +3628,351 @@ export function initSkinsStudio(): void {
       sendLiveBtn.disabled = false;
     }
   });
+
+  // ─── Muntrume Motorsport (MMT) Team Presets, Click-to-Slot Sponsors & Fleet JSON ───
+  let activeTeamSlot: TeamSlotId = "hood_main";
+
+  function applySlotAsset(slotId: TeamSlotId, assetId: string | null, colorOverride?: string, silent = false): void {
+    const mainId = makeSlotDecalId(slotId, "main");
+    const pairId = makeSlotDecalId(slotId, "pair");
+    state.decals = state.decals.filter((d) => d.id !== mainId && d.id !== pairId);
+
+    if (assetId) {
+      const asset = getSlotAssetById(assetId);
+      if (asset) {
+        const layout = resolveTeamLayoutForCar(state.carId, state.zones);
+        const created = buildDecalsForSlot(slotId, asset, layout, colorOverride);
+        state.decals.push(...created);
+        selectedDecalId = created[0]?.id ?? null;
+        if (!silent) {
+          setStatus(
+            `Slot "${TEAM_SLOT_META[slotId].label}" → ${asset.label}${created.length > 1 ? " (Izq 0° + Der 180°)" : ""}.`,
+            "ok",
+          );
+        }
+      }
+    } else if (!silent) {
+      setStatus(`Slot "${TEAM_SLOT_META[slotId].label}" vaciado.`, "ok");
+    }
+
+    if (!silent) {
+      renderSmartSlotsUI();
+      renderDecalList();
+      renderDecalEditor();
+      scheduleRender();
+    }
+  }
+
+  function remapActiveSlotsToCurrentCar(): void {
+    const currentSlots = extractCurrentSlotsFromDecals(state.decals);
+    const slotIds = Object.keys(currentSlots) as TeamSlotId[];
+    if (slotIds.length === 0) return;
+    for (const slotId of slotIds) {
+      const assignment = currentSlots[slotId];
+      if (assignment) {
+        applySlotAsset(slotId, assignment.assetId, assignment.color, true);
+      }
+    }
+  }
+
+  function applyTeamPresetConfig(
+    cfg: {
+      name: string;
+      pattern: PatternStyle;
+      palette: SkinDesignState["palette"];
+      spec: SkinDesignState["spec"];
+      fontStyle: SkinDesignState["fontStyle"];
+      showNumberOnCar: boolean;
+      slots: Partial<Record<TeamSlotId, SlotAssignment>>;
+    },
+    keepBasePaint = false,
+  ): void {
+    const car = getCarById(state.carId);
+    if (!keepBasePaint) {
+      state.pattern = cfg.pattern;
+      state.psdPatternName = null;
+      state.palette = { ...cfg.palette };
+      state.spec = { ...cfg.spec };
+      state.fontStyle = cfg.fontStyle;
+      state.showNumberOnCar = cfg.showNumberOnCar;
+      state.name = `${cfg.name} · ${car.name} #${state.customNumber}`;
+    }
+
+    // Replace only slot-managed layers (preserve user's custom uploaded decals & official UV kits)
+    state.decals = state.decals.filter((d) => !d.id.startsWith(SLOT_DECAL_PREFIX));
+    for (const slotId of TEAM_SLOT_ORDER) {
+      const assignment = cfg.slots[slotId];
+      if (assignment) {
+        applySlotAsset(slotId, assignment.assetId, assignment.color, true);
+      }
+    }
+
+    syncControlsFromState();
+    renderSmartSlotsUI();
+    renderDecalList();
+    renderDecalEditor();
+    scheduleRender();
+    setStatus(
+      `★ ${cfg.name} aplicada a ${car.name} (#${state.customNumber} ${state.customDriverName}) con slots MMT calibrados.`,
+      "ok",
+    );
+  }
+
+  function renderQuickDriverPills(): void {
+    const host = byId<HTMLElement>("skQuickDriverBar");
+    if (!host) return;
+    host.innerHTML = DRIVER_PROFILES.map((d) => {
+      const active = state.driverId === d.id;
+      const first = d.id === "custom" ? "Custom" : d.name.split(" ")[0];
+      return `<button type="button" class="sk-btn sk-btn-sm ${active ? "sk-btn-primary" : ""}" data-quick-drv="${escapeHtml(d.id)}" style="font-size:10.5px;padding:3px 7px;">#${escapeHtml(d.number)} ${escapeHtml(first)}</button>`;
+    }).join("");
+
+    host.querySelectorAll<HTMLButtonElement>("[data-quick-drv]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const drv = getDriverById(btn.dataset.quickDrv || "albertot");
+        const saved = loadDriverPrefs()[drv.id];
+        state.driverId = drv.id;
+        state.customDriverName = saved?.name || drv.name;
+        state.customNumber = saved?.number || drv.number;
+        state.customerId = saved?.customerId || drv.customerId;
+        state.showNumberOnCar = true;
+        customPhotoShots = null;
+        syncControlsFromState();
+        renderQuickDriverPills();
+        scheduleRender();
+        setStatus(`Piloto activo: #${state.customNumber} ${state.customDriverName} (dorsal y techo actualizados).`, "ok");
+      });
+    });
+  }
+
+  function renderSmartSlotsUI(): void {
+    const slotsGrid = byId<HTMLElement>("skSmartSlotsGrid");
+    const header = byId<HTMLElement>("skSlotPickerHeader");
+    const assetGrid = byId<HTMLElement>("skSlotAssetGrid");
+    const colorInput = byId<HTMLInputElement>("skSlotColorInput");
+    if (!slotsGrid || !assetGrid) return;
+
+    const assigned = extractCurrentSlotsFromDecals(state.decals);
+    slotsGrid.innerHTML = TEAM_SLOT_ORDER.map((slotId) => {
+      const meta = TEAM_SLOT_META[slotId];
+      const current = assigned[slotId];
+      const asset = current ? getSlotAssetById(current.assetId) : null;
+      const isSelected = slotId === activeTeamSlot;
+      return `
+        <button type="button" class="sk-btn sk-btn-sm" data-team-slot="${slotId}" style="flex-direction:column;align-items:flex-start;gap:2px;padding:6px 8px;text-align:left;${
+          isSelected
+            ? "border-color:rgba(0,230,153,0.75);background:rgba(0,230,153,0.16);color:#ecfdf5;"
+            : "border-color:rgba(255,255,255,0.12);"
+        }">
+          <span style="font-size:10.5px;font-weight:800;">${escapeHtml(meta.shortLabel)}</span>
+          <span style="font-size:9.5px;opacity:0.78;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">${
+            asset ? escapeHtml(asset.shortLabel) : "Vacío"
+          }</span>
+        </button>`;
+    }).join("");
+
+    slotsGrid.querySelectorAll<HTMLButtonElement>("[data-team-slot]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activeTeamSlot = (btn.dataset.teamSlot as TeamSlotId) || "hood_main";
+        const cur = assigned[activeTeamSlot];
+        if (colorInput && cur?.color) colorInput.value = cur.color;
+        renderSmartSlotsUI();
+      });
+    });
+
+    const activeMeta = TEAM_SLOT_META[activeTeamSlot];
+    if (header) header.textContent = `Slot activo: ${activeMeta.label}`;
+    const activeAssigned = assigned[activeTeamSlot];
+    if (colorInput && activeAssigned?.color) colorInput.value = activeAssigned.color;
+
+    assetGrid.innerHTML = QUICK_SLOT_ASSETS.map((a) => {
+      const isActiveAsset = activeAssigned?.assetId === a.id;
+      const badgeColor = a.category === "mmt" ? "#00e699" : a.category === "web" ? "#38bdf8" : "#f59e0b";
+      return `
+        <button type="button" class="sk-btn sk-btn-sm" data-slot-asset="${escapeHtml(a.id)}" title="${escapeHtml(a.label)}" style="flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 4px;min-height:46px;${
+          isActiveAsset
+            ? "border-color:rgba(0,230,153,0.85);background:rgba(0,230,153,0.2);"
+            : ""
+        }">
+          <span style="width:100%;height:3px;border-radius:99px;background:${badgeColor};opacity:0.75;"></span>
+          <span style="font-size:9.5px;font-weight:700;line-height:1.15;text-align:center;">${escapeHtml(a.shortLabel)}</span>
+        </button>`;
+    }).join("");
+
+    assetGrid.querySelectorAll<HTMLButtonElement>("[data-slot-asset]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const assetId = btn.dataset.slotAsset;
+        if (!assetId) return;
+        const asset = getSlotAssetById(assetId);
+        if (!asset) return;
+        const chosenColor = asset.kind === "builtin" && colorInput ? colorInput.value || asset.defaultColor : asset.defaultColor;
+        applySlotAsset(activeTeamSlot, assetId, chosenColor);
+      });
+    });
+  }
+
+  function renderFleetPresetList(): void {
+    const host = byId<HTMLElement>("skFleetPresetList");
+    if (!host) return;
+    const list = loadSavedFleetPresets();
+    if (list.length === 0) {
+      host.innerHTML = `<p class="sk-help" style="margin:0;">Guarda tu base de colores + sponsors para aplicarla a cualquier GT3/GTP en 1 clic.</p>`;
+      return;
+    }
+    host.innerHTML = list
+      .map(
+        (p) => `
+        <div class="sk-list-item">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;" title="Origen: ${escapeHtml(p.sourceCarId)}">${escapeHtml(p.name)}</span>
+          <div class="sk-row" style="gap:4px;">
+            <button type="button" class="sk-btn sk-btn-sm sk-btn-primary" data-apply-fleet="${escapeHtml(p.id)}">Aplicar</button>
+            <button type="button" class="sk-btn sk-btn-sm sk-btn-danger" data-del-fleet="${escapeHtml(p.id)}">×</button>
+          </div>
+        </div>`,
+      )
+      .join("");
+
+    host.querySelectorAll<HTMLButtonElement>("[data-apply-fleet]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const target = list.find((item) => item.id === btn.dataset.applyFleet);
+        if (!target) return;
+        applyTeamPresetConfig(target, false);
+      });
+    });
+
+    host.querySelectorAll<HTMLButtonElement>("[data-del-fleet]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.delFleet;
+        if (!id) return;
+        deleteFleetPreset(id);
+        renderFleetPresetList();
+      });
+    });
+  }
+
+  // Wire Official MMT Team Preset selector + 1-click Apply button
+  const teamPresetSel = byId<HTMLSelectElement>("skTeamPresetSelect");
+  const teamPresetDesc = byId<HTMLElement>("skTeamPresetDesc");
+  if (teamPresetSel) {
+    teamPresetSel.innerHTML = MMT_TEAM_PRESETS.map(
+      (p) => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`,
+    ).join("");
+    const updatePresetDesc = () => {
+      const found = MMT_TEAM_PRESETS.find((p) => p.id === teamPresetSel.value) ?? MMT_TEAM_PRESETS[0];
+      if (teamPresetDesc && found) teamPresetDesc.textContent = found.tagline;
+    };
+    updatePresetDesc();
+    teamPresetSel.addEventListener("change", updatePresetDesc);
+  }
+
+  byId<HTMLButtonElement>("skApplyMmtBaseBtn")?.addEventListener("click", () => {
+    const id = teamPresetSel?.value || MMT_TEAM_PRESETS[0].id;
+    const preset = MMT_TEAM_PRESETS.find((p) => p.id === id) ?? MMT_TEAM_PRESETS[0];
+    applyTeamPresetConfig(preset, false);
+  });
+
+  byId<HTMLButtonElement>("skClearActiveSlotBtn")?.addEventListener("click", () => {
+    applySlotAsset(activeTeamSlot, null);
+  });
+
+  byId<HTMLInputElement>("skSlotColorInput")?.addEventListener("input", (e) => {
+    const nextColor = (e.target as HTMLInputElement).value;
+    const assigned = extractCurrentSlotsFromDecals(state.decals)[activeTeamSlot];
+    if (assigned) {
+      applySlotAsset(activeTeamSlot, assigned.assetId, nextColor);
+    }
+  });
+
+  const buildCurrentFleetPreset = (): PortableTeamPreset => ({
+    kind: "mmt-team-preset-v1",
+    id: `fleet-${Date.now()}`,
+    name: (state.name || `MMT Flota ${new Date().toLocaleDateString("es-ES")}`).trim(),
+    createdAt: new Date().toISOString(),
+    sourceCarId: state.carId,
+    pattern: state.pattern,
+    palette: { ...state.palette },
+    spec: { ...state.spec },
+    fontStyle: state.fontStyle,
+    showNumberOnCar: state.showNumberOnCar,
+    slots: extractCurrentSlotsFromDecals(state.decals),
+  });
+
+  byId<HTMLButtonElement>("skSaveFleetPresetBtn")?.addEventListener("click", () => {
+    const preset = buildCurrentFleetPreset();
+    saveFleetPreset(preset);
+    renderFleetPresetList();
+    setStatus(`Preset de flota guardado: "${preset.name}" (listo para aplicar a cualquier coche).`, "ok");
+  });
+
+  byId<HTMLButtonElement>("skExportFleetJsonBtn")?.addEventListener("click", () => {
+    const preset = buildCurrentFleetPreset();
+    const slug = preset.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "mmt-team-preset";
+    const blob = new Blob([JSON.stringify(preset, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${slug}.mmt-preset.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    setStatus(`Preset de flota exportado: ${slug}.mmt-preset.json`, "ok");
+  });
+
+  byId<HTMLInputElement>("skImportFleetJsonInput")?.addEventListener("change", async (e) => {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      const parsed = JSON.parse(await file.text()) as PortableTeamPreset | SkinDesignState;
+      if ((parsed as PortableTeamPreset).kind === "mmt-team-preset-v1") {
+        const fleet = parsed as PortableTeamPreset;
+        saveFleetPreset(fleet);
+        renderFleetPresetList();
+        applyTeamPresetConfig(fleet, false);
+      } else if ((parsed as SkinDesignState).palette && (parsed as SkinDesignState).zones) {
+        // Also gracefully accept standard skins.muntru.me JSON and remap its slots onto the current car
+        const full = parsed as SkinDesignState;
+        const converted: PortableTeamPreset = {
+          kind: "mmt-team-preset-v1",
+          id: `fleet-imp-${Date.now()}`,
+          name: full.name || file.name.replace(/\.json$/i, ""),
+          createdAt: new Date().toISOString(),
+          sourceCarId: full.carId || state.carId,
+          pattern: full.pattern,
+          palette: { ...full.palette },
+          spec: { ...full.spec },
+          fontStyle: full.fontStyle,
+          showNumberOnCar: full.showNumberOnCar,
+          slots: extractCurrentSlotsFromDecals(full.decals || []),
+        };
+        saveFleetPreset(converted);
+        renderFleetPresetList();
+        applyTeamPresetConfig(converted, false);
+      } else {
+        throw new Error("El archivo JSON no es un preset de equipo válido.");
+      }
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Error importando preset de equipo JSON", "err");
+    } finally {
+      input.value = "";
+    }
+  });
+
+  // Automatically remap active MMT slots when switching cars and sync pilot pills on driver change
+  carSelect?.addEventListener("change", () => {
+    remapActiveSlotsToCurrentCar();
+    renderSmartSlotsUI();
+    renderDecalList();
+    scheduleRender();
+  });
+  drvSelect?.addEventListener("change", () => {
+    renderQuickDriverPills();
+  });
+
+  renderQuickDriverPills();
+  renderSmartSlotsUI();
+  renderFleetPresetList();
 
   // Init: verify active muntru.me Vault session before unlocking studio
   void verifyVaultSession();

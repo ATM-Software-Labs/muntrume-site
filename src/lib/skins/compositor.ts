@@ -158,6 +158,25 @@ async function loadImageCached(key: string, src: string): Promise<HTMLImageEleme
   return null;
 }
 
+function ensureCrispSvgSize(svg: string): string {
+  if (/\bwidth\s*=/i.test(svg.slice(0, 260)) && /\bheight\s*=/i.test(svg.slice(0, 260))) {
+    return svg;
+  }
+  const vb = svg.match(/viewBox=["']\s*[\d.-]+\s+[\d.-]+\s+([\d.]+)\s+([\d.]+)\s*["']/i);
+  let w = vb ? Number(vb[1]) : 512;
+  let h = vb ? Number(vb[2]) : 512;
+  if (w > 0 && h > 0) {
+    const targetMax = 1600;
+    const scale = targetMax / Math.max(w, h);
+    w = Math.max(128, Math.round(w * scale));
+    h = Math.max(128, Math.round(h * scale));
+  } else {
+    w = 1024;
+    h = 1024;
+  }
+  return svg.replace(/<svg\b/i, `<svg width="${w}" height="${h}"`);
+}
+
 function getDecalSource(decal: DecalLayer): { key: string; src: string } | null {
   if (decal.kind === "custom" && decal.dataUrl) {
     return { key: `custom:${decal.id}:${decal.dataUrl.slice(0, 48)}`, src: decal.dataUrl };
@@ -165,13 +184,13 @@ function getDecalSource(decal: DecalLayer): { key: string; src: string } | null 
   if (decal.kind === "builtin" && decal.assetId) {
     const stamp = DEFAULT_STAMPS.find((s) => s.id === decal.assetId);
     if (stamp) {
-      const svg = stamp.svg(decal.color || "#00e699");
+      const svg = ensureCrispSvgSize(stamp.svg(decal.color || "#00e699"));
       const encoded = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
       return { key: `stamp:${stamp.id}:${decal.color}`, src: encoded };
     }
     const asset = BUILTIN_DECALS.find((b) => b.id === decal.assetId);
     if (!asset) return null;
-    const svg = asset.svg(decal.color || "#ffffff");
+    const svg = ensureCrispSvgSize(asset.svg(decal.color || "#ffffff"));
     const encoded = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
     return { key: `builtin:${asset.id}:${decal.color}`, src: encoded };
   }
