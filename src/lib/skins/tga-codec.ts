@@ -8,7 +8,9 @@ export function encodeTgaFromImageData(imageData: ImageData, includeAlpha = fals
   const { width, height, data } = imageData;
   const bytesPerPixel = includeAlpha ? 4 : 3;
   const headerSize = 18;
-  const out = new Uint8Array(headerSize + width * height * bytesPerPixel);
+  const footerSize = 26;
+  const pixelBytes = width * height * bytesPerPixel;
+  const out = new Uint8Array(headerSize + pixelBytes + footerSize);
 
   // TGA Header (18 bytes)
   out[0] = 0; // ID length
@@ -20,8 +22,8 @@ export function encodeTgaFromImageData(imageData: ImageData, includeAlpha = fals
   out[13] = (width >> 8) & 0xff;
   out[14] = height & 0xff;
   out[15] = (height >> 8) & 0xff;
-  out[16] = includeAlpha ? 32 : 24; // Bits per pixel
-  // Image descriptor: bit 5 = 0 (bottom-left origin, standard iRacing TGA), alpha bits = 8 or 0
+  out[16] = includeAlpha ? 32 : 24; // Bits per pixel (24-bit standard iRacing / Trading Paints)
+  // Image descriptor: bit 5 = 0 (bottom-left origin, standard Photoshop/iRacing TGA), alpha bits = 8 or 0
   out[17] = includeAlpha ? 8 : 0;
 
   let dst = headerSize;
@@ -37,6 +39,16 @@ export function encodeTgaFromImageData(imageData: ImageData, includeAlpha = fals
       }
     }
   }
+
+  // Standard TGA 2.0 Footer (26 bytes: 8 zero bytes + "TRUEVISION-XFILE." + NUL)
+  // Required by Photoshop / ImageMagick / Trading Paints server-side TGA validator
+  const sig = "TRUEVISION-XFILE.";
+  const sigStart = headerSize + pixelBytes + 8;
+  for (let i = 0; i < sig.length; i++) {
+    out[sigStart + i] = sig.charCodeAt(i);
+  }
+  out[sigStart + sig.length] = 0;
+
   return out;
 }
 

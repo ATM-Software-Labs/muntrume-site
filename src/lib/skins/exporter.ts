@@ -25,62 +25,90 @@ function getExportBasePrefix(carId: string): string {
   return "car";
 }
 
+/**
+ * Trading Paints strictly requires 2048x2048 24-bit uncompressed .TGA (~12.0 MB).
+ * When the user selects 4096px (4K), we supersample at 4096px and downsample with
+ * high-quality filtering to 2048x2048 so logos/lines stay razor-sharp while Trading Paints
+ * accepts the file 100% of the time.
+ */
+async function renderTradingPaintsTgaImageData(
+  state: SkinDesignState,
+  numberModeOverride: "sim-stamped" | "custom-number",
+  partsOverlayCanvas?: HTMLCanvasElement | null,
+  psdPatternCanvas?: HTMLCanvasElement | null,
+): Promise<ImageData> {
+  const TARGET_TGA_SIZE = 2048;
+  const renderSize = state.resolution === 4096 ? 4096 : 2048;
+  const workCanvas = document.createElement("canvas");
+  workCanvas.width = renderSize;
+  workCanvas.height = renderSize;
+
+  await renderSkinToCanvas(workCanvas, state, {
+    size: renderSize,
+    partsOverlayCanvas,
+    psdPatternCanvas,
+    forExport: true,
+    numberModeOverride,
+  });
+
+  let finalCanvas = workCanvas;
+  if (renderSize !== TARGET_TGA_SIZE) {
+    finalCanvas = document.createElement("canvas");
+    finalCanvas.width = TARGET_TGA_SIZE;
+    finalCanvas.height = TARGET_TGA_SIZE;
+    const fCtx = finalCanvas.getContext("2d", { willReadFrequently: true });
+    if (!fCtx) throw new Error("No se pudo crear el lienzo 2048×2048 para Trading Paints.");
+    fCtx.imageSmoothingEnabled = true;
+    fCtx.imageSmoothingQuality = "high";
+    fCtx.drawImage(workCanvas, 0, 0, TARGET_TGA_SIZE, TARGET_TGA_SIZE);
+    workCanvas.width = 1;
+    workCanvas.height = 1;
+  }
+
+  const ctx = finalCanvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) throw new Error("No se pudo leer el lienzo de exportación.");
+  const data = ctx.getImageData(0, 0, TARGET_TGA_SIZE, TARGET_TGA_SIZE);
+  for (let i = 3; i < data.data.length; i += 4) data.data[i] = 255;
+  finalCanvas.width = 1;
+  finalCanvas.height = 1;
+  return data;
+}
+
 async function renderTgaBuffers(
   state: SkinDesignState,
   onProgress?: (msg: string) => void,
   partsOverlayCanvas?: HTMLCanvasElement | null,
   psdPatternCanvas?: HTMLCanvasElement | null,
 ): Promise<{ diffuseTga: Uint8Array; customNumTga: Uint8Array | null; specTga: Uint8Array; size: number }> {
-  const size = state.resolution;
+  const TARGET_TGA_SIZE = 2048;
   const cid = sanitizeCustomerId(state.customerId);
   const isCustomNumber = (state.numberMode || "sim-stamped") === "custom-number";
-  onProgress?.(`Renderizando textura base ${size}×${size}px...`);
+  onProgress?.(`Renderizando textura Trading Paints 2048×2048px${state.resolution === 4096 ? " (supersampling 4K)" : ""}...`);
 
-  const workCanvas = document.createElement("canvas");
-  workCanvas.width = size;
-  workCanvas.height = size;
-  // Base car_<id>.tga is ALWAYS rendered clean (sim-stamped) so iRacing never overlaps numbers
-  await renderSkinToCanvas(workCanvas, state, {
-    size,
-    partsOverlayCanvas,
-    psdPatternCanvas,
-    forExport: true,
-    numberModeOverride: "sim-stamped",
-  });
-
-  const ctx = workCanvas.getContext("2d", { willReadFrequently: true });
-  if (!ctx) throw new Error("No se pudo leer el lienzo de exportación.");
-  const diffuseData = ctx.getImageData(0, 0, size, size);
-  for (let i = 3; i < diffuseData.data.length; i += 4) diffuseData.data[i] = 255;
-
-  onProgress?.(`Codificando car_${cid}.tga (base limpia 24-bit)...`);
+  const diffuseData = await renderTradingPaintsTgaImageData(state, "sim-stamped", partsOverlayCanvas, psdPatternCanvas);
+  onProgress?.(`Codificando car_${cid}.tga (24-bit TGA 2.0 · 2048px)...`);
   const diffuseTga = encodeTgaFromImageData(diffuseData, false);
 
   let customNumTga: Uint8Array | null = null;
   if (isCustomNumber) {
     onProgress?.(`Renderizando dorsal fijo car_num_${cid}.tga...`);
-    await renderSkinToCanvas(workCanvas, state, {
-      size,
-      partsOverlayCanvas,
-      psdPatternCanvas,
-      forExport: true,
-      numberModeOverride: "custom-number",
-    });
-    const numData = ctx.getImageData(0, 0, size, size);
-    for (let i = 3; i < numData.data.length; i += 4) numData.data[i] = 255;
+    const numData = await renderTradingPaintsTgaImageData(state, "custom-number", partsOverlayCanvas, psdPatternCanvas);
     customNumTga = encodeTgaFromImageData(numData, false);
   }
 
-  onProgress?.(`Generando car_spec_${cid}.tga...`);
-  renderSpecMapToCanvas(workCanvas, state, size);
-  const specData = ctx.getImageData(0, 0, size, size);
+  onProgress?.(`Generando car_spec_${cid}.tga (2048px)...`);
+  const specCanvas = document.createElement("canvas");
+  specCanvas.width = TARGET_TGA_SIZE;
+  specCanvas.height = TARGET_TGA_SIZE;
+  renderSpecMapToCanvas(specCanvas, state, TARGET_TGA_SIZE);
+  const sCtx = specCanvas.getContext("2d", { willReadFrequently: true });
+  if (!sCtx) throw new Error("No se pudo leer el Spec Map.");
+  const specData = sCtx.getImageData(0, 0, TARGET_TGA_SIZE, TARGET_TGA_SIZE);
   const specTga = encodeTgaFromImageData(specData, false);
+  specCanvas.width = 1;
+  specCanvas.height = 1;
 
-  // Release large 4K backing buffer immediately
-  workCanvas.width = 1;
-  workCanvas.height = 1;
-
-  return { diffuseTga, customNumTga, specTga, size };
+  return { diffuseTga, customNumTga, specTga, size: TARGET_TGA_SIZE };
 }
 
 export async function exportSingleDiffuseTga(
@@ -90,26 +118,9 @@ export async function exportSingleDiffuseTga(
   psdPatternCanvas?: HTMLCanvasElement | null,
 ): Promise<string> {
   const cid = sanitizeCustomerId(state.customerId);
-  const size = state.resolution;
-  onProgress?.(`Renderizando car_${cid}.tga (${size}×${size}px)...`);
-
-  const workCanvas = document.createElement("canvas");
-  workCanvas.width = size;
-  workCanvas.height = size;
-  await renderSkinToCanvas(workCanvas, state, {
-    size,
-    partsOverlayCanvas,
-    psdPatternCanvas,
-    forExport: true,
-    numberModeOverride: "sim-stamped",
-  });
-  const ctx = workCanvas.getContext("2d", { willReadFrequently: true });
-  if (!ctx) throw new Error("No se pudo leer el lienzo.");
-  const diffuseData = ctx.getImageData(0, 0, size, size);
-  for (let i = 3; i < diffuseData.data.length; i += 4) diffuseData.data[i] = 255;
+  onProgress?.(`Renderizando car_${cid}.tga (2048×2048px Trading Paints)...`);
+  const diffuseData = await renderTradingPaintsTgaImageData(state, "sim-stamped", partsOverlayCanvas, psdPatternCanvas);
   const tga = encodeTgaFromImageData(diffuseData, false);
-  workCanvas.width = 1;
-  workCanvas.height = 1;
 
   const prefix = getExportBasePrefix(state.carId);
   const filename = `${prefix}_${cid}.tga`;
@@ -124,26 +135,9 @@ export async function exportSingleCustomNumberTga(
   psdPatternCanvas?: HTMLCanvasElement | null,
 ): Promise<string> {
   const cid = sanitizeCustomerId(state.customerId);
-  const size = state.resolution;
-  onProgress?.(`Renderizando dorsal fijo car_num_${cid}.tga (${size}×${size}px)...`);
-
-  const workCanvas = document.createElement("canvas");
-  workCanvas.width = size;
-  workCanvas.height = size;
-  await renderSkinToCanvas(workCanvas, state, {
-    size,
-    partsOverlayCanvas,
-    psdPatternCanvas,
-    forExport: true,
-    numberModeOverride: "custom-number",
-  });
-  const ctx = workCanvas.getContext("2d", { willReadFrequently: true });
-  if (!ctx) throw new Error("No se pudo leer el lienzo.");
-  const numData = ctx.getImageData(0, 0, size, size);
-  for (let i = 3; i < numData.data.length; i += 4) numData.data[i] = 255;
+  onProgress?.(`Renderizando dorsal fijo car_num_${cid}.tga (2048×2048px)...`);
+  const numData = await renderTradingPaintsTgaImageData(state, "custom-number", partsOverlayCanvas, psdPatternCanvas);
   const tga = encodeTgaFromImageData(numData, false);
-  workCanvas.width = 1;
-  workCanvas.height = 1;
 
   const prefix = getExportBasePrefix(state.carId);
   const filename = `${prefix}_num_${cid}.tga`;
@@ -156,8 +150,8 @@ export async function exportSingleSpecTga(
   onProgress?: (msg: string) => void,
 ): Promise<string> {
   const cid = sanitizeCustomerId(state.customerId);
-  const size = state.resolution;
-  onProgress?.(`Generando car_spec_${cid}.tga (${size}×${size}px)...`);
+  const size = 2048;
+  onProgress?.(`Generando car_spec_${cid}.tga (2048×2048px)...`);
 
   const workCanvas = document.createElement("canvas");
   workCanvas.width = size;
