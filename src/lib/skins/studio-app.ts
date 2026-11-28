@@ -4086,6 +4086,27 @@ export function initSkinsStudio(): void {
     applySlotAsset("rear_bumper", "slot-muntru-url-white", "#ffffff");
   });
 
+  // Compact iRacing Paint Shop 01-08 Pattern Strip
+  const syncPaintShopStrip = () => {
+    document.querySelectorAll<HTMLButtonElement>("[data-paintshop-pattern]").forEach((btn) => {
+      btn.classList.toggle("sk-btn-primary", btn.dataset.paintshopPattern === state.pattern);
+    });
+  };
+  document.querySelectorAll<HTMLButtonElement>("[data-paintshop-pattern]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const pat = btn.dataset.paintshopPattern as PatternStyle | undefined;
+      if (!pat) return;
+      state.pattern = pat;
+      state.psdPatternName = null;
+      const pSel = byId<HTMLSelectElement>("skPatternSelect");
+      if (pSel) pSel.value = pat;
+      syncPaintShopStrip();
+      scheduleRender();
+      setStatus(`Diseño aplicado: ${btn.title || pat}`, "ok");
+    });
+  });
+  syncPaintShopStrip();
+
   // Init: verify active muntru.me Vault session before unlocking studio
   void verifyVaultSession();
   window.addEventListener("resize", () => {

@@ -931,6 +931,159 @@ function drawPatternCore(
     ctx.lineTo(size * 0.28, size);
     ctx.closePath();
     ctx.fill();
+  } else if (pattern === "iracing-works-01") {
+    // Paint Shop #01: Works Nose & Roof 3-Color Band
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = secColor;
+    ctx.fillRect(0, 0, size * 0.36, size);
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(size * 0.34, 0, size * 0.045, size);
+    ctx.fillStyle = palette.detail;
+    ctx.fillRect(size * 0.395, 0, size * 0.015, size);
+  } else if (pattern === "iracing-gt-02") {
+    // Paint Shop #02: GT Side-Sweep (dynamic sweeping motorsport diagonal)
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = secColor;
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.56);
+    ctx.lineTo(size, size * 0.16);
+    ctx.lineTo(size, size);
+    ctx.lineTo(0, size);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = palette.accent;
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.52);
+    ctx.lineTo(size, size * 0.12);
+    ctx.lineTo(size, size * 0.175);
+    ctx.lineTo(0, size * 0.575);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = palette.detail;
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.495);
+    ctx.lineTo(size, size * 0.095);
+    ctx.lineTo(size, size * 0.112);
+    ctx.lineTo(0, size * 0.512);
+    ctx.closePath();
+    ctx.fill();
+  } else if (pattern === "iracing-enduro-03") {
+    // Paint Shop #03: Endurance Dual-Stripe + Lower Sill
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = secColor;
+    ctx.fillRect(0, size * 0.74, size, size * 0.26);
+    ctx.fillRect(0, 0, size, size * 0.18);
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(0, size * 0.45, size, size * 0.036);
+    ctx.fillRect(0, size * 0.515, size, size * 0.036);
+    ctx.fillStyle = palette.detail;
+    ctx.fillRect(0, size * 0.73, size, size * 0.014);
+    ctx.fillRect(0, size * 0.18, size, size * 0.014);
+  } else if (pattern === "iracing-apex-04") {
+    // Paint Shop #04: Apex Split-Body Front/Rear Contrast
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = secColor;
+    ctx.beginPath();
+    ctx.moveTo(size * 0.55, 0);
+    ctx.lineTo(size, 0);
+    ctx.lineTo(size, size);
+    ctx.lineTo(size * 0.35, size);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = palette.accent;
+    ctx.beginPath();
+    ctx.moveTo(size * 0.50, 0);
+    ctx.lineTo(size * 0.56, 0);
+    ctx.lineTo(size * 0.36, size);
+    ctx.lineTo(size * 0.30, size);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = palette.detail;
+    ctx.beginPath();
+    ctx.moveTo(size * 0.47, 0);
+    ctx.lineTo(size * 0.49, 0);
+    ctx.lineTo(size * 0.29, size);
+    ctx.lineTo(size * 0.27, size);
+    ctx.closePath();
+    ctx.fill();
+  } else if (pattern === "iracing-sprint-05") {
+    // Paint Shop #05: Sprint Rocker Wedge
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = secColor;
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.80);
+    ctx.lineTo(size * 0.65, size * 0.62);
+    ctx.lineTo(size, size * 0.38);
+    ctx.lineTo(size, size);
+    ctx.lineTo(0, size);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = palette.accent;
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.77);
+    ctx.lineTo(size * 0.64, size * 0.59);
+    ctx.lineTo(size, size * 0.34);
+    ctx.lineTo(size, size * 0.39);
+    ctx.lineTo(size * 0.65, size * 0.63);
+    ctx.lineTo(0, size * 0.81);
+    ctx.closePath();
+    ctx.fill();
+  } else if (pattern === "iracing-blade-06") {
+    // Paint Shop #06: Aero Side-Blade & Roof Trim
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = secColor;
+    ctx.beginPath();
+    ctx.moveTo(size * 0.12, size * 0.22);
+    ctx.lineTo(size * 0.88, size * 0.22);
+    ctx.lineTo(size * 0.78, size * 0.44);
+    ctx.lineTo(size * 0.04, size * 0.44);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(size * 0.12, size * 0.78);
+    ctx.lineTo(size * 0.88, size * 0.78);
+    ctx.lineTo(size * 0.78, size * 0.56);
+    ctx.lineTo(size * 0.04, size * 0.56);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(0, size * 0.47, size, size * 0.06);
+  } else if (pattern === "iracing-rally-07") {
+    // Paint Shop #07: Motorsport Triple-Slash
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    const slash = (x0: number, w: number, col: string) => {
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.moveTo(size * x0, 0);
+      ctx.lineTo(size * (x0 + w), 0);
+      ctx.lineTo(size * (x0 + w - 0.28), size);
+      ctx.lineTo(size * (x0 - 0.28), size);
+      ctx.closePath();
+      ctx.fill();
+    };
+    slash(0.32, 0.16, secColor);
+    slash(0.52, 0.09, palette.accent);
+    slash(0.64, 0.045, palette.detail);
+    slash(0.80, 0.14, secColor);
+  } else if (pattern === "iracing-factory-08") {
+    // Paint Shop #08: Clean Factory Works Trim
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = secColor;
+    ctx.fillRect(0, size * 0.86, size, size * 0.14);
+    ctx.fillRect(0, 0, size, size * 0.10);
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(0, size * 0.835, size, size * 0.028);
+    ctx.fillRect(0, size * 0.10, size, size * 0.025);
+    ctx.fillStyle = palette.detail;
+    ctx.fillRect(0, size * 0.822, size, size * 0.01);
   }
 
   if (carbonBase && pattern !== "carbon-exposed") {

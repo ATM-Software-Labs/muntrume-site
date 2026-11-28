@@ -602,6 +602,87 @@ export const BUILTIN_DECALS: BuiltinDecalAsset[] = [
     svg: (c) =>
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 90"><polygon points="20,80 70,10 110,10 60,80" fill="${c}"/><polygon points="95,80 145,10 185,10 135,80" fill="${c}" opacity="0.8"/><polygon points="170,80 220,10 260,10 210,80" fill="${c}" opacity="0.55"/></svg>`,
   },
+  // FIA / Motorsport mandatory safety & class decals (100% original vectors)
+  {
+    id: "fia-tow-arrow",
+    label: "TOW Remolque FIA",
+    svg: () =>
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 120"><polygon points="90,10 165,105 15,105" fill="#ef4444" stroke="#ffffff" stroke-width="6"/><text x="90" y="88" text-anchor="middle" fill="#ffffff" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="30" letter-spacing="2">TOW</text></svg>`,
+  },
+  {
+    id: "fia-fire-e",
+    label: "Extintor FIA (E)",
+    svg: () =>
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><circle cx="70" cy="70" r="60" fill="#ffffff" stroke="#dc2626" stroke-width="10"/><text x="70" y="92" text-anchor="middle" fill="#dc2626" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="74">E</text></svg>`,
+  },
+  {
+    id: "fia-power-cut",
+    label: "Corta-corrientes FIA",
+    svg: () =>
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 140"><polygon points="80,10 148,128 12,128" fill="#1d4ed8" stroke="#ffffff" stroke-width="8"/><polygon points="88,36 56,82 78,82 68,118 106,70 84,70" fill="#ef4444"/></svg>`,
+  },
+  {
+    id: "class-gt3-pro",
+    label: "Placa GT3 PRO",
+    svg: (c) =>
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 96"><rect x="4" y="4" width="292" height="88" rx="10" fill="#090d14" stroke="${c}" stroke-width="6"/><rect x="16" y="16" width="122" height="64" rx="6" fill="#00e699"/><text x="77" y="61" text-anchor="middle" fill="#05120d" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="38">GT3</text><text x="215" y="62" text-anchor="middle" fill="${c}" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="40" letter-spacing="3">PRO</text></svg>`,
+  },
+  {
+    id: "class-24h-enduro",
+    label: "Badge 24H Endurance",
+    svg: (c) =>
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 90"><rect x="4" y="8" width="96" height="74" rx="8" fill="#ef4444"/><text x="52" y="60" text-anchor="middle" fill="#ffffff" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="42">24H</text><text x="118" y="44" fill="${c}" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="28" letter-spacing="3">ENDURANCE</text><text x="118" y="72" fill="#00e699" font-family="Inter,Arial,sans-serif" font-weight="800" font-size="20" letter-spacing="4">MOTORSPORT</text></svg>`,
+  },
+  // Clean original technical motorsport sponsors
+  {
+    id: "tech-aero-labs",
+    label: "AERO LABS Composites",
+    svg: (c) =>
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 84"><polygon points="10,66 48,18 76,18 38,66" fill="#00e699"/><polygon points="48,66 86,18 106,18 68,66" fill="${c}"/><text x="116" y="47" fill="${c}" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="36" letter-spacing="3">AERO LABS</text><text x="118" y="70" fill="#94a3b8" font-family="Inter,Arial,sans-serif" font-weight="700" font-size="16" letter-spacing="5">CARBON COMPOSITES</text></svg>`,
+  },
+  {
+    id: "tech-slick-grip",
+    label: "APEX Compound Tires",
+    svg: (c) =>
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 84"><rect x="6" y="14" width="38" height="56" rx="6" fill="#facc15"/><text x="25" y="54" text-anchor="middle" fill="#090b0f" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="32">A</text><text x="58" y="48" fill="${c}" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="34" letter-spacing="2">APEX COMPOUND</text><text x="60" y="70" fill="#facc15" font-family="Inter,Arial,sans-serif" font-weight="800" font-size="15" letter-spacing="5">RACING SLICKS</text></svg>`,
+  },
+  {
+    id: "tech-telemetry-pro",
+    label: "TELEMETRY PRO Data",
+    svg: (c) =>
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 84"><polyline points="12,56 32,56 44,24 58,64 72,38 92,38" fill="none" stroke="#38bdf8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><text x="108" y="47" fill="${c}" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="31" letter-spacing="2">TELEMETRY PRO</text><text x="110" y="70" fill="#38bdf8" font-family="Inter,Arial,sans-serif" font-weight="700" font-size="15" letter-spacing="4">LIVE RACE DATA</text></svg>`,
+  },
+  {
+    id: "tech-race-fuel",
+    label: "OCTANE 102 Race Fuel",
+    svg: (c) =>
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 84"><rect x="8" y="14" width="96" height="56" rx="8" fill="#f97316"/><text x="56" y="54" text-anchor="middle" fill="#ffffff" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="34">102</text><text x="118" y="48" fill="${c}" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="34" letter-spacing="3">OCTANE</text><text x="120" y="70" fill="#f97316" font-family="Inter,Arial,sans-serif" font-weight="800" font-size="15" letter-spacing="5">RACING FUEL</text></svg>`,
+  },
+  // Clean National Flags for roof/door pilot strip
+  {
+    id: "flag-esp",
+    label: "Bandera España (ESP)",
+    svg: () =>
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 140"><rect width="240" height="35" y="0" fill="#aa151b"/><rect width="240" height="70" y="35" fill="#f1bf00"/><rect width="240" height="35" y="105" fill="#aa151b"/></svg>`,
+  },
+  {
+    id: "flag-eu",
+    label: "Bandera Europa (EU)",
+    svg: () =>
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 140"><rect width="240" height="140" fill="#003399"/><circle cx="120" cy="70" r="38" fill="none" stroke="#ffcc00" stroke-width="6" stroke-dasharray="6 14"/></svg>`,
+  },
+  {
+    id: "flag-ita",
+    label: "Bandera Italia (ITA)",
+    svg: () =>
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 140"><rect width="80" height="140" x="0" fill="#009246"/><rect width="80" height="140" x="80" fill="#ffffff"/><rect width="80" height="140" x="160" fill="#ce2b37"/></svg>`,
+  },
+  {
+    id: "flag-ger",
+    label: "Bandera Alemania (GER)",
+    svg: () =>
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 140"><rect width="240" height="47" y="0" fill="#111111"/><rect width="240" height="47" y="47" fill="#dd0000"/><rect width="240" height="46" y="94" fill="#ffce00"/></svg>`,
+  },
 ];
 
 export function cloneZones(zones: Record<ZoneKey, ZoneRect>): Record<ZoneKey, ZoneRect> {
