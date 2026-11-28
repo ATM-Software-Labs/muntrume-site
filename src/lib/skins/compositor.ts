@@ -1057,8 +1057,7 @@ async function drawDecals(ctx: CanvasRenderingContext2D, state: SkinDesignState,
     // Skip hidden layers (eye toggle), never bake wireframe guide into exported TGA,
     // and never project full-UV 2D iRacing sticker sheets onto approximate 3D preview meshes
     if (decal.opacity <= 0.001) continue;
-    if (forExport && decal.id.includes("-wireframe")) continue;
-    if (for3dPreview && decal.id.startsWith("official-uv-") && decal.scale >= 0.95) continue;
+    if ((forExport || for3dPreview) && decal.id.includes("-wireframe")) continue;
     const positions = decal.mirrorX
       ? [
           { x: decal.x, y: decal.y, rot: decal.rotation },
