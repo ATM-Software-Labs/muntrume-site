@@ -88,7 +88,7 @@ const STATE_STORAGE_KEY = "mmt-skins-active-design-v2";
 const LIBRARY_STORAGE_KEY = "mmt-skins-saved-presets-v1";
 
 type ViewMode = "showroom" | "uv" | "3d" | "spec";
-type RightTab = "design" | "decals" | "gemini" | "export";
+type RightTab = "design" | "decals" | "finish" | "team" | "export" | "gemini";
 
 function byId<T extends HTMLElement>(id: string): T | null {
   return document.getElementById(id) as T | null;
@@ -766,7 +766,7 @@ export function initSkinsStudio(): void {
     document.querySelectorAll<HTMLButtonElement>("[data-right-tab]").forEach((btn) => {
       btn.classList.toggle("is-active", btn.dataset.rightTab === rightTab);
     });
-    (["design", "decals", "gemini", "export"] as RightTab[]).forEach((t) => {
+    (["design", "decals", "finish", "team", "export", "gemini"] as RightTab[]).forEach((t) => {
       byId<HTMLElement>(`skTab-${t}`)?.classList.toggle("sk-hidden", rightTab !== t);
     });
     if (rightTab === "export") {
@@ -3973,6 +3973,85 @@ export function initSkinsStudio(): void {
   renderQuickDriverPills();
   renderSmartSlotsUI();
   renderFleetPresetList();
+
+  // ─── Compact 100dvh Symmetrical UI Bindings ───
+  // Left block switcher: Plantilla UV vs Editar .TGA
+  document.querySelectorAll<HTMLButtonElement>("[data-left-tab]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.leftTab || "template";
+      document.querySelectorAll<HTMLButtonElement>("[data-left-tab]").forEach((b) => {
+        b.classList.toggle("is-active", b.dataset.leftTab === target);
+      });
+      byId<HTMLElement>("skLeftPanel-template")?.classList.toggle("sk-hidden", target !== "template");
+      byId<HTMLElement>("skLeftPanel-import")?.classList.toggle("sk-hidden", target !== "import");
+    });
+  });
+
+  // Topbar quick Exportar .TGA + Reset view + Muntrume AI switcher
+  byId<HTMLButtonElement>("skHeaderExportTgaBtn")?.addEventListener("click", () => {
+    byId<HTMLButtonElement>("skExportTgaBtn")?.click();
+  });
+  byId<HTMLButtonElement>("skTopResetCamBtn")?.addEventListener("click", () => {
+    if (viewMode === "3d") {
+      glEngine.setCameraPreset("front34");
+    } else {
+      byId<HTMLButtonElement>("skZoomReset")?.click();
+    }
+  });
+  byId<HTMLButtonElement>("skOpenAiTabBtn")?.addEventListener("click", () => {
+    rightTab = "gemini";
+    updateRightTabUI();
+  });
+
+  // Compact Reference Livery Dropdown (replaces long open chip grid)
+  function syncRealLiveryDropdown(): void {
+    const sel = byId<HTMLSelectElement>("skRealLiverySelect");
+    if (!sel) return;
+    const car = getCarById(state.carId);
+    const list = getRealLiveriesForCar(car.id, car.brand, car.name, car.category);
+    sel.innerHTML = [
+      `<option value="">— Seleccionar livery de referencia (${list.length}) —</option>`,
+      ...list.map((p, idx) => `<option value="${idx}">${escapeHtml(p.label)} (${escapeHtml(p.era)})</option>`),
+    ].join("");
+  }
+  byId<HTMLSelectElement>("skRealLiverySelect")?.addEventListener("change", (e) => {
+    const val = (e.target as HTMLSelectElement).value;
+    if (val === "") return;
+    const idx = Number(val);
+    const car = getCarById(state.carId);
+    const list = getRealLiveriesForCar(car.id, car.brand, car.name, car.category);
+    const preset = list[idx];
+    if (preset) applyRealLiveryPreset(preset, car.name);
+  });
+  syncRealLiveryDropdown();
+  carSelect?.addEventListener("change", () => syncRealLiveryDropdown());
+
+  // 2x3 Symmetrical Finish Preset Buttons in Acabado tab
+  const syncFinishPresetButtons = () => {
+    document.querySelectorAll<HTMLButtonElement>("[data-finish-preset]").forEach((btn) => {
+      btn.classList.toggle("sk-btn-primary", btn.dataset.finishPreset === state.spec.finish);
+    });
+  };
+  document.querySelectorAll<HTMLButtonElement>("[data-finish-preset]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const f = (btn.dataset.finishPreset || "gloss") as FinishType;
+      const finSel = byId<HTMLSelectElement>("skFinishSelect");
+      if (finSel) {
+        finSel.value = f;
+        finSel.dispatchEvent(new Event("change"));
+      }
+      syncFinishPresetButtons();
+    });
+  });
+  syncFinishPresetButtons();
+
+  // Quick Layer Action Row in Capas tab (+ Logo MMT, + muntru.me)
+  byId<HTMLButtonElement>("skQuickAddMmtLogoBtn")?.addEventListener("click", () => {
+    applySlotAsset("hood_main", "slot-mmt-escudo", "#ffffff");
+  });
+  byId<HTMLButtonElement>("skQuickAddWebBtn")?.addEventListener("click", () => {
+    applySlotAsset("rear_bumper", "slot-muntru-url-white", "#ffffff");
+  });
 
   // Init: verify active muntru.me Vault session before unlocking studio
   void verifyVaultSession();
