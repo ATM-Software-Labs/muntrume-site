@@ -1188,7 +1188,13 @@ function drawDriverNumbers(
 }
 
 async function drawDecals(ctx: CanvasRenderingContext2D, state: SkinDesignState, size: number, selectedDecalId?: string | null, forExport?: boolean, for3dPreview = false): Promise<void> {
-  for (const decal of state.decals) {
+  // Always draw full-UV official sheets underneath user logos/URLs so user text & muntru.me sit cleanly on top
+  const orderedDecals = [...state.decals].sort((a, b) => {
+    const aSheet = a.id.startsWith("official-uv-") && a.scale >= 0.95 ? 0 : 1;
+    const bSheet = b.id.startsWith("official-uv-") && b.scale >= 0.95 ? 0 : 1;
+    return aSheet - bSheet;
+  });
+  for (const decal of orderedDecals) {
     // Skip hidden layers (eye toggle), never bake wireframe guide into exported TGA,
     // and never project full-UV 2D iRacing sticker sheets onto approximate 3D preview meshes
     if (decal.opacity <= 0.001) continue;
@@ -1256,13 +1262,27 @@ async function drawDecals(ctx: CanvasRenderingContext2D, state: SkinDesignState,
         }
       } else if (decal.kind === "text") {
         const fontFam = getFontFamily(state.fontStyle);
+        const labelText = decal.text || decal.name;
         const fontSize = Math.max(12, Math.round(drawW * 0.24));
         ctx.font = `800 ${fontSize}px ${fontFam}`;
+        drawH = fontSize * 1.28;
+        // Seamless paint-matched backing strip for custom web URLs / rear bumper text
+        // so racing stripes or stock manufacturer URLs (e.g. bmw-m.com) never strike through the text
+        if (decal.id.includes("team-web") || decal.zoneHint === "rearBumper") {
+          const metrics = ctx.measureText(labelText);
+          const padX = Math.max(10, fontSize * 0.55);
+          const padY = Math.max(6, fontSize * 0.32);
+          const boxW = Math.max(drawW * 0.9, metrics.width + padX * 2);
+          const boxH = fontSize + padY * 2;
+          ctx.fillStyle = state.palette.primary || "#0f1722";
+          ctx.beginPath();
+          ctx.roundRect(-boxW / 2, -boxH / 2, boxW, boxH, Math.max(4, boxH * 0.18));
+          ctx.fill();
+        }
         ctx.fillStyle = decal.color || "#ffffff";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(decal.text || decal.name, 0, 0);
-        drawH = fontSize * 1.25;
+        ctx.fillText(labelText, 0, 0);
       } else if (img) {
         const isFullUv = decal.scale >= 0.95 && Math.abs(pos.x - 0.5) < 0.05 && Math.abs(pos.y - 0.5) < 0.05;
         const aspect = isFullUv

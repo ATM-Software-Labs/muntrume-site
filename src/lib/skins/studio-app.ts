@@ -3904,6 +3904,52 @@ export function initSkinsStudio(): void {
     applyTeamPresetConfig(preset, false);
   });
 
+  // Custom Website URL placement (replaces stock manufacturer URLs like bmw-m.com with clean paint-matched backdrop)
+  byId<HTMLButtonElement>("skApplyTeamWebBtn")?.addEventListener("click", () => {
+    const rawUrl = (byId<HTMLInputElement>("skTeamWebUrlInput")?.value || "muntru.me").trim().toUpperCase();
+    if (!rawUrl) return;
+    const layout = resolveTeamLayoutForCar(state.carId, state.zones);
+    const rear = layout.rear_bumper;
+    const wing = layout.rear_wing;
+    const textColor = state.palette.detail || "#ffffff";
+    state.decals = state.decals.filter((d) => !d.id.startsWith("mmt-team-web-"));
+    state.decals.push(
+      {
+        id: "mmt-team-web-rear",
+        name: `Web Trasera (${rawUrl})`,
+        kind: "text",
+        text: rawUrl,
+        color: textColor,
+        x: rear.u,
+        y: rear.v,
+        scale: Math.max(0.11, rear.width),
+        rotation: rear.rotation,
+        opacity: 1,
+        mirrorX: false,
+        zoneHint: "rearBumper",
+      },
+      {
+        id: "mmt-team-web-wing",
+        name: `Web Alerón (${rawUrl})`,
+        kind: "text",
+        text: rawUrl,
+        color: textColor,
+        x: wing.u,
+        y: wing.v,
+        scale: Math.max(0.15, wing.width),
+        rotation: wing.rotation,
+        opacity: 1,
+        mirrorX: false,
+        zoneHint: "rearWing",
+      },
+    );
+    selectedDecalId = "mmt-team-web-rear";
+    renderDecalList();
+    renderDecalEditor();
+    scheduleRender();
+    setStatus(`Web "${rawUrl}" aplicada en trasera y alerón con fondo limpio (sin líneas cruzadas).`, "ok");
+  });
+
   byId<HTMLButtonElement>("skClearActiveSlotBtn")?.addEventListener("click", () => {
     applySlotAsset(activeTeamSlot, null);
   });
