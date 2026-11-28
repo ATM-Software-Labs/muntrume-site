@@ -448,6 +448,7 @@ export class WebGLPreviewEngine {
   private hemiLight: THREE.HemisphereLight | null = null;
 
   private rafId = 0;
+  private needsRender = true;
   private currentCategory: CarBodyCategory = "gt3";
   private currentZones: Record<ZoneKey, UvRect> = { ...DEFAULT_ZONES };
   private uvMappingMode: UvMappingMode = "autofit";
@@ -461,9 +462,13 @@ export class WebGLPreviewEngine {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.specPackedCanvas = document.createElement("canvas");
-    this.specPackedCanvas.width = 1024;
-    this.specPackedCanvas.height = 1024;
+    this.specPackedCanvas.width = 256;
+    this.specPackedCanvas.height = 256;
     this.initScene();
+  }
+
+  public requestRender(): void {
+    this.needsRender = true;
   }
 
   private initScene(): void {
@@ -475,7 +480,7 @@ export class WebGLPreviewEngine {
         preserveDrawingBuffer: true,
         powerPreference: "high-performance",
       });
-      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
       this.renderer.outputColorSpace = THREE.SRGBColorSpace;
       this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
       this.renderer.toneMappingExposure = 1.15;
@@ -509,7 +514,7 @@ export class WebGLPreviewEngine {
       this.keyLight = new THREE.DirectionalLight("#ffffff", 2.35);
       this.keyLight.position.set(4.5, 8.5, 5.2);
       this.keyLight.castShadow = true;
-      this.keyLight.shadow.mapSize.set(2048, 2048);
+      this.keyLight.shadow.mapSize.set(1024, 1024);
       this.keyLight.shadow.camera.near = 1;
       this.keyLight.shadow.camera.far = 22;
       this.keyLight.shadow.camera.left = -4.5;
@@ -738,10 +743,23 @@ export class WebGLPreviewEngine {
   }
 
   private startLoop(): void {
+    if (this.controls) {
+      this.controls.addEventListener("change", () => {
+        this.needsRender = true;
+      });
+    }
     const tick = () => {
       this.rafId = requestAnimationFrame(tick);
-      if (this.controls) this.controls.update();
-      this.render();
+      // Pause WebGL rendering completely when canvas is hidden (UV 2D / Spec / GT mode)
+      if (!this.canvas || this.canvas.offsetParent === null) return;
+      const autoRotating = Boolean(this.controls?.autoRotate);
+      if (this.controls && (autoRotating || this.needsRender)) {
+        this.controls.update();
+      }
+      if (this.needsRender || autoRotating) {
+        this.needsRender = false;
+        this.render();
+      }
     };
     this.rafId = requestAnimationFrame(tick);
   }
@@ -765,6 +783,7 @@ export class WebGLPreviewEngine {
     this.currentZones = { ...DEFAULT_ZONES, ...zones };
     if (!this.isSpeedformFallback && this.uvMappingMode === "autofit") {
       this.reapplyCurrentUvMapping();
+      this.needsRender = true;
       this.render();
     }
   }
@@ -772,6 +791,7 @@ export class WebGLPreviewEngine {
   public setUvMappingMode(mode: UvMappingMode): void {
     this.uvMappingMode = mode;
     this.reapplyCurrentUvMapping();
+    this.needsRender = true;
     this.render();
   }
 
@@ -824,6 +844,7 @@ export class WebGLPreviewEngine {
       this.hemiLight.intensity = 0.75;
       this.renderer.toneMappingExposure = 1.15;
     }
+    this.needsRender = true;
   }
 
   public setCameraPreset(preset: "front34" | "side" | "rear34" | "top"): void {
@@ -842,6 +863,7 @@ export class WebGLPreviewEngine {
       this.controls.target.set(0, 0.35, 0);
     }
     this.controls.update();
+    this.needsRender = true;
   }
 
   public updateTexture(
@@ -869,6 +891,7 @@ export class WebGLPreviewEngine {
     } else {
       this.diffuseTexture.needsUpdate = true;
     }
+    this.needsRender = true;
 
     if (specCanvas) {
       const sw = this.specPackedCanvas.width;

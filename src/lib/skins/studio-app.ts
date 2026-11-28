@@ -671,65 +671,91 @@ export function initSkinsStudio(): void {
     return loadedTemplate.carPatterns.find((p) => p.name === state.psdPatternName)?.canvas ?? null;
   }
 
-  let renderPending = false;
-  function scheduleRender(): void {
-    persistState();
-    if (renderPending) return;
-    renderPending = true;
-    requestAnimationFrame(async () => {
-      renderPending = false;
-      try {
-        const psdPatCanvas = getActivePsdPatternCanvas();
-        if (viewMode === "showroom") {
-          await renderShowroomCarView(showroomCanvas, state, showroomAngle);
-        } else if (viewMode === "uv") {
-          const uvRenderSize = state.resolution === 4096 ? 2048 : 1536;
-          await renderSkinToCanvas(uvCanvas, state, {
-            size: uvRenderSize,
-            templateCanvas: loadedTemplate?.wireframeCanvas ?? loadedTemplate?.canvas ?? kitWireframeCanvas ?? workerWireframeCanvas,
-            partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
-            psdPatternCanvas: psdPatCanvas,
-            restrictedPlates: workerRestrictedPlates,
-            seriesSlots: workerSeriesSlots,
-            showTemplateOverlay,
-            templateOpacity,
-            showZonesOverlay,
-            selectedZone,
-            selectedDecalId,
-            forExport: false,
-          });
-          applyUvTransform();
-        } else if (viewMode === "spec") {
-          renderSpecMapToCanvas(uvCanvas, state, 1024);
-          applyUvTransform();
-        } else if (viewMode === "3d") {
-          const glTexSize = state.resolution === 4096 ? 4096 : 2048;
-          await renderSkinToCanvas(offscreenTexture, state, {
-            size: glTexSize,
-            partsOverlayCanvas: null,
-            psdPatternCanvas: psdPatCanvas,
-            forExport: true,
-            for3dPreview: true,
-          });
-          const offscreenSpec = document.createElement("canvas");
-          offscreenSpec.width = 1024;
-          offscreenSpec.height = 1024;
-          renderSpecMapToCanvas(offscreenSpec, state, 1024);
-          glEngine.updateTexture(
-            offscreenTexture,
-            state.spec.metallic,
-            state.spec.roughness,
-            offscreenSpec,
-            state.spec.clearcoat,
-            state.spec.carbonAccent || state.spec.finish === "carbon",
-          );
-          const notice = byId<HTMLElement>("skGlNotice");
-          if (notice) notice.textContent = glEngine.getMeshLabel();
-        }
-      } catch (err) {
-        setStatus(err instanceof Error ? err.message : "Error al renderizar lienzo", "err");
+  let renderTimer: number | null = null;
+  let isRendering = false;
+  let renderQueued = false;
+  let persistTimer: number | null = null;
+  const sharedOffscreenSpec = document.createElement("canvas");
+  sharedOffscreenSpec.width = 256;
+  sharedOffscreenSpec.height = 256;
+
+  function schedulePersistState(): void {
+    if (persistTimer !== null) window.clearTimeout(persistTimer);
+    persistTimer = window.setTimeout(() => {
+      persistTimer = null;
+      persistState();
+    }, 600);
+  }
+
+  async function runRenderFrame(): Promise<void> {
+    if (isRendering) {
+      renderQueued = true;
+      return;
+    }
+    isRendering = true;
+    try {
+      const psdPatCanvas = getActivePsdPatternCanvas();
+      if (viewMode === "showroom") {
+        await renderShowroomCarView(showroomCanvas, state, showroomAngle);
+      } else if (viewMode === "uv") {
+        // Fast 1024px interactive UV preview (exports always use full 2048px / 4096px)
+        await renderSkinToCanvas(uvCanvas, state, {
+          size: 1024,
+          templateCanvas: loadedTemplate?.wireframeCanvas ?? loadedTemplate?.canvas ?? kitWireframeCanvas ?? workerWireframeCanvas,
+          partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
+          psdPatternCanvas: psdPatCanvas,
+          restrictedPlates: workerRestrictedPlates,
+          seriesSlots: workerSeriesSlots,
+          showTemplateOverlay,
+          templateOpacity,
+          showZonesOverlay,
+          selectedZone,
+          selectedDecalId,
+          forExport: false,
+        });
+        applyUvTransform();
+      } else if (viewMode === "spec") {
+        renderSpecMapToCanvas(uvCanvas, state, 512);
+        applyUvTransform();
+      } else if (viewMode === "3d") {
+        // Crisp 1536px live 3D texture + 256px spec map (zero 64MB 4K GPU stalls while editing)
+        await renderSkinToCanvas(offscreenTexture, state, {
+          size: 1536,
+          partsOverlayCanvas: null,
+          psdPatternCanvas: psdPatCanvas,
+          forExport: true,
+          for3dPreview: true,
+        });
+        renderSpecMapToCanvas(sharedOffscreenSpec, state, 256);
+        glEngine.updateTexture(
+          offscreenTexture,
+          state.spec.metallic,
+          state.spec.roughness,
+          sharedOffscreenSpec,
+          state.spec.clearcoat,
+          state.spec.carbonAccent || state.spec.finish === "carbon",
+        );
+        const notice = byId<HTMLElement>("skGlNotice");
+        if (notice) notice.textContent = glEngine.getMeshLabel();
       }
-    });
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Error al renderizar lienzo", "err");
+    } finally {
+      isRendering = false;
+      if (renderQueued) {
+        renderQueued = false;
+        requestAnimationFrame(() => void runRenderFrame());
+      }
+    }
+  }
+
+  function scheduleRender(): void {
+    schedulePersistState();
+    if (renderTimer !== null) return;
+    renderTimer = window.setTimeout(() => {
+      renderTimer = null;
+      requestAnimationFrame(() => void runRenderFrame());
+    }, 45);
   }
 
   function applyUvTransform(): void {
@@ -867,7 +893,7 @@ export function initSkinsStudio(): void {
 
   function renderPatternGallery(): void {
     const host = byId<HTMLElement>("skPatternGallery");
-    if (!host) return;
+    if (!host || host.classList.contains("sk-hidden") || host.offsetParent === null) return;
     if (host.childElementCount === 0) {
       host.innerHTML = GALLERY_PATTERNS.map(
         (p) =>
