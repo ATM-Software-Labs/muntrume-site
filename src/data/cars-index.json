@@ -1452,30 +1452,6 @@
       "wireframe_url": null
     },
     {
-      "car_slug": "mercedesw12",
-      "name": "Mercedesw 12",
-      "brand": "Mercedes-AMG",
-      "category": "Fórmula",
-      "archetype": "open_wheel",
-      "iracing_paint_dir": "paint/mercedesw12/",
-      "resolution": "2048x2048",
-      "uv_status": "archetype",
-      "uv_url": null,
-      "wireframe_url": null
-    },
-    {
-      "car_slug": "mercedesw13",
-      "name": "Mercedesw 13",
-      "brand": "Mercedes-AMG",
-      "category": "Fórmula",
-      "archetype": "open_wheel",
-      "iracing_paint_dir": "paint/mercedesw13/",
-      "resolution": "2048x2048",
-      "uv_status": "archetype",
-      "uv_url": null,
-      "wireframe_url": null
-    },
-    {
       "car_slug": "ministock",
       "name": "Mini Stock",
       "brand": "iRacing",
