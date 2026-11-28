@@ -1192,6 +1192,57 @@ function drawDriverNumbers(
   ctx.restore();
 }
 
+function sampleBackgroundRgb(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number,
+): [number, number, number] {
+  try {
+    const px = Math.max(0, Math.min(size - 1, Math.round(cx)));
+    const py = Math.max(0, Math.min(size - 1, Math.round(cy)));
+    const data = ctx.getImageData(px, py, 1, 1).data;
+    return [data[0], data[1], data[2]];
+  } catch {
+    return [18, 24, 34];
+  }
+}
+
+function relativeLuminance(r: number, g: number, b: number): number {
+  const lin = (c: number) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
+/**
+ * Guarantees every logo/letter stays clearly readable against the actual painted panel underneath.
+ * If the panel is green (or any color too close to the decal's color / low WCAG contrast),
+ * automatically switches to crisp pure white (#ffffff) or deep carbon black (#090d14).
+ */
+function resolveVisibleDecalColor(
+  desiredHex: string,
+  bgRgb: [number, number, number],
+): { color: string; bgLum: number; adjusted: boolean } {
+  const [br, bg, bb] = bgRgb;
+  const [fr, fg, fb] = hexToRgb(desiredHex || "#ffffff");
+  const bgLum = relativeLuminance(br, bg, bb);
+  const fgLum = relativeLuminance(fr, fg, fb);
+  const contrast = (Math.max(bgLum, fgLum) + 0.05) / (Math.min(bgLum, fgLum) + 0.05);
+  const colorDist = Math.hypot(br - fr, bg - fg, bb - fb);
+  const bothGreenish = bg > br * 1.15 && bg > bb * 1.1 && fg > fr * 1.15 && fg > fb * 1.05;
+
+  if (contrast < 3.4 || colorDist < 115 || bothGreenish) {
+    return {
+      color: bgLum < 0.44 ? "#ffffff" : "#090d14",
+      bgLum,
+      adjusted: true,
+    };
+  }
+  return { color: desiredHex || "#ffffff", bgLum, adjusted: false };
+}
+
 async function drawDecals(ctx: CanvasRenderingContext2D, state: SkinDesignState, size: number, selectedDecalId?: string | null, forExport?: boolean, for3dPreview = false): Promise<void> {
   // Always draw full-UV official sheets underneath user logos/URLs so user text & muntru.me sit cleanly on top
   const orderedDecals = [...state.decals].sort((a, b) => {
@@ -1214,9 +1265,18 @@ async function drawDecals(ctx: CanvasRenderingContext2D, state: SkinDesignState,
         ]
       : [{ x: decal.x, y: decal.y, rot: decal.rotation }];
 
+    const isFullUvSheet = decal.scale >= 0.95 && Math.abs(decal.x - 0.5) < 0.05 && Math.abs(decal.y - 0.5) < 0.05;
+    const bgSample = isFullUvSheet
+      ? ([18, 24, 34] as [number, number, number])
+      : sampleBackgroundRgb(ctx, decal.x * size, decal.y * size, size);
+    const vis = isFullUvSheet
+      ? { color: decal.color || "#ffffff", bgLum: 0.05, adjusted: false }
+      : resolveVisibleDecalColor(decal.color || "#ffffff", bgSample);
+
     let img: HTMLImageElement | null = null;
     if (decal.kind !== "text") {
-      const srcInfo = getDecalSource(decal);
+      const effectiveDecal = decal.kind === "builtin" ? { ...decal, color: vis.color } : decal;
+      const srcInfo = getDecalSource(effectiveDecal);
       if (srcInfo) {
         img = await loadImageCached(srcInfo.key, srcInfo.src);
       }
@@ -1273,20 +1333,28 @@ async function drawDecals(ctx: CanvasRenderingContext2D, state: SkinDesignState,
         drawH = fontSize * 1.28;
         // Seamless paint-matched backing strip for custom web URLs / rear bumper text
         // so racing stripes or stock manufacturer URLs (e.g. bmw-m.com) never strike through the text
+        let textColor = vis.color;
         if (decal.id.includes("team-web") || decal.zoneHint === "rearBumper") {
           const metrics = ctx.measureText(labelText);
           const padX = Math.max(10, fontSize * 0.55);
           const padY = Math.max(6, fontSize * 0.32);
           const boxW = Math.max(drawW * 0.9, metrics.width + padX * 2);
           const boxH = fontSize + padY * 2;
-          ctx.fillStyle = state.palette.primary || "#0f1722";
+          const pillBg = state.palette.primary || "#0f1722";
+          ctx.fillStyle = pillBg;
           ctx.beginPath();
           ctx.roundRect(-boxW / 2, -boxH / 2, boxW, boxH, Math.max(4, boxH * 0.18));
           ctx.fill();
+          textColor = resolveVisibleDecalColor(decal.color || "#ffffff", hexToRgb(pillBg)).color;
         }
-        ctx.fillStyle = decal.color || "#ffffff";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
+        // Crisp contrasting keyline stroke so every single letter remains 100% legible over stripes
+        ctx.lineJoin = "round";
+        ctx.lineWidth = Math.max(2, fontSize * 0.09);
+        ctx.strokeStyle = textColor === "#090d14" ? "rgba(255,255,255,0.65)" : "rgba(0,0,0,0.72)";
+        ctx.strokeText(labelText, 0, 0);
+        ctx.fillStyle = textColor;
         ctx.fillText(labelText, 0, 0);
       } else if (img) {
         const isFullUv = decal.scale >= 0.95 && Math.abs(pos.x - 0.5) < 0.05 && Math.abs(pos.y - 0.5) < 0.05;
@@ -1296,7 +1364,14 @@ async function drawDecals(ctx: CanvasRenderingContext2D, state: SkinDesignState,
             ? img.naturalHeight / img.naturalWidth
             : 0.35;
         drawH = drawW * aspect;
+        if (!isFullUv && !decal.id.startsWith("official-uv-")) {
+          ctx.shadowColor = vis.bgLum < 0.44 ? "rgba(0,0,0,0.78)" : "rgba(255,255,255,0.75)";
+          ctx.shadowBlur = Math.max(3, Math.round(size * 0.0035));
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+        }
         ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+        ctx.shadowBlur = 0;
       }
 
       if (!forExport && idx === 0 && selectedDecalId === decal.id && decal.scale < 0.95) {
