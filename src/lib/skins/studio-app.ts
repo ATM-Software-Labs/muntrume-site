@@ -1764,49 +1764,10 @@ export function initSkinsStudio(): void {
     });
   });
 
-  // 1-Click Complete Muntrume Team + Website Kit (zero overlaps across all key zones)
+  // 1-Click Complete Muntrume Team + Website Kit using pixel-calibrated TEAM_LAYOUT_ZONES
   byId<HTMLButtonElement>("skApplyTeamKitBtn")?.addEventListener("click", () => {
-    const now = Date.now();
-    const z = state.zones;
-    const addSafe = (
-      name: string,
-      assetId: DecalLayer["assetId"],
-      color: string,
-      rect: { x: number; y: number; w: number; h: number },
-      rx: number,
-      ry: number,
-      scale: number,
-      rotation: number,
-      zoneHint: ZoneKey,
-    ) => {
-      const spot = findFreeDecalSpot(rect.x + rect.w * rx, rect.y + rect.h * ry, scale, rect);
-      if (doesDecalCollide(spot.x, spot.y, scale)) return;
-      state.decals.push({
-        id: `kit-${zoneHint}-${now}-${Math.floor(Math.random() * 999)}`,
-        name,
-        kind: "builtin",
-        assetId,
-        color,
-        x: spot.x,
-        y: spot.y,
-        scale,
-        rotation,
-        opacity: 1,
-        mirrorX: false,
-        zoneHint,
-      });
-    };
-    addSafe("Escudo MMT (Capó)", "mmt-crest", "#ffffff", z.hood, 0.5, 0.5, 0.14, 90, "hood");
-    addSafe("MUNTRUME (Lateral Izq.)", "mmt-wordmark", "#ffffff", z.leftSide, 0.58, 0.52, 0.20, 0, "leftSide");
-    addSafe("MUNTRUME (Lateral Der.)", "mmt-wordmark", "#ffffff", z.rightSide, 0.58, 0.48, 0.20, 180, "rightSide");
-    addSafe("MUNTRU.ME (Alerón)", "muntru-url", "#ffffff", z.rearWing, 0.5, 0.5, 0.18, 0, "rearWing");
-    addSafe("MUNTRU.ME (Frontal)", "muntru-url", "#ffffff", z.frontBumper, 0.5, 0.5, 0.14, 0, "frontBumper");
-    addSafe("MUNTRU.ME (Trasera)", "muntru-url", "#ffffff", z.rearBumper, 0.5, 0.5, 0.12, 90, "rearBumper");
-    selectedDecalId = state.decals[state.decals.length - 1]?.id ?? null;
-    renderDecalList();
-    renderDecalEditor();
-    scheduleRender();
-    setStatus("★ Kit completo MUNTRUME + MUNTRU.ME aplicado sin solapamientos en capó, puertas, alerón y parachoques.", "ok");
+    const preset = MMT_TEAM_PRESETS[0];
+    applyTeamPresetConfig(preset, true);
   });
 
   document.querySelectorAll<HTMLButtonElement>("[data-right-tab]").forEach((btn) => {
