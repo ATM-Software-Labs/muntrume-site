@@ -39,7 +39,7 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const MODELS_CDN_BASE = "/assets/models";
-const MODEL_VER = "v=17";
+const MODEL_VER = "v=18";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
@@ -173,8 +173,13 @@ function isPaintableBodyMesh(mesh: THREE.Mesh): boolean {
   const matId = getMeshMaterialNames(mesh);
   const meshId = (mesh.name || "").toLowerCase();
 
-  // 1. Explicit positive match on material name first (handles Mustang GT3, F1, BMW M4 GT3 "meshesbody"/"mesheswhite", Porsche 992 GT3 RS "carpaint"/"bodyy", Lambo STO "mat_carrozzeria", Ferrari 488 GT3 "phong4", McLaren P1 GTR "vehicle_exterior_mm_ext", Valkyrie GTP "ext_carpaint")
-  if (/(paint|carpaint|livery|redbull_color|body_color|bodypaint|meshesbody|mesheswhite|mt_body|mat_body|mat_carrozzeria|bodymaterials|bodyy|vehicle_exterior_mm_ext|\bphong4\b|mt_mirrorcover|\bbody\b)/.test(matId)) {
+  // 0. Hard exclusion for semantic non-paintable PBR zones (glass, interior, carbon aero, wheels, lights, grilles)
+  if (/(cockpit_glass|interior_dark|carbon_aero|wheel_tire|wheel_rim|grille_intake|lights_front|lights_rear)/.test(`${meshId} ${matId}`)) {
+    return false;
+  }
+
+  // 1. Explicit positive match on material name first (handles Mustang GT3, F1, BMW M4 GT3, Porsche 992 GT3 RS, Lambo STO, McLaren, Valkyrie, and our body_paint/carpaint_body GPU models)
+  if (/(body_paint|paint|carpaint|livery|redbull_color|body_color|bodypaint|meshesbody|mesheswhite|mt_body|mat_body|mat_carrozzeria|bodymaterials|bodyy|vehicle_exterior_mm_ext|\bphong4\b|mt_mirrorcover|\bbody\b)/.test(matId)) {
     return true;
   }
 
@@ -941,12 +946,16 @@ export class WebGLPreviewEngine {
     const finalBox = new THREE.Box3().setFromObject(root);
     this.sanitizeSceneGroup(root, finalBox);
 
-    // Apply live paint ONLY to exterior bodywork panels; refine untextured/blown-out rims/tires/glass/carbon into realistic motorsport PBR
-    const gunmetalRimMat = new THREE.MeshStandardMaterial({ color: "#282f3a", roughness: 0.26, metalness: 0.88, envMapIntensity: 1.25 });
+    // Apply live paint ONLY to exterior bodywork panels; refine non-paintable zones into crisp motorsport PBR
+    const gunmetalRimMat = new THREE.MeshStandardMaterial({ color: "#323b48", roughness: 0.24, metalness: 0.90, envMapIntensity: 1.35 });
     const rubberTireMat = new THREE.MeshStandardMaterial({ color: "#14171c", roughness: 0.88, metalness: 0.05 });
-    const smokedGlassMat = new THREE.MeshPhysicalMaterial({ color: "#060b12", roughness: 0.06, metalness: 0.15, transparent: true, opacity: 0.90, clearcoat: 1.0, clearcoatRoughness: 0.04, envMapIntensity: 1.8 });
+    const smokedGlassMat = new THREE.MeshPhysicalMaterial({ color: "#050910", roughness: 0.05, metalness: 0.14, transparent: true, opacity: 0.90, clearcoat: 1.0, clearcoatRoughness: 0.04, envMapIntensity: 1.9 });
+    const darkInteriorMat = new THREE.MeshStandardMaterial({ color: "#0b0e13", roughness: 0.92, metalness: 0.05 });
     const brakeSteelMat = new THREE.MeshStandardMaterial({ color: "#68727e", roughness: 0.34, metalness: 0.9 });
-    const darkCarbonMat = new THREE.MeshStandardMaterial({ color: "#161b22", roughness: 0.48, metalness: 0.22 });
+    const darkCarbonMat = new THREE.MeshStandardMaterial({ color: "#161b22", roughness: 0.42, metalness: 0.24, bumpMap: this.carbonBumpTexture, bumpScale: 0.003 });
+    const grilleIntakeMat = new THREE.MeshStandardMaterial({ color: "#0a0d12", roughness: 0.82, metalness: 0.15 });
+    const frontLightMat = new THREE.MeshPhysicalMaterial({ color: "#dbeafe", emissive: new THREE.Color("#bfdbfe"), emissiveIntensity: 0.38, roughness: 0.08, metalness: 0.1, clearcoat: 1.0 });
+    const rearLightMat = new THREE.MeshPhysicalMaterial({ color: "#991b1b", emissive: new THREE.Color("#dc2626"), emissiveIntensity: 0.58, roughness: 0.12, metalness: 0.1, clearcoat: 1.0 });
 
     const isMaterialUntexturedOrWhite = (m: THREE.Material | undefined): boolean => {
       if (!m) return true;
@@ -960,7 +969,13 @@ export class WebGLPreviewEngine {
     };
 
     const refineNonBodyMaterial = (id: string, mat: THREE.Material): THREE.Material => {
-      if (/(tireside|tiretread|sidewall|tread|tire|tyre|rubber|slick|gt3phong1|meshesff41|twixer_992_gt3rs_black|rubbertrim)/.test(id)) return rubberTireMat;
+      if (/interior_dark/.test(id)) return darkInteriorMat;
+      if (/lights_front/.test(id)) return frontLightMat;
+      if (/lights_rear/.test(id)) return rearLightMat;
+      if (/grille_intake/.test(id)) return grilleIntakeMat;
+      if (/carbon_aero/.test(id)) return darkCarbonMat;
+      if (/wheel_rim/.test(id)) return gunmetalRimMat;
+      if (/(wheel_tire|tireside|tiretread|sidewall|tread|tire|tyre|rubber|slick|gt3phong1|meshesff41|twixer_992_gt3rs_black|rubbertrim)/.test(id)) return rubberTireMat;
       if (/(rim1|rim2|wheel|alloy|spoke|lugs|phong9|meshesm8rim)/.test(id)) return gunmetalRimMat;
       if (/(glass|window|windshield|windscreen|visor|black_glass|cockpit_glass)/.test(id)) return smokedGlassMat;
       if (/(rotor|disc|caliper|brake)/.test(id)) return brakeSteelMat;
