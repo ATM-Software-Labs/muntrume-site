@@ -671,13 +671,21 @@ export function initSkinsStudio(): void {
     return loadedTemplate.carPatterns.find((p) => p.name === state.psdPatternName)?.canvas ?? null;
   }
 
+  const isLowPowerDevice =
+    window.matchMedia("(max-width: 900px)").matches ||
+    (navigator.hardwareConcurrency || 4) <= 4 ||
+    (typeof (navigator as unknown as { deviceMemory?: number }).deviceMemory === "number" &&
+      ((navigator as unknown as { deviceMemory?: number }).deviceMemory || 8) <= 4) ||
+    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
   let renderTimer: number | null = null;
   let isRendering = false;
   let renderQueued = false;
   let persistTimer: number | null = null;
   const sharedOffscreenSpec = document.createElement("canvas");
-  sharedOffscreenSpec.width = 256;
-  sharedOffscreenSpec.height = 256;
+  const liveSpecDim = isLowPowerDevice ? 128 : 256;
+  sharedOffscreenSpec.width = liveSpecDim;
+  sharedOffscreenSpec.height = liveSpecDim;
 
   function schedulePersistState(): void {
     if (persistTimer !== null) window.clearTimeout(persistTimer);
@@ -698,9 +706,9 @@ export function initSkinsStudio(): void {
       if (viewMode === "showroom") {
         await renderShowroomCarView(showroomCanvas, state, showroomAngle);
       } else if (viewMode === "uv") {
-        // Fast 1024px interactive UV preview (exports always use full 2048px / 4096px)
+        // Adaptive live UV preview: 512px on mobile/low-end, 1024px on desktop (exports always 2048px / 4096px)
         await renderSkinToCanvas(uvCanvas, state, {
-          size: 1024,
+          size: isLowPowerDevice ? 512 : 1024,
           templateCanvas: loadedTemplate?.wireframeCanvas ?? loadedTemplate?.canvas ?? kitWireframeCanvas ?? workerWireframeCanvas,
           partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
           psdPatternCanvas: psdPatCanvas,
@@ -715,18 +723,18 @@ export function initSkinsStudio(): void {
         });
         applyUvTransform();
       } else if (viewMode === "spec") {
-        renderSpecMapToCanvas(uvCanvas, state, 512);
+        renderSpecMapToCanvas(uvCanvas, state, isLowPowerDevice ? 256 : 512);
         applyUvTransform();
       } else if (viewMode === "3d") {
-        // Ultra-fast 1024px live 3D texture + 256px spec map (zero GPU stalls; exports always stay 2048px / 4096px)
+        // Adaptive live 3D texture: 512px on mobile/low-end, 1024px on desktop (exports always 2048px / 4096px)
         await renderSkinToCanvas(offscreenTexture, state, {
-          size: 1024,
+          size: isLowPowerDevice ? 512 : 1024,
           partsOverlayCanvas: null,
           psdPatternCanvas: psdPatCanvas,
           forExport: true,
           for3dPreview: true,
         });
-        renderSpecMapToCanvas(sharedOffscreenSpec, state, 256);
+        renderSpecMapToCanvas(sharedOffscreenSpec, state, liveSpecDim);
         glEngine.updateTexture(
           offscreenTexture,
           state.spec.metallic,
@@ -755,7 +763,7 @@ export function initSkinsStudio(): void {
     renderTimer = window.setTimeout(() => {
       renderTimer = null;
       requestAnimationFrame(() => void runRenderFrame());
-    }, 65);
+    }, isLowPowerDevice ? 115 : 65);
   }
 
   function applyUvTransform(): void {

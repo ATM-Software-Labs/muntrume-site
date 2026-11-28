@@ -449,6 +449,7 @@ export class WebGLPreviewEngine {
 
   private rafId = 0;
   private needsRender = true;
+  private isLowPowerDevice = false;
   private currentCategory: CarBodyCategory = "gt3";
   private currentZones: Record<ZoneKey, UvRect> = { ...DEFAULT_ZONES };
   private uvMappingMode: UvMappingMode = "autofit";
@@ -461,9 +462,17 @@ export class WebGLPreviewEngine {
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
+    this.isLowPowerDevice =
+      typeof window !== "undefined" &&
+      (window.matchMedia("(max-width: 900px)").matches ||
+        (navigator.hardwareConcurrency || 4) <= 4 ||
+        (typeof (navigator as unknown as { deviceMemory?: number }).deviceMemory === "number" &&
+          ((navigator as unknown as { deviceMemory?: number }).deviceMemory || 8) <= 4) ||
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
     this.specPackedCanvas = document.createElement("canvas");
-    this.specPackedCanvas.width = 256;
-    this.specPackedCanvas.height = 256;
+    const specDim = this.isLowPowerDevice ? 128 : 256;
+    this.specPackedCanvas.width = specDim;
+    this.specPackedCanvas.height = specDim;
     this.initScene();
   }
 
@@ -473,18 +482,23 @@ export class WebGLPreviewEngine {
 
   private initScene(): void {
     try {
+      this.canvas.addEventListener("webglcontextlost", (e) => {
+        e.preventDefault();
+        this.meshLabel = "Visor 3D en pausa (baja memoria GPU) · Usa UV 2D para editar sin consumo";
+        this.syncNoticeDom();
+      });
       this.renderer = new THREE.WebGLRenderer({
         canvas: this.canvas,
-        antialias: true,
+        antialias: !this.isLowPowerDevice,
         alpha: false,
-        preserveDrawingBuffer: true,
-        powerPreference: "high-performance",
+        preserveDrawingBuffer: false,
+        powerPreference: this.isLowPowerDevice ? "low-power" : "high-performance",
       });
-      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      this.renderer.setPixelRatio(this.isLowPowerDevice ? 1 : Math.min(window.devicePixelRatio || 1, 1.5));
       this.renderer.outputColorSpace = THREE.SRGBColorSpace;
       this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
       this.renderer.toneMappingExposure = 1.15;
-      this.renderer.shadowMap.enabled = true;
+      this.renderer.shadowMap.enabled = !this.isLowPowerDevice;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
       this.scene = new THREE.Scene();
@@ -492,9 +506,12 @@ export class WebGLPreviewEngine {
       this.scene.fog = new THREE.Fog("#090d14", 11, 26);
 
       // Studio HDRI environment reflections via PMREMGenerator
-      const pmrem = new THREE.PMREMGenerator(this.renderer);
-      this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-      pmrem.dispose();
+      // Skip expensive PMREM HDR environment baking on mobile / low-end GPUs
+      if (!this.isLowPowerDevice) {
+        const pmrem = new THREE.PMREMGenerator(this.renderer);
+        this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+        pmrem.dispose();
+      }
 
       this.camera = new THREE.PerspectiveCamera(36, 16 / 10, 0.1, 100);
       this.camera.position.set(3.8, 1.6, 4.1);
@@ -881,7 +898,11 @@ export class WebGLPreviewEngine {
       const tex = new THREE.CanvasTexture(diffuseCanvas);
       tex.colorSpace = THREE.SRGBColorSpace;
       tex.flipY = false; // Standard glTF orientation: zero upside-down/mirrored text
-      tex.anisotropy = this.renderer ? Math.min(4, this.renderer.capabilities.getMaxAnisotropy()) : 4;
+      tex.anisotropy = this.isLowPowerDevice
+        ? 1
+        : this.renderer
+          ? Math.min(4, this.renderer.capabilities.getMaxAnisotropy())
+          : 4;
       tex.minFilter = THREE.LinearMipmapLinearFilter;
       tex.magFilter = THREE.LinearFilter;
       tex.generateMipmaps = true;

@@ -131,8 +131,58 @@
 
 @media (max-width: 960px) {
   .sk-workspace {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     overflow: visible;
+  }
+
+  .sk-stage-col {
+    order: 1;
+    height: 44dvh;
+    min-height: 260px;
+    max-height: 380px;
+    border-bottom: 1px solid var(--sk-border);
+  }
+
+  .sk-inspector {
+    order: 2;
+    height: auto;
+    overflow: visible;
+    border-left: none;
+    border-bottom: 1px solid var(--sk-border);
+  }
+
+  .sk-sidebar {
+    order: 3;
+    height: auto;
+    overflow: visible;
+    border-right: none;
+  }
+
+  .sk-topbar {
+    height: auto;
+    min-height: 44px;
+    padding: 6px 8px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  #skQuickDriverBar,
+  .sk-status-pill {
+    display: none;
+  }
+
+  .sk-btn,
+  .sk-input,
+  .sk-select {
+    min-height: 36px;
+  }
+
+  .sk-compact-footer {
+    height: auto;
+    padding: 8px 10px;
+    white-space: normal;
+    flex-wrap: wrap;
   }
 }
 
