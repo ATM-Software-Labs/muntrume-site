@@ -675,6 +675,13 @@ const canonical = "https://skins.muntru.me/";
 
           <select id="skTeamPresetSelect" class="sk-select" aria-label="Base oficial MMT"></select>
           <p id="skTeamPresetDesc" class="sk-help" style="margin:-2px 0 0;font-size:10px;"></p>
+
+          <!-- Brand Logo Style Toggle: Modern Vector vs Classic Original (paddock/marca) -->
+          <div class="sk-seg" style="width:100%;" role="group" aria-label="Estilo de logos Muntrume">
+            <button type="button" data-mmt-logo-style="modern" class="is-active" style="flex:1;">Logos Actuales</button>
+            <button type="button" data-mmt-logo-style="classic" style="flex:1;">Logos Clásicos</button>
+          </div>
+
           <button type="button" id="skApplyMmtBaseBtn" class="sk-btn sk-btn-primary" style="width:100%;font-weight:800;">
             ★ Aplicar Base Muntrume Motorsport
           </button>
@@ -694,6 +701,10 @@ const canonical = "https://skins.muntru.me/";
             </div>
           </div>
           <div id="skSmartSlotsGrid" class="sk-grid-2" style="gap:5px;"></div>
+          <label class="sk-btn sk-btn-sm" style="width:100%;cursor:pointer;border-style:dashed;border-color:rgba(0,230,153,0.45);" title="Sube tu propio PNG/SVG y sustituye el slot seleccionado en su posición exacta">
+            + Subir mi sponsor a este slot (.PNG / .SVG)
+            <input id="skUploadToActiveSlotInput" type="file" accept=".png,.svg,.webp" class="sk-hidden" />
+          </label>
           <div id="skSlotAssetGrid" class="sk-finish-grid" style="max-height:125px;overflow-y:auto;"></div>
 
           <!-- 2-Column Fleet Preset Save / Export / Import -->

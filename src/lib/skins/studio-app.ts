@@ -25,6 +25,7 @@ import {
   SLOT_DECAL_PREFIX,
   TEAM_SLOT_META,
   TEAM_SLOT_ORDER,
+  buildCategoryAwareTeamSlots,
   buildDecalsForSlot,
   deleteFleetPreset,
   extractCurrentSlotsFromDecals,
@@ -33,6 +34,7 @@ import {
   makeSlotDecalId,
   resolveTeamLayoutForCar,
   saveFleetPreset,
+  type MmtBrandStyle,
   type PortableTeamPreset,
   type SlotAssignment,
   type TeamSlotId,
@@ -3626,6 +3628,7 @@ export function initSkinsStudio(): void {
 
   // ─── Muntrume Motorsport (MMT) Team Presets, Click-to-Slot Sponsors & Fleet JSON ───
   let activeTeamSlot: TeamSlotId = "hood_main";
+  let activeMmtBrandStyle: MmtBrandStyle = "modern";
 
   function applySlotAsset(slotId: TeamSlotId, assetId: string | null, colorOverride?: string, silent = false): void {
     const mainId = makeSlotDecalId(slotId, "main");
@@ -3695,8 +3698,9 @@ export function initSkinsStudio(): void {
 
     // Replace only slot-managed layers (preserve user's custom uploaded decals & official UV kits)
     state.decals = state.decals.filter((d) => !d.id.startsWith(SLOT_DECAL_PREFIX));
+    const categorySlots = buildCategoryAwareTeamSlots(car.category, cfg.slots, activeMmtBrandStyle);
     for (const slotId of TEAM_SLOT_ORDER) {
-      const assignment = cfg.slots[slotId];
+      const assignment = categorySlots[slotId];
       if (assignment) {
         applySlotAsset(slotId, assignment.assetId, assignment.color, true);
       }
@@ -3863,6 +3867,92 @@ export function initSkinsStudio(): void {
     const id = teamPresetSel?.value || MMT_TEAM_PRESETS[0].id;
     const preset = MMT_TEAM_PRESETS.find((p) => p.id === id) ?? MMT_TEAM_PRESETS[0];
     applyTeamPresetConfig(preset, false);
+  });
+
+  // Brand Style Toggle: Modern Vector vs Classic Original (paddock/marca)
+  document.querySelectorAll<HTMLButtonElement>("[data-mmt-logo-style]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      activeMmtBrandStyle = (btn.dataset.mmtLogoStyle === "classic" ? "classic" : "modern") as MmtBrandStyle;
+      document.querySelectorAll<HTMLButtonElement>("[data-mmt-logo-style]").forEach((b) => {
+        b.classList.toggle("is-active", b.dataset.mmtLogoStyle === activeMmtBrandStyle);
+      });
+      // Immediately swap active hood & roof MMT logos in-place to Classic or Modern
+      const hoodAsset = activeMmtBrandStyle === "classic" ? "slot-mmt-classic-logo" : "slot-mmt-escudo";
+      const roofAsset = activeMmtBrandStyle === "classic" ? "slot-mmt-classic-icon" : "slot-mmt-monogram";
+      applySlotAsset("hood_main", hoodAsset, "#ffffff", true);
+      applySlotAsset("roof_banner", roofAsset, "#00e699", true);
+      renderSmartSlotsUI();
+      renderDecalList();
+      renderDecalEditor();
+      scheduleRender();
+      setStatus(
+        activeMmtBrandStyle === "classic"
+          ? "Estilo Logos Clásicos MMT (paddock/marca) aplicado en su sitio."
+          : "Estilo Logos Actuales Vectoriales MMT aplicado en su sitio.",
+        "ok",
+      );
+    });
+  });
+
+  // Upload custom local sponsor (.PNG/.SVG) directly into the active slot in the exact same position/orientation
+  byId<HTMLInputElement>("skUploadToActiveSlotInput")?.addEventListener("change", (e) => {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = typeof reader.result === "string" ? reader.result : "";
+      if (!dataUrl) return;
+      const slotId = activeTeamSlot;
+      const layout = resolveTeamLayoutForCar(state.carId, state.zones);
+      const coord = layout[slotId];
+      const meta = TEAM_SLOT_META[slotId];
+      const mainId = makeSlotDecalId(slotId, "main");
+      const pairId = makeSlotDecalId(slotId, "pair");
+      state.decals = state.decals.filter((d) => d.id !== mainId && d.id !== pairId);
+      const cleanName = file.name.replace(/\.[^.]+$/, "").slice(0, 20);
+      const created: DecalLayer[] = [
+        {
+          id: mainId,
+          name: `${cleanName} · ${meta.shortLabel}${coord.pair ? " (Izq)" : ""}`,
+          kind: "custom",
+          dataUrl,
+          color: "#ffffff",
+          x: coord.u,
+          y: coord.v,
+          scale: coord.width,
+          rotation: coord.rotation,
+          opacity: 1,
+          mirrorX: false,
+          zoneHint: coord.zoneHint,
+        },
+      ];
+      if (coord.pair) {
+        created.push({
+          id: pairId,
+          name: `${cleanName} · ${meta.shortLabel} (Der)`,
+          kind: "custom",
+          dataUrl,
+          color: "#ffffff",
+          x: coord.pair.u,
+          y: coord.pair.v,
+          scale: coord.width,
+          rotation: coord.pair.rotation,
+          opacity: 1,
+          mirrorX: false,
+          zoneHint: coord.pair.zoneHint,
+        });
+      }
+      state.decals.push(...created);
+      selectedDecalId = mainId;
+      renderSmartSlotsUI();
+      renderDecalList();
+      renderDecalEditor();
+      scheduleRender();
+      setStatus(`Sponsor "${cleanName}" colocado en "${meta.label}"${coord.pair ? " (ambos lados L/R)" : ""}.`, "ok");
+    };
+    reader.readAsDataURL(file);
+    input.value = "";
   });
 
   // Custom Website URL placement (replaces stock manufacturer URLs like bmw-m.com with clean paint-matched backdrop)

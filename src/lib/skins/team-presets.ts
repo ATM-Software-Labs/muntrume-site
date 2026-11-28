@@ -14,7 +14,11 @@ export type TeamSlotId =
   | "rear_wing"
   | "rear_bumper"
   | "front_splitter_fenders"
-  | "roof_banner";
+  | "roof_banner"
+  | "side_skirts"
+  | "safety_fia";
+
+export type MmtBrandStyle = "modern" | "classic";
 
 export interface TeamSlotCoord {
   /** Normalized center X (0..1) on the UV map */
@@ -52,6 +56,8 @@ export const TEAM_SLOT_ORDER: TeamSlotId[] = [
   "rear_bumper",
   "front_splitter_fenders",
   "roof_banner",
+  "side_skirts",
+  "safety_fia",
 ];
 
 export const TEAM_SLOT_META: Record<TeamSlotId, TeamSlotMeta> = {
@@ -94,7 +100,21 @@ export const TEAM_SLOT_META: Record<TeamSlotId, TeamSlotMeta> = {
     id: "roof_banner",
     label: "Techo / Banner",
     shortLabel: "Techo",
-    description: "Logo superior, bandera o marca sobre el techo junto al dorsal",
+    description: "Logo superior, bandera o marca sobre el techo",
+    defaultColor: "#ffffff",
+  },
+  side_skirts: {
+    id: "side_skirts",
+    label: "Faldones / Taloneras L/R",
+    shortLabel: "Faldones L/R",
+    description: "Sponsors técnicos inferiores en ambos faldones (0° izq. / 180° der.)",
+    defaultColor: "#ffffff",
+  },
+  safety_fia: {
+    id: "safety_fia",
+    label: "Clase / Seguridad FIA",
+    shortLabel: "Clase / FIA",
+    description: "Distintivo de categoría (GT3 PRO, 24H, TOW) en morro/aleta",
     defaultColor: "#ffffff",
   },
 };
@@ -116,11 +136,47 @@ export interface QuickSlotAsset {
 export const QUICK_SLOT_ASSETS: QuickSlotAsset[] = [
   {
     id: "slot-mmt-escudo",
-    label: "Escudo MMT Color",
+    label: "Escudo MMT Vector",
     shortLabel: "Escudo MMT",
     category: "mmt",
     kind: "svg-path",
     src: "/assets/skins/team/muntrume-escudo-vector.svg",
+    defaultColor: "#ffffff",
+  },
+  {
+    id: "slot-mmt-classic-logo",
+    label: "Logo Clásico MMT (Original)",
+    shortLabel: "Clásico MMT",
+    category: "mmt",
+    kind: "svg-path",
+    src: "/assets/img/logo.png",
+    defaultColor: "#ffffff",
+  },
+  {
+    id: "slot-mmt-classic-crest",
+    label: "Escudo Heráldico Clásico",
+    shortLabel: "Heráldico",
+    category: "mmt",
+    kind: "svg-path",
+    src: "/assets/brand/muntrume-escudo-heraldico.jpg",
+    defaultColor: "#ffffff",
+  },
+  {
+    id: "slot-mmt-classic-icon",
+    label: "Icono Clásico MMT 512",
+    shortLabel: "Icono Clásico",
+    category: "mmt",
+    kind: "svg-path",
+    src: "/assets/img/icon-512.png",
+    defaultColor: "#ffffff",
+  },
+  {
+    id: "slot-mmt-classic-press",
+    label: "Cabecera Prensa Clásica",
+    shortLabel: "Prensa MMT",
+    category: "mmt",
+    kind: "svg-path",
+    src: "/assets/img/email-logo.png",
     defaultColor: "#ffffff",
   },
   {
@@ -515,11 +571,33 @@ export function resolveTeamLayoutForCar(
     },
     roof_banner: {
       u: clamp01(roof.x + roof.w * 0.5),
-      v: clamp01(roof.y + roof.h * 0.28),
+      v: clamp01(roof.y + roof.h * 0.35),
       width: Number(Math.min(0.14, Math.max(0.08, Math.min(roof.w, roof.h) * 0.48)).toFixed(3)),
       height: Number(Math.min(0.08, Math.max(0.05, Math.min(roof.w, roof.h) * 0.34)).toFixed(3)),
       rotation: topRot,
       zoneHint: "roof",
+    },
+    side_skirts: {
+      u: clamp01(left.x + left.w * 0.50),
+      v: clamp01(left.y + left.h * 0.86),
+      width: Number(Math.min(0.17, Math.max(0.09, left.w * 0.30)).toFixed(3)),
+      height: Number(Math.min(0.05, Math.max(0.03, left.h * 0.28)).toFixed(3)),
+      rotation: 0,
+      zoneHint: "leftSide",
+      pair: {
+        u: clamp01(right.x + right.w * 0.50),
+        v: clamp01(right.y + right.h * 0.14),
+        rotation: isHorizontalUv ? 180 : 0,
+        zoneHint: "rightSide",
+      },
+    },
+    safety_fia: {
+      u: clamp01(hood.x + hood.w * 0.24),
+      v: clamp01(hood.y + hood.h * 0.78),
+      width: 0.065,
+      height: 0.045,
+      rotation: topRot,
+      zoneHint: "hood",
     },
   };
 
@@ -532,7 +610,52 @@ export function resolveTeamLayoutForCar(
     rear_bumper: specific.rear_bumper ?? autoFit.rear_bumper,
     front_splitter_fenders: specific.front_splitter_fenders ?? autoFit.front_splitter_fenders,
     roof_banner: specific.roof_banner ?? autoFit.roof_banner,
+    side_skirts: specific.side_skirts ?? autoFit.side_skirts,
+    safety_fia: specific.safety_fia ?? autoFit.safety_fia,
   };
+}
+
+/**
+ * Returns rich, category-aware default logos for all 8 slots, adapting automatically to
+ * GT3 / GTP / LMP / Cup / TCR / Formula and honoring the user's Modern vs Classic MMT logo style.
+ */
+export function buildCategoryAwareTeamSlots(
+  category: string,
+  baseSlots: Partial<Record<TeamSlotId, SlotAssignment>>,
+  brandStyle: MmtBrandStyle = "modern",
+): Partial<Record<TeamSlotId, SlotAssignment>> {
+  const cat = (category || "").toLowerCase();
+  const isProto = /gtp|hypercar|lmp/.test(cat);
+  const isFormula = /fórmula|formula/.test(cat);
+  const isGt3 = /gt3/.test(cat);
+
+  const out: Partial<Record<TeamSlotId, SlotAssignment>> = { ...baseSlots };
+
+  // Honor Classic (paddock/marca original) vs Modern (futuristic SVG) brand logos
+  if (brandStyle === "classic") {
+    out.hood_main = { assetId: "slot-mmt-classic-logo", color: "#ffffff" };
+    out.roof_banner = { assetId: "slot-mmt-classic-icon", color: "#ffffff" };
+  }
+
+  // Enrich with category-specific technical sponsors & FIA class badges
+  if (isProto) {
+    out.front_splitter_fenders = out.front_splitter_fenders ?? { assetId: "slot-telemetry-pro", color: "#ffffff" };
+    out.side_skirts = { assetId: "slot-octane-fuel", color: "#ffffff" };
+    out.safety_fia = { assetId: "slot-class-24h", color: "#ffffff" };
+  } else if (isGt3) {
+    out.front_splitter_fenders = out.front_splitter_fenders ?? { assetId: "slot-aero-labs", color: "#ffffff" };
+    out.side_skirts = { assetId: "slot-apex-tires", color: "#ffffff" };
+    out.safety_fia = { assetId: "slot-class-gt3", color: "#ffffff" };
+  } else if (isFormula) {
+    out.front_splitter_fenders = { assetId: "slot-telemetry-pro", color: "#ffffff" };
+    out.side_skirts = { assetId: "slot-aero-labs", color: "#ffffff" };
+    out.safety_fia = { assetId: "slot-fia-tow", color: "#ffffff" };
+  } else {
+    out.front_splitter_fenders = out.front_splitter_fenders ?? { assetId: "slot-atm-labs", color: "#ffffff" };
+    out.side_skirts = { assetId: "slot-apex-tires", color: "#ffffff" };
+    out.safety_fia = { assetId: "slot-fia-tow", color: "#ffffff" };
+  }
+  return out;
 }
 
 export interface SlotAssignment {
