@@ -2358,16 +2358,43 @@ export function initSkinsStudio(): void {
   document.querySelectorAll<HTMLButtonElement>("[data-quick-pal]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const parts = (btn.dataset.quickPal || "").split(",");
-      if (parts.length < 5) return;
+      if (parts.length < 4) return;
       state.palette.primary = parts[0];
       state.palette.secondary = parts[1];
       state.palette.accent = parts[2];
       state.palette.detail = parts[3];
-      state.pattern = parts[4] as PatternStyle;
-      state.psdPatternName = null;
+      if (parts[4]) {
+        state.pattern = parts[4] as PatternStyle;
+        state.psdPatternName = null;
+      }
       syncControlsFromState();
       scheduleRender();
-      setStatus(`Paleta aplicada: ${btn.textContent?.trim() || "Pro"}`, "ok");
+      setStatus(`Paleta aplicada: ${btn.textContent?.trim() || "MMT"}`, "ok");
+    });
+  });
+
+  // Motorsport Color Dictionary (applies clicked swatch to active channel: 1º / 2º / Ac. / Det.)
+  let dictColorTarget: "primary" | "secondary" | "accent" | "detail" = "primary";
+  document.querySelectorAll<HTMLButtonElement>("[data-dict-target]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const t = btn.dataset.dictTarget;
+      if (t === "primary" || t === "secondary" || t === "accent" || t === "detail") {
+        dictColorTarget = t;
+        document.querySelectorAll<HTMLButtonElement>("[data-dict-target]").forEach((b) => {
+          b.classList.toggle("is-active", b.dataset.dictTarget === dictColorTarget);
+        });
+      }
+    });
+  });
+  document.querySelectorAll<HTMLButtonElement>("[data-dict-color]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const hex = btn.dataset.dictColor;
+      if (!hex) return;
+      state.palette[dictColorTarget] = hex;
+      syncControlsFromState();
+      scheduleRender();
+      const chName = dictColorTarget === "primary" ? "Primario" : dictColorTarget === "secondary" ? "Secundario" : dictColorTarget === "accent" ? "Acento" : "Detalles";
+      setStatus(`Color ${chName}: ${btn.title || hex}`, "ok");
     });
   });
   byId<HTMLSelectElement>("skFontSelect")?.addEventListener("change", (e) => {

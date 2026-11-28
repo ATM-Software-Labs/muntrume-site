@@ -501,6 +501,54 @@ const canonical = "https://skins.muntru.me/";
             <label class="sk-color-item"><span>Fondo Dorsal</span><input id="skColorNumBg" type="color" /></label>
           </div>
 
+          <!-- Predefined Muntrume Team Palettes (1-click) -->
+          <div>
+            <span style="display:block;font-size:9.5px;font-weight:800;color:var(--sk-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Paletas del Equipo Muntrume</span>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;">
+              <button type="button" class="sk-pal-chip" data-quick-pal="#0f1722,#1a2c3a,#00e699,#f8fafc" title="Grafito Esmeralda Oficial MMT"><span class="sk-pal-dots"><i style="background:#0f1722"></i><i style="background:#00e699"></i></span>MMT Oficial</button>
+              <button type="button" class="sk-pal-chip" data-quick-pal="#0e8f48,#f8fafc,#0b0f14,#00e699" title="Verde Racing + Blanco Clásico MMT"><span class="sk-pal-dots"><i style="background:#0e8f48"></i><i style="background:#f8fafc"></i></span>MMT Clásico</button>
+              <button type="button" class="sk-pal-chip" data-quick-pal="#090d14,#131c28,#00ff9d,#ffffff" title="Carbono 24H + Neón Esmeralda"><span class="sk-pal-dots"><i style="background:#090d14"></i><i style="background:#00ff9d"></i></span>MMT Carbono</button>
+              <button type="button" class="sk-pal-chip" data-quick-pal="#f1f5f9,#0f172a,#00e699,#090b0f" title="Blanco Glaciar Sprint MMT"><span class="sk-pal-dots"><i style="background:#f1f5f9"></i><i style="background:#0f172a"></i></span>MMT Sprint</button>
+              <button type="button" class="sk-pal-chip" data-quick-pal="#0b0d12,#1b1f2a,#f59e0b,#ffffff" title="Negro + Oro Motorsport (GT4)"><span class="sk-pal-dots"><i style="background:#0b0d12"></i><i style="background:#f59e0b"></i></span>MMT Gold</button>
+              <button type="button" class="sk-pal-chip" data-quick-pal="#0a192f,#172a45,#00e699,#e2e8f0" title="Azul Noche Endurance MMT"><span class="sk-pal-dots"><i style="background:#0a192f"></i><i style="background:#00e699"></i></span>MMT Navy</button>
+            </div>
+          </div>
+
+          <!-- Motorsport Most-Used Color Dictionary (click any swatch to apply to active channel) -->
+          <div>
+            <div class="sk-row" style="justify-content:space-between;margin-bottom:4px;">
+              <span style="font-size:9.5px;font-weight:800;color:var(--sk-muted);text-transform:uppercase;letter-spacing:0.06em;">Diccionario de colores</span>
+              <div class="sk-seg" role="group" aria-label="Canal de color destino" style="padding:1px;">
+                <button type="button" data-dict-target="primary" class="is-active" style="padding:1px 5px;font-size:9px;">1º</button>
+                <button type="button" data-dict-target="secondary" style="padding:1px 5px;font-size:9px;">2º</button>
+                <button type="button" data-dict-target="accent" style="padding:1px 5px;font-size:9px;">Ac.</button>
+                <button type="button" data-dict-target="detail" style="padding:1px 5px;font-size:9px;">Det.</button>
+              </div>
+            </div>
+            <div id="skColorDictionaryGrid" style="display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;">
+              <button type="button" data-dict-color="#00e699" title="Muntrume Esmeralda (#00e699)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#00e699;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#0e8f48" title="Verde Muntrume Racing (#0e8f48)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#0e8f48;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#004225" title="British Racing Green (#004225)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#004225;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#76ff03" title="Verde Lima Manthey (#76ff03)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#76ff03;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#00d2be" title="Cian Petronas (#00d2be)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#00d2be;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#6cb4ee" title="Azul Gulf (#6cb4ee)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#6cb4ee;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#0066b1" title="Azul BMW M (#0066b1)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#0066b1;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#0b2545" title="Azul Endurance Navy (#0b2545)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#0b2545;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#6d28d9" title="Púrpura Nocturno (#6d28d9)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#6d28d9;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#e11d48" title="Magenta Racing (#e11d48)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#e11d48;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#d40000" title="Rosso Corsa (#d40000)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#d40000;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#991b1b" title="Rojo Carmesí (#991b1b)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#991b1b;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#ff8000" title="Naranja Papaya McLaren (#ff8000)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#ff8000;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#ffd000" title="Amarillo Módena (#ffd000)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#ffd000;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#d4af37" title="Oro Motorsport (#d4af37)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#d4af37;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#f8fafc" title="Blanco Glaciar (#f8fafc)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.35);background:#f8fafc;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#c0c7d1" title="Plata Flecha AMG (#c0c7d1)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#c0c7d1;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#6b7280" title="Gris Nardo (#6b7280)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#6b7280;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#1e293b" title="Grafito Mate (#1e293b)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.22);background:#1e293b;cursor:pointer;"></button>
+              <button type="button" data-dict-color="#090d14" title="Negro Carbono (#090d14)" style="height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.3);background:#090d14;cursor:pointer;"></button>
+            </div>
+          </div>
+
           <div class="sk-row">
             <button type="button" id="skMonoColorBtn" class="sk-btn sk-btn-sm" style="width:100%;">Pintar Monocolor (Limpio)</button>
           </div>
