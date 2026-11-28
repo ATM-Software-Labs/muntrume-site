@@ -986,69 +986,51 @@ function drawDriverNumbers(
   size: number,
   effectiveMode: NumberPlateMode,
 ): void {
-  const num = (state.customNumber || "16").trim();
-  const driverLabel = (state.customDriverName || "").trim().toUpperCase();
-  const fontFam = getFontFamily(state.fontStyle);
-  const roof = zonePx(state.zones.roof, size);
-
-  // In official Sim-Stamped mode (iRacing stamps numbers onto the official IMSA/GT3 plates),
-  // keep the roof and hood 100% clean unless the user explicitly enables Custom Number or roof dorsal.
-  if (effectiveMode !== "custom-number" && !state.showNumberOnCar) {
+  // Never paint synthetic driver names or roof/hood numbers by default.
+  // In official Sim-Stamped mode iRacing renders numbers on the official IMSA/GT3 plates.
+  // Only in explicit Custom Number mode do we stamp the number inside the exact IMSA/GT3 side plates.
+  if (effectiveMode !== "custom-number") {
     return;
   }
 
+  const num = (state.customNumber || "16").trim();
+  const fontFam = getFontFamily(state.fontStyle);
+
   ctx.save();
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
+  const plateKeys: Array<"numberPlateLeft" | "numberPlateRight"> = ["numberPlateLeft", "numberPlateRight"];
+  for (const key of plateKeys) {
+    const z = state.zones[key];
+    if (!z || z.w <= 0.01 || z.h <= 0.01) continue;
+    const p = zonePx(z, size);
+    const radius = Math.max(4, Math.min(p.w, p.h) * 0.08);
+    const isRight = key === "numberPlateRight";
 
-  // Optional roof dorsal ONLY when explicitly enabled by the user
-  if (state.showNumberOnCar) {
-    ctx.fillStyle = state.palette.detail || "#f8fafc";
-    ctx.font = `900 ${Math.round(roof.h * 0.36)}px ${fontFam}`;
-    ctx.fillText(num, roof.x + roof.w * 0.5, roof.y + roof.h * 0.52);
+    ctx.save();
+    ctx.translate(p.x + p.w * 0.5, p.y + p.h * 0.5);
+    if (isRight) ctx.rotate(Math.PI);
 
-    if (driverLabel) {
-      const nameSize = Math.max(10, Math.round(roof.h * 0.11));
-      ctx.font = `800 ${nameSize}px ${fontFam}`;
-      ctx.fillStyle = state.palette.detail || "#f8fafc";
-      ctx.fillText(driverLabel.slice(0, 22), roof.x + roof.w * 0.5, roof.y + roof.h * 0.18);
-    }
+    ctx.beginPath();
+    ctx.roundRect(-p.w / 2, -p.h / 2, p.w, p.h, radius);
+    ctx.fillStyle = state.palette.numberBg;
+    ctx.fill();
+    ctx.lineWidth = Math.max(2.5, size * 0.003);
+    ctx.strokeStyle = state.palette.accent;
+    ctx.stroke();
+
+    // Top accent strip inside IMSA/GT3 plate
+    const barH = Math.max(4, p.h * 0.14);
+    ctx.fillStyle = state.palette.accent;
+    ctx.fillRect(-p.w / 2 + 2, -p.h / 2 + 2, Math.max(0, p.w - 4), barH);
+
+    // Driver number centered strictly inside the official IMSA/GT3 plate
+    const fontSize = Math.max(16, Math.round(Math.min(p.w * 0.62, p.h * 0.62)));
+    ctx.font = `900 ${fontSize}px ${fontFam}`;
+    ctx.fillStyle = state.palette.numberColor;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(num, 0, barH * 0.5);
+    ctx.restore();
   }
-
-  // Custom Number mode: stamp fixed side door number plates directly onto car_num_<id>.tga
-  if (effectiveMode === "custom-number") {
-    const plateKeys: Array<"numberPlateLeft" | "numberPlateRight"> = ["numberPlateLeft", "numberPlateRight"];
-    for (const key of plateKeys) {
-      const z = state.zones[key];
-      if (!z || z.w <= 0.01 || z.h <= 0.01) continue;
-      const p = zonePx(z, size);
-      const radius = Math.max(4, Math.min(p.w, p.h) * 0.08);
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.roundRect(p.x, p.y, p.w, p.h, radius);
-      ctx.fillStyle = state.palette.numberBg;
-      ctx.fill();
-      ctx.lineWidth = Math.max(2.5, size * 0.003);
-      ctx.strokeStyle = state.palette.accent;
-      ctx.stroke();
-
-      // Top accent strip inside plate
-      const barH = Math.max(4, p.h * 0.14);
-      ctx.fillStyle = state.palette.accent;
-      ctx.fillRect(p.x + 2, p.y + 2, Math.max(0, p.w - 4), barH);
-
-      // Driver number centered inside plate
-      const fontSize = Math.max(16, Math.round(Math.min(p.w * 0.62, p.h * 0.62)));
-      ctx.font = `900 ${fontSize}px ${fontFam}`;
-      ctx.fillStyle = state.palette.numberColor;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(num, p.x + p.w * 0.5, p.y + barH + (p.h - barH) * 0.54);
-      ctx.restore();
-    }
-  }
-
   ctx.restore();
 }
 
@@ -1058,6 +1040,9 @@ async function drawDecals(ctx: CanvasRenderingContext2D, state: SkinDesignState,
     // and never project full-UV 2D iRacing sticker sheets onto approximate 3D preview meshes
     if (decal.opacity <= 0.001) continue;
     if ((forExport || for3dPreview) && decal.id.includes("-wireframe")) continue;
+    // Full-UV 2D iRacing sticker sheets align 1:1 on iRacing's 2D UV map & exported .TGA,
+    // never project them onto approximate 3D preview meshes (prevents white headlight/bumper blotches)
+    if (for3dPreview && decal.id.startsWith("official-uv-") && decal.scale >= 0.95) continue;
     const positions = decal.mirrorX
       ? [
           { x: decal.x, y: decal.y, rot: decal.rotation },

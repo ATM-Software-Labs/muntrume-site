@@ -718,9 +718,9 @@ export function initSkinsStudio(): void {
         renderSpecMapToCanvas(uvCanvas, state, 512);
         applyUvTransform();
       } else if (viewMode === "3d") {
-        // Crisp 1536px live 3D texture + 256px spec map (zero 64MB 4K GPU stalls while editing)
+        // Ultra-fast 1024px live 3D texture + 256px spec map (zero GPU stalls; exports always stay 2048px / 4096px)
         await renderSkinToCanvas(offscreenTexture, state, {
-          size: 1536,
+          size: 1024,
           partsOverlayCanvas: null,
           psdPatternCanvas: psdPatCanvas,
           forExport: true,
@@ -755,7 +755,7 @@ export function initSkinsStudio(): void {
     renderTimer = window.setTimeout(() => {
       renderTimer = null;
       requestAnimationFrame(() => void runRenderFrame());
-    }, 45);
+    }, 65);
   }
 
   function applyUvTransform(): void {

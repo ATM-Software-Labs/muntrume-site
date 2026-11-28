@@ -39,7 +39,7 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const MODELS_CDN_BASE = "/assets/models";
-const MODEL_VER = "v=20";
+const MODEL_VER = "v=21";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
@@ -881,7 +881,7 @@ export class WebGLPreviewEngine {
       const tex = new THREE.CanvasTexture(diffuseCanvas);
       tex.colorSpace = THREE.SRGBColorSpace;
       tex.flipY = false; // Standard glTF orientation: zero upside-down/mirrored text
-      tex.anisotropy = this.renderer ? Math.min(16, this.renderer.capabilities.getMaxAnisotropy()) : 8;
+      tex.anisotropy = this.renderer ? Math.min(4, this.renderer.capabilities.getMaxAnisotropy()) : 4;
       tex.minFilter = THREE.LinearMipmapLinearFilter;
       tex.magFilter = THREE.LinearFilter;
       tex.generateMipmaps = true;
@@ -972,13 +972,13 @@ export class WebGLPreviewEngine {
     // Apply live paint ONLY to exterior bodywork panels; refine non-paintable zones into crisp motorsport PBR
     const gunmetalRimMat = new THREE.MeshStandardMaterial({ color: "#323b48", roughness: 0.24, metalness: 0.90, envMapIntensity: 1.35 });
     const rubberTireMat = new THREE.MeshStandardMaterial({ color: "#14171c", roughness: 0.88, metalness: 0.05 });
-    const smokedGlassMat = new THREE.MeshPhysicalMaterial({ color: "#050910", roughness: 0.05, metalness: 0.14, transparent: true, opacity: 0.90, clearcoat: 1.0, clearcoatRoughness: 0.04, envMapIntensity: 1.9 });
-    const darkInteriorMat = new THREE.MeshStandardMaterial({ color: "#0b0e13", roughness: 0.92, metalness: 0.05 });
+    const smokedGlassMat = new THREE.MeshPhysicalMaterial({ color: "#03060c", roughness: 0.04, metalness: 0.16, transparent: true, opacity: 0.94, clearcoat: 1.0, clearcoatRoughness: 0.03, envMapIntensity: 2.1 });
+    const darkInteriorMat = new THREE.MeshStandardMaterial({ color: "#07090d", roughness: 0.94, metalness: 0.04 });
     const brakeSteelMat = new THREE.MeshStandardMaterial({ color: "#68727e", roughness: 0.34, metalness: 0.9 });
-    const darkCarbonMat = new THREE.MeshStandardMaterial({ color: "#161b22", roughness: 0.42, metalness: 0.24, bumpMap: this.carbonBumpTexture, bumpScale: 0.003 });
-    const grilleIntakeMat = new THREE.MeshStandardMaterial({ color: "#0a0d12", roughness: 0.82, metalness: 0.15 });
-    const frontLightMat = new THREE.MeshPhysicalMaterial({ color: "#dbeafe", emissive: new THREE.Color("#bfdbfe"), emissiveIntensity: 0.38, roughness: 0.08, metalness: 0.1, clearcoat: 1.0 });
-    const rearLightMat = new THREE.MeshPhysicalMaterial({ color: "#991b1b", emissive: new THREE.Color("#dc2626"), emissiveIntensity: 0.58, roughness: 0.12, metalness: 0.1, clearcoat: 1.0 });
+    const darkCarbonMat = new THREE.MeshStandardMaterial({ color: "#151a22", roughness: 0.42, metalness: 0.24, bumpMap: this.carbonBumpTexture, bumpScale: 0.003 });
+    const grilleIntakeMat = new THREE.MeshStandardMaterial({ color: "#090c11", roughness: 0.85, metalness: 0.15 });
+    const frontLightMat = new THREE.MeshPhysicalMaterial({ color: "#f0f9ff", emissive: new THREE.Color("#e0f2fe"), emissiveIntensity: 0.95, roughness: 0.06, metalness: 0.1, clearcoat: 1.0 });
+    const rearLightMat = new THREE.MeshPhysicalMaterial({ color: "#ef4444", emissive: new THREE.Color("#dc2626"), emissiveIntensity: 1.55, roughness: 0.08, metalness: 0.1, clearcoat: 1.0 });
 
     const isMaterialUntexturedOrWhite = (m: THREE.Material | undefined): boolean => {
       if (!m) return true;
