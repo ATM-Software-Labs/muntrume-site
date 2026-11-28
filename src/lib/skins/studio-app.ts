@@ -2397,6 +2397,27 @@ export function initSkinsStudio(): void {
       setStatus(`Color ${chName}: ${btn.title || hex}`, "ok");
     });
   });
+
+  // 1-Click Color Swap (1º ↔ 2º) & 3-Color Rotate (1º → 2º → Accent → 1º)
+  byId<HTMLButtonElement>("skSwapColorsBtn")?.addEventListener("click", () => {
+    const prevPrimary = state.palette.primary;
+    state.palette.primary = state.palette.secondary;
+    state.palette.secondary = prevPrimary;
+    syncControlsFromState();
+    scheduleRender();
+    setStatus("Colores Primario y Secundario intercambiados.", "ok");
+  });
+  byId<HTMLButtonElement>("skRotateColorsBtn")?.addEventListener("click", () => {
+    const p = state.palette.primary;
+    const s = state.palette.secondary;
+    const a = state.palette.accent;
+    state.palette.primary = s;
+    state.palette.secondary = a;
+    state.palette.accent = p;
+    syncControlsFromState();
+    scheduleRender();
+    setStatus("Combinación de colores rotada (1º → 2º → Acento).", "ok");
+  });
   byId<HTMLSelectElement>("skFontSelect")?.addEventListener("change", (e) => {
     state.fontStyle = (e.target as HTMLSelectElement).value as SkinDesignState["fontStyle"];
     scheduleRender();
