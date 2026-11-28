@@ -486,7 +486,7 @@ export const MMT_TEAM_PRESETS: TeamPresetDefinition[] = [
     },
     spec: { finish: "satin", metallic: 28, roughness: 32, clearcoat: 78, carbonAccent: false },
     fontStyle: "racing-bold",
-    showNumberOnCar: true,
+    showNumberOnCar: false,
     slots: {
       hood_main: { assetId: "slot-mmt-escudo", color: "#ffffff" },
       doors_side: { assetId: "slot-mmt-wordmark-white", color: "#ffffff" },
@@ -511,7 +511,7 @@ export const MMT_TEAM_PRESETS: TeamPresetDefinition[] = [
     },
     spec: { finish: "gloss", metallic: 12, roughness: 14, clearcoat: 94, carbonAccent: false },
     fontStyle: "condensed-gt",
-    showNumberOnCar: true,
+    showNumberOnCar: false,
     slots: {
       hood_main: { assetId: "slot-mmt-escudo", color: "#090b0f" },
       doors_side: { assetId: "slot-mmt-wordmark-dark", color: "#090b0f" },
@@ -536,7 +536,7 @@ export const MMT_TEAM_PRESETS: TeamPresetDefinition[] = [
     },
     spec: { finish: "carbon", metallic: 40, roughness: 44, clearcoat: 62, carbonAccent: true },
     fontStyle: "mono-tech",
-    showNumberOnCar: true,
+    showNumberOnCar: false,
     slots: {
       hood_main: { assetId: "slot-mmt-escudo", color: "#ffffff" },
       doors_side: { assetId: "slot-mmt-wordmark-white", color: "#ffffff" },

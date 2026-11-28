@@ -990,39 +990,29 @@ function drawDriverNumbers(
   const driverLabel = (state.customDriverName || "").trim().toUpperCase();
   const fontFam = getFontFamily(state.fontStyle);
   const roof = zonePx(state.zones.roof, size);
-  const hood = zonePx(state.zones.hood, size);
+
+  // In official Sim-Stamped mode (iRacing stamps numbers onto the official IMSA/GT3 plates),
+  // keep the roof and hood 100% clean unless the user explicitly enables Custom Number or roof dorsal.
+  if (effectiveMode !== "custom-number" && !state.showNumberOnCar) {
+    return;
+  }
 
   ctx.save();
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  // Subtle driver name on top of roof / window header (always synced with selected driver)
-  if (driverLabel) {
-    const nameSize = Math.max(10, Math.round(roof.h * 0.12));
-    ctx.font = `800 ${nameSize}px ${fontFam}`;
+  // Optional roof dorsal ONLY when explicitly enabled by the user
+  if (state.showNumberOnCar) {
     ctx.fillStyle = state.palette.detail || "#f8fafc";
-    ctx.fillText(driverLabel.slice(0, 22), roof.x + roof.w * 0.5, roof.y + roof.h * 0.16);
-  }
+    ctx.font = `900 ${Math.round(roof.h * 0.36)}px ${fontFam}`;
+    ctx.fillText(num, roof.x + roof.w * 0.5, roof.y + roof.h * 0.52);
 
-  // Optional roof & hood dorsal (permitted in Sim-Stamped when checkbox is enabled, always drawn in Custom Number)
-  if (state.showNumberOnCar || effectiveMode === "custom-number") {
-    ctx.fillStyle = state.palette.numberColor === state.palette.secondary ? state.palette.detail : state.palette.detail;
-    ctx.font = `900 ${Math.round(roof.h * 0.44)}px ${fontFam}`;
-    ctx.fillText(num, roof.x + roof.w * 0.5, roof.y + roof.h * 0.58);
-
-    const badgeW = hood.w * 0.22;
-    const badgeH = hood.h * 0.22;
-    const bx = hood.x + hood.w * 0.74;
-    const by = hood.y + hood.h * 0.72;
-    ctx.fillStyle = state.palette.numberBg;
-    ctx.fillRect(bx, by, badgeW, badgeH);
-    ctx.strokeStyle = state.palette.accent;
-    ctx.lineWidth = Math.max(2, size * 0.0025);
-    ctx.strokeRect(bx, by, badgeW, badgeH);
-
-    ctx.fillStyle = state.palette.numberColor;
-    ctx.font = `900 ${Math.round(badgeH * 0.68)}px ${fontFam}`;
-    ctx.fillText(num, bx + badgeW / 2, by + badgeH / 2 + 1);
+    if (driverLabel) {
+      const nameSize = Math.max(10, Math.round(roof.h * 0.11));
+      ctx.font = `800 ${nameSize}px ${fontFam}`;
+      ctx.fillStyle = state.palette.detail || "#f8fafc";
+      ctx.fillText(driverLabel.slice(0, 22), roof.x + roof.w * 0.5, roof.y + roof.h * 0.18);
+    }
   }
 
   // Custom Number mode: stamp fixed side door number plates directly onto car_num_<id>.tga

@@ -3735,12 +3735,11 @@ export function initSkinsStudio(): void {
         state.customDriverName = saved?.name || drv.name;
         state.customNumber = saved?.number || drv.number;
         state.customerId = saved?.customerId || drv.customerId;
-        state.showNumberOnCar = true;
         customPhotoShots = null;
         syncControlsFromState();
         renderQuickDriverPills();
         scheduleRender();
-        setStatus(`Piloto activo: #${state.customNumber} ${state.customDriverName} (dorsal y techo actualizados).`, "ok");
+        setStatus(`Piloto activo: #${state.customNumber} ${state.customDriverName} (ID iRacing: ${state.customerId}).`, "ok");
       });
     });
   }

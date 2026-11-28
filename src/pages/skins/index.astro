@@ -497,8 +497,8 @@ const canonical = "https://skins.muntru.me/";
               <option value="condensed-gt">GT Condensed</option>
               <option value="mono-tech">Tech Mono</option>
             </select>
-            <label class="sk-row" style="font-size:10.5px;cursor:pointer;">
-              <input id="skShowNumber" type="checkbox" checked /> Dorsal techo
+            <label class="sk-row" style="font-size:10.5px;cursor:pointer;" title="Opcional: solo si quieres dorsal extra en el techo (en modo oficial iRacing usa las placas IMSA/GT3)">
+              <input id="skShowNumber" type="checkbox" /> Dorsal extra techo
             </label>
           </div>
 
@@ -566,14 +566,14 @@ const canonical = "https://skins.muntru.me/";
             </div>
           </details>
 
-          <details class="sk-accordion">
-            <summary>Capas UV de plantilla <span>▾</span></summary>
-            <p class="sk-help" id="skOfficialKitStatus" style="margin:0 0 6px;font-size:10.5px;">Capas alineadas sobre UV 2D del coche.</p>
+          <details class="sk-accordion" open>
+            <summary>Capas oficiales IMSA / GT3 / Cascarón <span>▾</span></summary>
+            <p class="sk-help" id="skOfficialKitStatus" style="margin:0 0 6px;font-size:10.5px;">Aplica al píxel exacto las capas oficiales de plantilla iRacing (Marca, IMSA, Placas GT3 y Cascarón UV).</p>
             <div id="skOfficialKitBar" class="sk-grid-2" style="gap:5px;">
               <button type="button" id="skKitAddBrand" class="sk-btn sk-btn-sm">+ Marca UV</button>
-              <button type="button" id="skKitAddImsa" class="sk-btn sk-btn-sm">+ Serie UV</button>
-              <button type="button" id="skKitAddSeries" class="sk-btn sk-btn-sm">+ Placas UV</button>
-              <button type="button" id="skKitAddWire" class="sk-btn sk-btn-sm">+ Cascarón</button>
+              <button type="button" id="skKitAddImsa" class="sk-btn sk-btn-sm">+ IMSA / Serie</button>
+              <button type="button" id="skKitAddSeries" class="sk-btn sk-btn-sm">+ Placas GT3</button>
+              <button type="button" id="skKitAddWire" class="sk-btn sk-btn-sm">+ Cascarón UV</button>
             </div>
           </details>
 
