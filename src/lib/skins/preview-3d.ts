@@ -39,7 +39,7 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const MODELS_CDN_BASE = "/assets/models";
-const MODEL_VER = "v=22";
+const MODEL_VER = "v=23";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
@@ -995,7 +995,7 @@ export class WebGLPreviewEngine {
     // Apply live paint ONLY to exterior bodywork panels; refine non-paintable zones into crisp motorsport PBR
     const gunmetalRimMat = new THREE.MeshStandardMaterial({ color: "#323b48", roughness: 0.24, metalness: 0.90, envMapIntensity: 1.35 });
     const rubberTireMat = new THREE.MeshStandardMaterial({ color: "#14171c", roughness: 0.88, metalness: 0.05 });
-    const smokedGlassMat = new THREE.MeshPhysicalMaterial({ color: "#03060c", roughness: 0.04, metalness: 0.16, transparent: true, opacity: 0.94, clearcoat: 1.0, clearcoatRoughness: 0.03, envMapIntensity: 2.1 });
+    const smokedGlassMat = new THREE.MeshPhysicalMaterial({ color: "#1a2f45", emissive: new THREE.Color("#0b1826"), emissiveIntensity: 0.32, roughness: 0.04, metalness: 0.32, transparent: true, opacity: 0.84, clearcoat: 1.0, clearcoatRoughness: 0.02, envMapIntensity: 2.3 });
     const darkInteriorMat = new THREE.MeshStandardMaterial({ color: "#07090d", roughness: 0.94, metalness: 0.04 });
     const brakeSteelMat = new THREE.MeshStandardMaterial({ color: "#68727e", roughness: 0.34, metalness: 0.9 });
     const darkCarbonMat = new THREE.MeshStandardMaterial({ color: "#151a22", roughness: 0.42, metalness: 0.24, bumpMap: this.carbonBumpTexture, bumpScale: 0.003 });
