@@ -39,7 +39,7 @@ const DEFAULT_ZONES: Record<ZoneKey, UvRect> = {
 };
 
 const MODELS_CDN_BASE = "/assets/models";
-const MODEL_VER = "v=21";
+const MODEL_VER = "v=22";
 
 const CATEGORY_BASE_GLB_PATHS: Record<CarBodyCategory, string> = {
   gt3: `${MODELS_CDN_BASE}/fordmustanggt3-v2.glb?${MODEL_VER}`,
@@ -307,19 +307,21 @@ function applyIracingAutoFitUVs(
       lv = 1 - up;
     } else if (zoneKind === "leftSide") {
       zone = zones.leftSide;
+      const doorUp = Math.max(0, Math.min(1, (up - 0.08) / 0.56));
       lu = 1 - along;
-      lv = 1 - up;
+      lv = 1 - doorUp;
     } else if (zoneKind === "rightSide") {
       zone = zones.rightSide;
+      const doorUp = Math.max(0, Math.min(1, (up - 0.08) / 0.56));
       lu = along;
-      lv = up;
+      lv = doorUp;
     } else if (zoneKind === "hood") {
       zone = zones.hood;
-      lu = 1 - Math.max(0, Math.min(1, (along - 0.52) / 0.48));
+      lu = 1 - Math.max(0, Math.min(1, (along - 0.46) / 0.52));
       lv = 1 - across;
     } else {
       zone = zones.roof;
-      lu = 1 - Math.max(0, Math.min(1, (along - 0.12) / 0.42));
+      lu = 1 - Math.max(0, Math.min(1, (along - 0.14) / 0.42));
       lv = 1 - across;
     }
 
